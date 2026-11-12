@@ -26,6 +26,9 @@ The package exposes these entry points, and no others:
 | `@aloong-planet/ui/apply-theme` | The synchronous theme apply function ([theming](theming.md) `theming::REQ-007`) |
 | `@aloong-planet/ui/theme.css` | The theme stylesheet: the general tokens for every theme and light/dark, their Tailwind theme mapping, the type and radius scale, and the scrollbars |
 
+> Pending: the three entry points resolve but provide none of this yet: `@aloong-planet/ui` and
+> `@aloong-planet/ui/apply-theme` export nothing, and `@aloong-planet/ui/theme.css` holds no rules.
+
 - package::REQ-001/AC-01: Each entry point in the table resolves when imported from a consumer project.
 - package::REQ-001/AC-02: A bundle that imports only `@aloong-planet/ui/apply-theme` contains no React
   code, so the function can run in an Electron preload script or a page's `<head>` before React loads.
@@ -39,6 +42,8 @@ source so that the class names inside the kit components are compiled.
 - package::REQ-002/AC-01: In a consumer that has done both steps, every kit component renders with the kit's
   styles in every theme and light/dark.
 - package::REQ-002/AC-03: The package README states both steps.
+
+> Pending: the package has no README.
 
 ## Constraints
 

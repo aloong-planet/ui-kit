@@ -1,7 +1,9 @@
 // package::REQ-001: the package's entry points, imported by a consumer project. This package is that consumer: it
 // installs the kit as a workspace dependency, so `@aloong-planet/ui` resolves through the kit's built `exports`.
 // Each import runs in its own Node process started in this directory, so it resolves as Node does for an app.
-// The stylesheet entry is imported by Tailwind CSS, not by Node: the story tests cover it, through src/styles.css.
+// The stylesheet entry is imported by Tailwind CSS, not by Node: stories/package.stories.tsx covers it, through
+// src/styles.css. The workspace link points at the kit's directory, so whether the published package carries the
+// files the entry points resolve to is tested in the kit's own tests (packages/ui/tests/package.test.ts).
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { expect, test } from 'vitest'
