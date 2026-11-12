@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A newer push to the same ref cancels the unfinished run. On the default branch this is safe only because
+# ci-scope.mjs selects every scope for a push.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # The job id must stay `changes`: ci-gate.mjs reads the scopes from it.
+  changes:
+    name: Changed scopes
+    runs-on: ubuntu-latest
+    outputs:
+      # one line per scope of .github/ci/routing.json
+      kit: ${{ steps.scope.outputs.kit }}
+    steps:
+      # every action at a full commit with its release in a comment (the github-ops skill: pin every action)
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0             # a pull request is compared from its merge base
+          persist-credentials: false
+      - id: scope
+        run: node .github/ci/ci-scope.mjs
+
+  # Always runs, so no scope lists it and the gate always requires it. Checks that read the whole repository
+  # (language, links, documents) belong here.
+  repo-policy:
+    name: Repository policy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+      - run: node --test .github/ci/*.test.mjs
+
+  kit-checks:
+    name: Kit checks
+    needs: changes
+    if: needs.changes.outputs.kit == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # pnpm must come before setup-node: setup-node's cache: 'pnpm' calls pnpm to find the store path
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # A story that imports the kit type-checks against the kit's built declarations, so the build runs first
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm --filter @aloong-planet/ui-storybook exec playwright install --with-deps chromium
+      - run: pnpm test
+
+  # The one required check. `needs` must list every other job of this workflow; `always()` makes it run after a
+  # failure or a skip upstream, which `!cancelled()` or the default `success()` would not.
+  ci-gate:
+    name: CI gate
+    needs: [changes, repo-policy, kit-checks]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify the selected jobs
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: node .github/ci/ci-gate.mjs

@@ -1,0 +1,10 @@
+{
+  "scopes": {
+    "kit": ["kit-checks"]
+  },
+  "rules": [
+    { "reason": "Shared input", "select": "all", "paths": ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", "eslint.config.js", ".gitignore"] },
+    { "reason": "Documentation", "select": [], "paths": ["AGENTS.md", "CLAUDE.md", "capabilities.toml", "docs/**/*.md"] },
+    { "reason": "The kit and its Storybook", "select": ["kit"], "paths": ["packages/**", "storybook/**"] }
+  ]
+}
