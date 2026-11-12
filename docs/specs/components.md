@@ -53,6 +53,9 @@ Applies to every interactive component in this spec.
   components::REQ-011). Every floating surface casts the `--shadow-pop` shadow.
 - components::REQ-001/AC-04: No component animates a colour change, so switching the theme or light/dark
   recolours every component at once ([theming](theming.md) `theming::REQ-003/AC-03`).
+- components::REQ-001/AC-05: The labels of buttons, select triggers and options, segments, tabs and badges
+  stay on one line and are cut with an ellipsis when the space runs out; the text of toasts, tooltips,
+  dialogs and drawers wraps.
 
 ### components::REQ-002 Button
 
@@ -87,7 +90,9 @@ clear button.
 
 - components::REQ-003/AC-01: The search icon sits inside the field at the leading edge, and typed text starts
   after it.
-- components::REQ-003/AC-02: Focusing the field turns its border `--ring`.
+- components::REQ-003/AC-02: Focusing the field turns its border `--ring`, with no outline.
+- components::REQ-003/AC-03: The field has a `--card` ground, a 1px `--input` border and the placeholder the
+  caller passes, and no clear button.
 
 ### components::REQ-004 Select
 
@@ -118,6 +123,8 @@ selected at a time.
   under the pointer.
 - components::REQ-005/AC-02: It is announced as a group of mutually exclusive options under the label the
   caller passes (components::CON-001), and arrow keys move between its segments.
+- components::REQ-005/AC-03: Selecting a segment deselects the one selected before; the container's 1px
+  `--border-strong` border clips the segments at its rounded corners.
 
 ### components::REQ-006 Card
 
@@ -164,6 +171,8 @@ may include a line in `--tooltip-warning`.
   and moves to the opposite side when there is not room.
 - components::REQ-008/AC-03: Its text is the trigger's description for screen readers; the tooltip itself
   takes no focus and lets the pointer pass through it.
+- components::REQ-008/AC-04: It shows the `--tooltip` ground, `--tooltip-foreground` text and no border; a
+  line the caller marks as a warning shows in `--tooltip-warning`.
 
 ### components::REQ-009 Drawer
 
@@ -177,6 +186,9 @@ holding its title in `--primary` and an icon-only close button at its top-right 
   element that opened it.
 - components::REQ-009/AC-03: The close button carries the accessible name the caller passes
   (components::CON-001).
+- components::REQ-009/AC-04: The panel runs along the right edge of the window for its full height,
+  `min(720px, 80vw)` wide, over a scrim in `--overlay`; its header shows the title in `--primary` and the
+  close button at its top-right corner.
 
 ### components::REQ-010 Confirm dialog
 
@@ -190,6 +202,8 @@ passes, and its buttons at the bottom right — cancel first, then the confirmin
 - components::REQ-010/AC-03: On opening, keyboard focus moves to the cancel button and stays inside the
   dialog, and the dialog is announced under its title; on closing, focus returns to the element that opened it.
 - components::REQ-010/AC-04: Activating the confirming action runs the caller's action and closes the dialog.
+- components::REQ-010/AC-05: The box sits centred near the top of the window over a scrim in `--overlay`,
+  showing its title, the caller's body, and its buttons at the bottom right with cancel first.
 
 ### components::REQ-011 Toast
 
@@ -205,6 +219,10 @@ with the newest at the bottom. Any code in the app can raise one.
   3200ms after it appears.
 - components::REQ-011/AC-02: A toast has no close button.
 - components::REQ-011/AC-03: Screen readers announce a toast when it appears.
+- components::REQ-011/AC-04: Toasts appear at the bottom centre of the window, 18px above its bottom edge,
+  stacked in a column 8px apart with the newest at the bottom.
+- components::REQ-011/AC-05: Each variant renders as its row describes.
+- components::REQ-011/AC-06: Code outside any React component can raise a toast.
 
 ### components::REQ-012 Skeleton
 
@@ -213,6 +231,8 @@ A placeholder block in `--border` (`deep`: `--border-strong`) that pulses betwee
 
 - components::REQ-012/AC-01: When the system asks for reduced motion, the block does not pulse.
 - components::REQ-012/AC-02: The block is hidden from screen readers and does not react to the pointer.
+- components::REQ-012/AC-03: The block pulses between 55% and full opacity over 1.6s, eased in and out,
+  repeating, in `--border`, or `--border-strong` for `deep`.
 
 ### components::REQ-013 Tabs
 
@@ -286,9 +306,8 @@ on light/dark.
 
 ## Failure modes and boundaries
 
-- **A label longer than its control**: the labels of buttons, select triggers and options, segments, tabs and
-  badges stay on one line and are cut with an ellipsis when the space runs out; the text of toasts,
-  tooltips, dialogs and drawers wraps.
+- **A label longer than its control**: it stays on one line and is cut with an ellipsis, while running text
+  wraps (components::REQ-001/AC-05).
 - **An icon-only button, a drawer or a segmented control without its text**: the type check fails
   (components::CON-001); nothing renders a fallback text.
 - **A select whose options do not fit the window**: the popup scrolls inside its own height
