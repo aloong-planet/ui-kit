@@ -7,6 +7,7 @@
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { expect, test } from 'vitest'
+import { bundleApplyTheme } from './support/bundle-apply-theme'
 
 const consumerDir = fileURLToPath(new URL('..', import.meta.url))
 
@@ -28,4 +29,12 @@ test.each(['@aloong-planet/ui', '@aloong-planet/ui/apply-theme'])(
 
 test('a consumer cannot import a path the entry point table does not list', () => {
   expect(() => importInConsumer('@aloong-planet/ui/dist/index.mjs')).toThrow(/ERR_PACKAGE_PATH_NOT_EXPORTED/)
+})
+
+// package::REQ-001/AC-02: the bundle a consumer builds from the apply-theme entry point alone holds the kit's function
+// and no React, so it can run before React loads
+test('a bundle that imports only the apply-theme entry point holds no React code', async () => {
+  const { code, moduleIds } = await bundleApplyTheme()
+  expect(code).toContain('function applyTheme')
+  expect(moduleIds.filter((id) => /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/.test(id))).toEqual([])
 })

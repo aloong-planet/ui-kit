@@ -1,0 +1,21 @@
+/* A fixture app token (theming::REQ-009), declared on the root contract as the package README tells an app to: a
+   value for the root element, one per `data-theme` value, and one under `dark` for each. Its values are arbitrary and
+   distinct, so that each state of the root shows which declaration is in force. */
+:root {
+  --fixture-app-token: rgb(1, 0, 0);
+}
+:root[data-theme="blue"] {
+  --fixture-app-token: rgb(2, 0, 0);
+}
+:root[data-theme="amber"] {
+  --fixture-app-token: rgb(3, 0, 0);
+}
+:root.dark {
+  --fixture-app-token: rgb(4, 0, 0);
+}
+:root.dark[data-theme="blue"] {
+  --fixture-app-token: rgb(5, 0, 0);
+}
+:root.dark[data-theme="amber"] {
+  --fixture-app-token: rgb(6, 0, 0);
+}

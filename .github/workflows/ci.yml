@@ -62,6 +62,7 @@ jobs:
       - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm lint
+      - run: pnpm check:tokens
       - run: pnpm --filter @aloong-planet/ui-storybook exec playwright install --with-deps chromium
       - run: pnpm test
 

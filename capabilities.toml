@@ -27,4 +27,6 @@ source = "docs/ops/merging.md"
 enforced-by = []
 
 [theming]
-enabled = false
+enabled = true
+source = "packages/ui/src/theme.css"
+enforced-by = ["pnpm check:tokens"]

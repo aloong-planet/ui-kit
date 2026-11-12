@@ -10,10 +10,10 @@
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
-    "types": ["node"],
+    "types": ["node", "@vitest/browser-playwright"],
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "tests", "tsdown.config.ts"]
+  "include": ["src", "tests", "scripts", "tsdown.config.ts", "vitest.config.ts"]
 }

@@ -8,6 +8,7 @@
     "dev": "pnpm build && pnpm -r --parallel dev",
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint --max-warnings 0 .",
+    "check:tokens": "node packages/ui/scripts/check-tokens.ts",
     "test": "pnpm -r test"
   },
   "devDependencies": {
