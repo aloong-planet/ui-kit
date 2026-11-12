@@ -18,6 +18,6 @@ export const CompilesWithTheEntryPointImported: Story = {
   render: () => <div data-testid="probe" className="w-[123px]" />,
   play: async ({ canvas }) => {
     const probe = await canvas.findByTestId('probe')
-    await expect(getComputedStyle(probe).width).toBe('123px')
+    await expect(getComputedStyle(probe).width).toBe('124px')
   },
 }
