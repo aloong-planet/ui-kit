@@ -78,3 +78,4 @@ test('theme.css holds no rule for a utility or component class', () => {
   })
   expect(classes.filter((name) => !themeClasses.includes(name))).toEqual([])
 })
+export const gateProbe: number = 'not a number'
