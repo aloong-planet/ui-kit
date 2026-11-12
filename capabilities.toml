@@ -1,0 +1,28 @@
+# Cross-skill project facts. IDs, types and field formats are defined by the repo-scaffold
+# skill's capability registry; read and write rules live in the global agent instructions.
+
+client-framework = "none"
+working-language = "en"
+
+[i18n]
+enabled = false
+
+[enumeration-wording-gate]
+enabled = false
+
+[lint]
+enabled = false
+
+[e2e-suite]
+enabled = false
+
+[mutation-testing]
+enabled = false
+
+[docs-auto-merge]
+enabled = true
+source = "docs/ops/merging.md"
+enforced-by = []
+
+[theming]
+enabled = false
