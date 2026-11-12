@@ -4,6 +4,8 @@ Cross-skill project facts are declared in `capabilities.toml` at the repository 
 
 ## Invariants
 
+- The kit serves no particular app: no token, entry point, variant or option exists for a single app; what
+  only one app needs stays in that app (see `docs/specs/theming.md`, Implementation Decisions).
 - No `docs/CONTEXT.md` and no `docs/adr/`: terms and architectural decisions go into the specs under
   `docs/specs/` (see `docs/agents/docs-layout.md`).
 - No interface prototypes under `docs/prototypes/`: a component's look is confirmed by the owner on its
