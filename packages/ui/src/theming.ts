@@ -23,11 +23,25 @@ export function knownMode(mode: Mode): Mode {
  * Writes `theme` and the effective light/dark of `mode` on the root element, resolving `system` against the
  * system appearance at the moment of the call. An unknown theme is taken as `purple` and an unknown mode as
  * `system`, so a value read from damaged storage still gives a working page.
+ *
+ * Called before the document has a root element, as an Electron preload script is, it writes them as soon as the
+ * parser creates the root element: the mutation is delivered as a microtask, before the parser runs the page's first
+ * script and before anything is painted.
  */
 export function applyTheme(theme: Theme, mode: Mode): void {
-  const root = document.documentElement
   const inForce = knownMode(mode)
   const dark = inForce === 'system' ? window.matchMedia(darkSchemeQuery).matches : inForce === 'dark'
-  root.setAttribute('data-theme', themes.includes(theme) ? theme : 'purple')
-  root.classList.toggle('dark', dark)
+  const write = (root: Element) => {
+    root.setAttribute('data-theme', themes.includes(theme) ? theme : 'purple')
+    root.classList.toggle('dark', dark)
+  }
+  const root = document.documentElement as Element | null
+  if (root) return write(root)
+  const observer = new MutationObserver(() => {
+    const created = document.documentElement as Element | null
+    if (!created) return
+    observer.disconnect()
+    write(created)
+  })
+  observer.observe(document, { childList: true })
 }

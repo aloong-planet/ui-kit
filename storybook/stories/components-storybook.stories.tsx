@@ -1,6 +1,7 @@
 // components::REQ-015/AC-02: each value of the toolbar's theme and mode reaches the root element through the
-// ThemeProvider every story renders in. A story's `globals` set the toolbar values it opens with. These stories show
-// no kit component, so they are hidden from the sidebar (`!dev`) and run only as tests.
+// ThemeProvider every story renders in. A story's `globals` set the toolbar values it opens with. The tests run with a
+// dark system appearance (vite.config.ts), so `light` and `system` give different roots. These stories show no kit
+// component, so they are hidden from the sidebar (`!dev`) and run only as tests.
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect } from 'storybook/test'
 import preview from '../.storybook/preview'
@@ -16,6 +17,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 const root = document.documentElement
+const systemIsDark = () => window.matchMedia('(prefers-color-scheme: dark)').matches
 
 export const OffersEveryThemeAndMode: Story = {
   play: async () => {
@@ -37,6 +39,7 @@ export const BlueAndDark: Story = {
 export const AmberAndLight: Story = {
   globals: { theme: 'amber', mode: 'light' },
   play: async () => {
+    await expect(systemIsDark()).toBe(true)
     await expect(root.getAttribute('data-theme')).toBe('amber')
     await expect(root.classList.contains('dark')).toBe(false)
   },
@@ -45,7 +48,8 @@ export const AmberAndLight: Story = {
 export const PurpleAndSystem: Story = {
   globals: { theme: 'purple', mode: 'system' },
   play: async () => {
+    await expect(systemIsDark()).toBe(true)
     await expect(root.getAttribute('data-theme')).toBe('purple')
-    await expect(root.classList.contains('dark')).toBe(window.matchMedia('(prefers-color-scheme: dark)').matches)
+    await expect(root.classList.contains('dark')).toBe(true)
   },
 }

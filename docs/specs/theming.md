@@ -121,8 +121,10 @@ theming::REQ-003. It stores nothing (theming::CON-001).
 
 `@aloong-planet/ui/apply-theme` exports a function that takes a theme and a mode and writes them on the root
 element by theming::REQ-003, synchronously, resolving `system` against the system appearance at the moment
-of the call. The ThemeProvider writes the root element through the same function, so the rules exist once.
-It loads no React ([package](package.md) `package::REQ-001/AC-02`).
+of the call. Called before the document has a root element, as an Electron preload script is, it writes them
+as soon as the root element is created, before the page runs any script of its own. The ThemeProvider writes
+the root element through the same function, so the rules exist once. It loads no React
+([package](package.md) `package::REQ-001/AC-02`).
 
 - theming::REQ-007/AC-01: Called before the first render — from an Electron preload script, or from a
   script in a page's `<head>` — it makes the first painted frame show the final theme and light/dark.

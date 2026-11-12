@@ -12,11 +12,11 @@ export default defineConfig({
   test: {
     projects: [
       {
-        // The package as it is published, in Node
+        // What runs in Node, such as the package as it is published
         test: {
           name: 'package',
           environment: 'node',
-          include: ['tests/package.test.ts'],
+          include: ['tests/**/*.test.ts'],
         },
       },
       {

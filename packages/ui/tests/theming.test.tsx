@@ -73,16 +73,24 @@ test('with mode system, the root follows a change of the system appearance while
   expect(rootState()).toEqual({ theme: 'blue', dark: false })
 })
 
+// The system appearance moves toward the locked value and then away from it: a ThemeProvider that followed the system
+// would show the system's value after the second move
 test.each([
-  { mode: 'light', system: 'dark', dark: false },
-  { mode: 'dark', system: 'light', dark: true },
-] as const)('with mode $mode, the system appearance has no effect', async ({ mode, system, dark }) => {
-  await setSystemAppearance(system)
-  render('amber', mode)
-  expect(rootState()).toEqual({ theme: 'amber', dark })
-  await setSystemAppearance(system === 'dark' ? 'light' : 'dark')
-  expect(rootState()).toEqual({ theme: 'amber', dark })
-})
+  { mode: 'light', dark: false },
+  { mode: 'dark', dark: true },
+] as const)(
+  'with mode $mode, the root shows it from mount on, whatever the system appearance does',
+  async ({ mode, dark }) => {
+    const away = dark ? 'light' : 'dark'
+    await setSystemAppearance(away)
+    render('amber', mode)
+    expect(rootState()).toEqual({ theme: 'amber', dark })
+    await setSystemAppearance(dark ? 'dark' : 'light')
+    expect(rootState()).toEqual({ theme: 'amber', dark })
+    await setSystemAppearance(away)
+    expect(rootState()).toEqual({ theme: 'amber', dark })
+  },
+)
 
 test('selecting system again after light resumes following the system appearance from that moment', async () => {
   await setSystemAppearance('dark')
@@ -94,11 +102,6 @@ test('selecting system again after light resumes following the system appearance
   expect(rootState()).toEqual({ theme: 'purple', dark: false })
 })
 
-test('on mount, the root reflects the props', () => {
-  render('amber', 'dark')
-  expect(rootState()).toEqual({ theme: 'amber', dark: true })
-})
-
 test('when either prop changes, the root reflects the new value', () => {
   render('amber', 'dark')
   render('blue', 'dark')
@@ -107,12 +110,19 @@ test('when either prop changes, the root reflects the new value', () => {
   expect(rootState()).toEqual({ theme: 'blue', dark: false })
 })
 
-test('after the mode leaves system, a change of the system appearance no longer reaches the root', async () => {
-  render('blue', 'system')
-  render('blue', 'light')
-  await setSystemAppearance('dark')
-  expect(rootState()).toEqual({ theme: 'blue', dark: false })
-})
+test.each([
+  { mode: 'light', dark: false },
+  { mode: 'dark', dark: true },
+] as const)(
+  'after the mode leaves system for $mode, a change of the system appearance no longer reaches the root',
+  async ({ mode, dark }) => {
+    await setSystemAppearance(dark ? 'dark' : 'light')
+    render('blue', 'system')
+    render('blue', mode)
+    await setSystemAppearance(dark ? 'light' : 'dark')
+    expect(rootState()).toEqual({ theme: 'blue', dark })
+  },
+)
 
 test('after the ThemeProvider unmounts, a change of the system appearance no longer reaches the root', async () => {
   render('blue', 'system')
@@ -121,30 +131,43 @@ test('after the ThemeProvider unmounts, a change of the system appearance no lon
   expect(rootState()).toEqual({ theme: 'blue', dark: false })
 })
 
-// An unknown theme or mode: a value read from damaged storage, which the types cannot rule out
+// An unknown or missing theme or mode, as read from damaged storage or from settings without the key: the types cannot
+// rule them out. `dark` is what the root shows for the mode: locked, or `system` when the mode falls back to it.
 const unknownValues = [
-  { theme: 'teal' as Theme, mode: 'light' as Mode, expected: { theme: 'purple', dark: false }, followsSystem: false },
-  { theme: 'blue' as Theme, mode: 'dim' as Mode, expected: { theme: 'blue', dark: true }, followsSystem: true },
-]
+  { theme: 'teal', mode: 'light', expectedTheme: 'purple', dark: false },
+  { theme: undefined, mode: 'dark', expectedTheme: 'purple', dark: true },
+  { theme: null, mode: 'light', expectedTheme: 'purple', dark: false },
+  { theme: 'blue', mode: 'dim', expectedTheme: 'blue', dark: 'system' },
+  { theme: 'blue', mode: undefined, expectedTheme: 'blue', dark: 'system' },
+  { theme: 'amber', mode: null, expectedTheme: 'amber', dark: 'system' },
+] as const
+
+// The root for one of those values while the system appearance is `system`
+const fallbackRoot = (
+  { expectedTheme, dark }: (typeof unknownValues)[number],
+  system: 'light' | 'dark',
+): { theme: string; dark: boolean } => ({ theme: expectedTheme, dark: dark === 'system' ? system === 'dark' : dark })
 
 test.each(unknownValues)(
   'the ThemeProvider given theme $theme and mode $mode leaves the root as for purple / system',
-  async ({ theme, mode, expected, followsSystem }) => {
+  async (value) => {
     await setSystemAppearance('dark')
-    render(theme, mode)
-    expect(rootState()).toEqual(expected)
-    // as for `system`, an unknown mode goes on following the system appearance; a known one does not
+    render(value.theme as Theme, value.mode as Mode)
+    expect(rootState()).toEqual(fallbackRoot(value, 'dark'))
+    // as for `system`, a mode that falls back goes on following the system appearance; a locked one does not
     await setSystemAppearance('light')
-    expect(rootState()).toEqual(followsSystem ? { ...expected, dark: false } : expected)
+    expect(rootState()).toEqual(fallbackRoot(value, 'light'))
+    await setSystemAppearance('dark')
+    expect(rootState()).toEqual(fallbackRoot(value, 'dark'))
   },
 )
 
 test.each(unknownValues)(
   'the apply function given theme $theme and mode $mode does not throw and leaves the root as for purple / system',
-  async ({ theme, mode, expected }) => {
+  async (value) => {
     await setSystemAppearance('dark')
-    expect(() => applyTheme(theme, mode)).not.toThrow()
-    expect(rootState()).toEqual(expected)
+    expect(() => applyTheme(value.theme as Theme, value.mode as Mode)).not.toThrow()
+    expect(rootState()).toEqual(fallbackRoot(value, 'dark'))
   },
 )
 
@@ -169,14 +192,19 @@ test.each(themes.flatMap((theme) => modes.map((mode) => ({ theme, mode }))))(
   },
 )
 
-test('neither the ThemeProvider nor the apply function touches browser storage, cookies or IndexedDB', async () => {
-  // Every way into them goes through one of these getters, method calls and named items (`localStorage.theme`) alike
+const noStorage =
+  "neither the ThemeProvider nor the apply function touches browser storage, cookies or the origin's files"
+
+test(noStorage, async () => {
+  // The entrances to them: the getter of each store, so that a method call and a named item (`localStorage.theme`)
+  // are both seen; both cookie APIs; and `navigator.storage`, which leads to the origin's private file system
   const spies = [
-    ...(['localStorage', 'sessionStorage', 'indexedDB', 'caches'] as const).map((store) =>
+    ...(['localStorage', 'sessionStorage', 'indexedDB', 'caches', 'cookieStore'] as const).map((store) =>
       vi.spyOn(window, store, 'get'),
     ),
     vi.spyOn(Document.prototype, 'cookie', 'get'),
     vi.spyOn(Document.prototype, 'cookie', 'set'),
+    vi.spyOn(Navigator.prototype, 'storage', 'get'),
   ]
   try {
     for (const theme of themes) for (const mode of modes) applyTheme(theme, mode)

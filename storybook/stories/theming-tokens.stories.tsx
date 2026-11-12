@@ -194,17 +194,18 @@ export const RecoloursWithNoTransition: Story = {
   },
 }
 
-// The `dark:` variant follows the root's `dark` class (theming::REQ-003), not the system's `prefers-color-scheme`:
-// with dark locked while the system is light, a `dark:` utility applies
+// The `dark:` variant follows the root's `dark` class (theming::REQ-003), not the system's `prefers-color-scheme`: with
+// light locked while the system is dark (as the tests run it, vite.config.ts), a `dark:` utility does not apply, and
+// with dark locked it does
 export const DarkVariantFollowsTheRoot: Story = {
   tags: ['!dev'],
   render: () => <div data-utility="variant" className="size-4 bg-card dark:bg-primary" />,
   play: async ({ canvasElement }) => {
-    await expect(window.matchMedia('(prefers-color-scheme: dark)').matches).toBe(false)
+    await expect(window.matchMedia('(prefers-color-scheme: dark)').matches).toBe(true)
     const background = () => getComputedStyle(utility(canvasElement, 'variant')).backgroundColor
-    applyTheme('purple', 'dark')
-    await expect(background()).toBe(computed('color', 'var(--primary)'))
     applyTheme('purple', 'light')
     await expect(background()).toBe(computed('color', 'var(--card)'))
+    applyTheme('purple', 'dark')
+    await expect(background()).toBe(computed('color', 'var(--primary)'))
   },
 }

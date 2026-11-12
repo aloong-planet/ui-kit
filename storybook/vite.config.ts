@@ -26,9 +26,13 @@ export default defineConfig({
           browser: {
             enabled: true,
             headless: true,
-            // Playwright starts a headless Chromium with its scrollbars hidden; shown, they take their place in the
-            // layout as in a user's browser, which the scrollbar stories measure (theming::REQ-010)
-            provider: playwright({ launchOptions: { ignoreDefaultArgs: ['--hide-scrollbars'] } }),
+            provider: playwright({
+              // Playwright starts a headless Chromium with its scrollbars hidden; shown, they take their place in the
+              // layout as in a user's browser, which the scrollbar stories measure (theming::REQ-010)
+              launchOptions: { ignoreDefaultArgs: ['--hide-scrollbars'] },
+              // A dark system appearance, so that the mode `system` leaves a different root than `light` does
+              contextOptions: { colorScheme: 'dark' },
+            }),
             instances: [{ browser: 'chromium' }],
           },
         },
