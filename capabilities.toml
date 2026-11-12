@@ -11,7 +11,9 @@ enabled = false
 enabled = false
 
 [lint]
-enabled = false
+enabled = true
+source = "eslint.config.js"
+enforced-by = ["pnpm lint"]
 
 [e2e-suite]
 enabled = false

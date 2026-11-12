@@ -1,0 +1,5 @@
+/* Storybook's stylesheet, written exactly as a consumer app's Tailwind CSS v4 entry (package::REQ-002). */
+@import "tailwindcss";
+@import "@aloong-planet/ui/theme.css";
+
+@source "../node_modules/@aloong-planet/ui/dist";
