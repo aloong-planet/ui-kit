@@ -4,31 +4,40 @@
 
 ## Problem Statement
 
-Agent Shed already has a look of its own, but no component library: the same kind of control is written
-several times over — seven button styles, six segmented controls, two search boxes, two drawers, two forms of
-tabs — with focus rings on only a few of them, five different floating shadows, and dialogs that ignore Esc
-and keep no keyboard focus. Another app that wanted the same look would have to copy those inconsistencies
-along with it.
+The owner's apps share one look but no components. Each app writes its own controls, and the same kind of
+control ends up written several ways even within one app — with focus rings on only a few of them, several
+different floating shadows, and dialogs that ignore Esc and keep no keyboard focus. An app that wanted the
+look would copy those inconsistencies along with it.
 
 ## Solution
 
-The kit's first release provides the twelve kinds of component Agent Shed already has a look for, each in one
-standard form: button, search box, select, segmented control, card, badge, tooltip, drawer, confirm dialog,
-toast, skeleton and tabs. Each keeps Agent Shed's look, keeps a variant only where Agent Shed uses that kind
-for a really different purpose, and draws its inconsistencies — focus rings, floating shadows, radii — from
-one set. Their behaviour for keyboard, focus and screen readers is Base UI's, and the parameters Agent Shed
-set explicitly — where a toast appears and how long it stays, the scrim, where a tooltip sits — are kept.
-Every component is shown in Storybook in every variant, size and state, in every theme and light/dark, and
-the owner confirms its look there.
+The kit's first release provides twelve kinds of component — button, search box, select, segmented control,
+card, badge, tooltip, drawer, confirm dialog, toast, skeleton and tabs — each in one standard form. A
+variant exists only where the purpose really differs, and focus rings, floating shadows and radii come from
+one set. Keyboard, focus and screen-reader behaviour is Base UI's; the kit sets a few parameters of its own:
+where a toast appears and how long it stays, the scrim, where a tooltip sits. Every component is shown in
+Storybook in every variant, size and state, in every theme and light/dark, and the owner confirms its look
+there.
 
 ## Terms
 
-- **Variant**: a form of a component chosen by the caller for a different purpose (a danger button, a pill
-  tab). Agent Shed's other ways of writing the same thing are not variants; they fold into the standard form.
+- **Variant**: a form of a component the caller chooses for a different purpose (a danger button, a pill
+  tab). Another way of drawing the same thing for the same purpose is not a variant.
 - **Wash**: the pale `--accent` ground of a hovered or selected item ([theming](theming.md) `theming::REQ-004`).
 - **Floating surface**: a select popup, a tooltip, a toast, a drawer or a dialog.
 
 ## Functional Requirements
+
+> Pending: none of these components is built yet. Each one's first sizes (padding, heights, font sizes,
+> weights, radii) are taken from the matching element of the Agent Shed app (`aloong-planet/agentshed`,
+> commit `14b6d5b`, `src/renderer/src/theme.css` unless named otherwise) and then confirmed by the owner in
+> Storybook (components::CON-002): button `.cfg-btn` (`danger` `.cfg-btn.danger`, `ghost` `.sback`, `link`
+> `.stat-link`, size `sm` `.ins`, `icon` `.drawer-close`, `icon-sm` `.sact`); search box `.sbar input`, with
+> the icon placement of `.sh`; select `.lang-trigger`, `.lang-pop`, `.lang-opt`, `.lang-sep`; segmented
+> control `.seg.seg-field` (size `sm` `.seg`); card `.card` (`selectable` `.theme-card`, `dashed`
+> `.settings-foot`); badge `.pill` (`count` `.cnt-b`); tooltip `TIP_LOOK` in `FloatingBox.tsx`; drawer
+> `.file-drawer`; confirm dialog `.reader.dlg`; toast `.toasts`, `.toast`; skeleton `.sk-ph`; tabs `.tab`
+> (`pill` `.ptab`).
 
 ### components::REQ-001 Shared states
 
@@ -47,23 +56,23 @@ Applies to every interactive component in this spec.
 
 ### components::REQ-002 Button
 
-The standard form is Agent Shed's regular button: `--background` ground, 1px `--border-strong` border,
-`--foreground` text; under the pointer, a `--primary` border and the wash.
+The standard form: `--background` ground, 1px `--border-strong` border, `--foreground` text; under the
+pointer, a `--primary` border and the wash.
 
-| Variant | Look | Agent Shed source |
-|---|---|---|
-| `default` | The standard form above | `.cfg-btn` |
-| `primary` | `--primary` fill, `--primary-foreground` text | none: added for apps that need a prominent main action |
-| `danger` | `--destructive` fill and border, `--destructive-foreground` text | `.cfg-btn.danger` |
-| `ghost` | No ground or border, `--muted-foreground` text; under the pointer, the wash and `--primary` text | `.sback` |
-| `link` | Inline text underlined in `--border-strong`; under the pointer, `--foreground` text and an underline in the text colour | `.stat-link` |
+| Variant | Look |
+|---|---|
+| `default` | The standard form above |
+| `primary` | `--primary` fill, `--primary-foreground` text — for an app's prominent main action |
+| `danger` | `--destructive` fill and border, `--destructive-foreground` text |
+| `ghost` | No ground or border, `--muted-foreground` text; under the pointer, the wash and `--primary` text |
+| `link` | Inline text underlined in `--border-strong`; under the pointer, `--foreground` text and an underline in the text colour |
 
-| Size | Use | Agent Shed source |
-|---|---|---|
-| `default` | Buttons in forms, dialogs and toolbars | `.cfg-btn` |
-| `sm` | Actions on a list row | `.ins` |
-| `icon` | An icon-only button | `.drawer-close` |
-| `icon-sm` | A small icon-only button on a row or inside a note | `.sact` |
+| Size | Use |
+|---|---|
+| `default` | Buttons in forms, dialogs and toolbars |
+| `sm` | Actions on a list row |
+| `icon` | An icon-only button |
+| `icon-sm` | A small icon-only button on a row or inside a note |
 
 - components::REQ-002/AC-01: Each variant renders as its row describes, at rest and under the pointer.
 - components::REQ-002/AC-02: Each size renders at its step of the scale; the two icon sizes are square.
@@ -82,8 +91,6 @@ clear button.
 
 ### components::REQ-004 Select
 
-One form, after Agent Shed's language select.
-
 - components::REQ-004/AC-01: The trigger shows the selected option's label in a `--background` ground with a
   1px `--border-strong` border; under the pointer and while open, a `--primary` border and the wash; its
   chevron turns 180° while open.
@@ -98,13 +105,13 @@ One form, after Agent Shed's language select.
 
 ### components::REQ-005 Segmented control
 
-One form, after Agent Shed's settings control: segments side by side in a container with a 1px
-`--border-strong` border that clips them; one segment is selected at a time.
+Segments side by side in a container with a 1px `--border-strong` border that clips them; one segment is
+selected at a time.
 
-| Size | Use | Agent Shed source |
-|---|---|---|
-| `default` | Settings and forms | `.seg.seg-field` |
-| `sm` | Inline in toolbars and headers | `.seg` |
+| Size | Use |
+|---|---|
+| `default` | Settings and forms |
+| `sm` | Inline in toolbars and headers |
 
 - components::REQ-005/AC-01: The selected segment shows the wash, `--accent-foreground` text and a heavier
   weight; the others show `--muted-foreground` text, and `--foreground` text on the `--background` ground
@@ -114,11 +121,11 @@ One form, after Agent Shed's settings control: segments side by side in a contai
 
 ### components::REQ-006 Card
 
-| Variant | Look | Agent Shed source |
-|---|---|---|
-| `default` | `--card` ground, 1px `--border` border | `.card` |
-| `selectable` | As `default`; under the pointer, a `--primary` border and the wash; when selected, also a 1px `--primary` ring and its label in `--primary` | `.theme-card`, `.tot-c` |
-| `dashed` | `--background` ground, 1px dashed `--border-strong` border, `--muted-foreground` text — for empty states and notes | `.none`, `.stale-note`, `.settings-foot` |
+| Variant | Look |
+|---|---|
+| `default` | `--card` ground, 1px `--border` border |
+| `selectable` | As `default`; under the pointer, a `--primary` border and the wash; when selected, also a 1px `--primary` ring and its label in `--primary` |
+| `dashed` | `--background` ground, 1px dashed `--border-strong` border, `--muted-foreground` text — for empty states and notes |
 
 - components::REQ-006/AC-01: Each variant renders as its row describes.
 - components::REQ-006/AC-02: A `selectable` card is a button that reports whether it is pressed, and takes
@@ -126,31 +133,30 @@ One form, after Agent Shed's settings control: segments side by side in a contai
 
 ### components::REQ-007 Badge
 
-A small label in one shape (Agent Shed's `.pill`), in these variants:
+A small label in one shape, in these variants:
 
-| Variant | Look | Agent Shed source |
-|---|---|---|
-| `neutral` | 1px `--border-strong` border, `--muted-foreground` text | `.pill.off`, `.pill.fork` |
-| `dashed` | 1px dashed `--border-strong` border, `--muted-foreground` text | `.pill.ln` |
-| `muted` | `--border` ground, `--muted-foreground` text | `.pill.glb` |
-| `primary` | The wash, `--primary` text, heavier weight | `.pill.prj`, `.files .tag` |
-| `primary-outline` | 1px `--primary` border, `--primary` text | `.pill.plg` |
-| `success` | `--success` ground, `--success-foreground` text | `.pill.on` |
-| `warning` | `--warning` ground, `--warning-foreground` text | `.pill.warn` |
-| `note` | `--note` ground, `--note-foreground` text | `.pill.shadow` |
-| `risk` | 1px dashed `--risk` border, `--risk-foreground` text | `.pill.forkq` |
-| `count` | A rounded number in the wash, `--primary` text | `.cnt-b` |
+| Variant | Look |
+|---|---|
+| `neutral` | 1px `--border-strong` border, `--muted-foreground` text |
+| `dashed` | 1px dashed `--border-strong` border, `--muted-foreground` text |
+| `muted` | `--border` ground, `--muted-foreground` text |
+| `primary` | The wash, `--primary` text, heavier weight |
+| `primary-outline` | 1px `--primary` border, `--primary` text |
+| `success` | `--success` ground, `--success-foreground` text |
+| `warning` | `--warning` ground, `--warning-foreground` text |
+| `note` | `--note` ground, `--note-foreground` text |
+| `risk` | 1px dashed `--risk` border, `--risk-foreground` text |
+| `count` | A rounded number in the wash, `--primary` text |
 
 - components::REQ-007/AC-01: Each variant renders as its row describes.
 - components::REQ-007/AC-02: A badge can carry a leading icon before its text.
-
-Agent Shed's side badges (Claude Code, Codex, Grok, Antigravity) are not badge variants: Agent Shed composes
-them from a badge and the Agent Shed layer's colours ([theming](theming.md) `theming::REQ-005`).
+- components::REQ-007/AC-03: A caller's own classes override a badge's ground, border and text colours, so
+  an app can colour a badge with its app tokens ([theming](theming.md) `theming::REQ-009`).
 
 ### components::REQ-008 Tooltip
 
-One form, after Agent Shed's dark tooltip: `--tooltip` ground, `--tooltip-foreground` text, no border, and
-the text the caller passes, which may include a line in `--tooltip-warning`.
+One form: `--tooltip` ground, `--tooltip-foreground` text, no border, and the text the caller passes, which
+may include a line in `--tooltip-warning`.
 
 - components::REQ-008/AC-01: It opens when its trigger is hovered or receives keyboard focus, and closes when
   neither holds.
@@ -161,9 +167,9 @@ the text the caller passes, which may include a line in `--tooltip-warning`.
 
 ### components::REQ-009 Drawer
 
-One form, after Agent Shed's file drawer: a panel along the right edge of the window, the full window
-height, `min(720px, 80vw)` wide, with a header holding its title in `--primary` and an icon-only close
-button at its top-right corner, over a scrim in `--overlay`.
+A panel along the right edge of the window, the full window height, `min(720px, 80vw)` wide, with a header
+holding its title in `--primary` and an icon-only close button at its top-right corner, over a scrim in
+`--overlay`.
 
 - components::REQ-009/AC-01: Esc, a click on the scrim, and the close button each close it.
 - components::REQ-009/AC-02: While open, keyboard focus moves into it and stays inside it, the page behind
@@ -174,9 +180,8 @@ button at its top-right corner, over a scrim in `--overlay`.
 
 ### components::REQ-010 Confirm dialog
 
-One form, after Agent Shed's uninstall confirmation: a box centred near the top of the window over a scrim in
-`--overlay`, with a title, a body the caller passes, and its buttons at the bottom right — cancel first, then
-the confirming action.
+A box centred near the top of the window over a scrim in `--overlay`, with a title, a body the caller
+passes, and its buttons at the bottom right — cancel first, then the confirming action.
 
 - components::REQ-010/AC-01: The cancel button is a `default` button; the confirming action is a `danger`
   button when the caller marks the action destructive, and a `primary` button otherwise.
@@ -191,10 +196,10 @@ the confirming action.
 Toasts appear at the bottom centre of the window, 18px above its bottom edge, stacked in a column 8px apart
 with the newest at the bottom. Any code in the app can raise one.
 
-| Variant | Look | Agent Shed source |
-|---|---|---|
-| `success` | `--success` ground, `--success-foreground` text and 1px border | `.toast.ok` |
-| `error` | `--error` ground, `--error-foreground` text and 1px border | `.toast.err` |
+| Variant | Look |
+|---|---|
+| `success` | `--success` ground, `--success-foreground` text and 1px border |
+| `error` | `--error` ground, `--error-foreground` text and 1px border |
 
 - components::REQ-011/AC-01: With no pointer over it and the window in the foreground, a toast disappears
   3200ms after it appears.
@@ -211,10 +216,10 @@ A placeholder block in `--border` (`deep`: `--border-strong`) that pulses betwee
 
 ### components::REQ-013 Tabs
 
-| Variant | Use | Look | Agent Shed source |
-|---|---|---|---|
-| `page` | Switching the sections of a page | Folder tabs above a 1px `--border` rule; the selected tab takes the `--background` ground and `--primary` text in a heavier weight and joins the panel below it; the others show `--muted-foreground` text, `--foreground` under the pointer | `.tab` |
-| `pill` | Switching between categories of a list | Separate pill buttons on a `--card` ground with a 1px `--border-strong` border and `--muted-foreground` text; the selected one shows the wash, `--primary-strong` text and a `--primary` border; a tab can show a count after its label in a lighter tone | `.ptab` |
+| Variant | Use | Look |
+|---|---|---|
+| `page` | Switching the sections of a page | Folder tabs above a 1px `--border` rule; the selected tab takes the `--background` ground and `--primary` text in a heavier weight and joins the panel below it; the others show `--muted-foreground` text, `--foreground` under the pointer |
+| `pill` | Switching between categories of a list | Separate pill buttons on a `--card` ground with a 1px `--border-strong` border and `--muted-foreground` text; the selected one shows the wash, `--primary-strong` text and a `--primary` border; a tab can show a count after its label in a lighter tone |
 
 - components::REQ-013/AC-01: Each variant renders as its row describes.
 - components::REQ-013/AC-02: The tabs are announced as a tab list, and arrow keys move between tabs.
@@ -294,35 +299,32 @@ on light/dark.
 Each decision carries its reason and the alternative it rejected (this repository keeps decisions in its
 specs; see `AGENTS.md`).
 
-- **One standard form per kind of component, with variants only where the purpose differs.** Most of Agent
-  Shed's duplicates differ only by when they were written. Rejected: a variant for every way Agent Shed
-  writes a component, which would carry those inconsistencies into every other app.
-- **A filled `primary` button that Agent Shed does not have.** Other apps need a prominent main action; its
-  text takes the card colour, as on Agent Shed's update dot. Rejected: only Agent Shed's outlined buttons.
-- **Base UI's behaviour for keyboard, focus and screen readers, with Agent Shed's explicit parameters.** Agent
-  Shed's dialogs and drawers lack Esc handling, focus containment and dialog semantics, and its toasts are
-  not announced; Base UI provides them. Rejected: reproducing Agent Shed's current behaviour, which would
-  mean writing code to switch Base UI's behaviour off.
+- **One standard form per kind of component, with variants only where the purpose differs.** A second way of
+  drawing the same thing for the same purpose gives apps a choice that means nothing and lets their looks
+  drift apart. Rejected: several forms of a component for the same purpose.
+- **A filled `primary` button.** Apps need a prominent main action; its text takes the card colour, which
+  reads on the brand colour in every theme. Rejected: outlined buttons only.
+- **Base UI's behaviour for keyboard, focus and screen readers.** Base UI provides Esc handling, focus
+  containment, dialog semantics and announced toasts. Rejected: a plainer behaviour without them, which
+  would mean writing code to switch Base UI's off.
 - **The confirm dialog ignores clicks on the scrim.** A confirm dialog is closed by a choice, so a stray
-  click beside it cannot dismiss the question. Rejected: Agent Shed's behaviour, where a click on the scrim
-  cancels.
-- **Starting from the Mira style.** It is shadcn/ui's style for dense interfaces and the closest to Agent
-  Shed's size (its default button is 28px tall with 12px text, against Agent Shed's 28–30px controls with
-  12.5px text). Rejected: Nova (32px, 14px text) and Vega (36px, 14px text), both further from Agent Shed.
+  click beside it cannot dismiss the question. Rejected: cancelling on a scrim click.
+- **Starting from the Mira style.** It is shadcn/ui's style for dense interfaces and the closest to the kit's
+  scale (its default button is 28px tall with 12px text, against the kit's controls of about 28–30px with
+  12.5px text). Rejected: Nova (32px, 14px text) and Vega (36px, 14px text), both further from it.
 - **The toast is shadcn/ui's `toast`, on Base UI.** Rejected: shadcn/ui's `sonner`, which depends on
   `next-themes` and would compete with the kit's ThemeProvider for the root element.
 - **The drawer is shadcn/ui's `sheet`**, a panel from the side of the window. Rejected: shadcn/ui's `drawer`,
   which slides up from the bottom.
-- **One floating shadow, `--shadow-pop`, for every floating surface.** Agent Shed has five shadows and a
-  dialog with none. Rejected: carrying them over per surface.
+- **One floating shadow, `--shadow-pop`, for every floating surface.** Rejected: a shadow per kind of
+  surface, which gives the same depth several looks.
 
 ## Out of Scope
 
-- **Components beyond the twelve**: menus (such as Agent Shed's install-to popover), filter chips, the app
-  rail, charts and sidebars.
-- **A light tooltip and a CSS-only chart tooltip**: Agent Shed's other tooltip forms fold into the one
-  tooltip.
-- **A loading state on buttons, and a clear button in the search box**: Agent Shed has neither.
+- **Components beyond the twelve**: menus, filter chips, app navigation rails, charts and sidebars.
+- **More than one tooltip form**, such as a light tooltip or a CSS-only tooltip on chart bars.
+- **A loading state on buttons, and a clear button in the search box**: not part of the first release's
+  look.
 - **Right-to-left languages**: no app that uses the kit has one; the components are not checked mirrored.
   Supporting them later means reopening this decision and checking every component mirrored.
 - **Showing a cut label in full on hover**: a caller that needs it wraps the control in a tooltip.

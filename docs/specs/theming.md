@@ -4,16 +4,17 @@
 
 ## Problem Statement
 
-Every app that uses the kit needs the same looks — Agent Shed's three themes, each in light and dark — and
-needs light/dark either to follow the system appearance or to be locked by the user. Today each app would
-have to re-implement the token values, the switching rules and the handling of the first frame on its own.
+Every app that uses the kit needs the same looks — three themes, each in light and dark — and needs
+light/dark either to follow the system appearance or to be locked by the user. Without the kit, each app
+re-implements the token values, the switching rules and the handling of the first frame on its own.
 
 ## Solution
 
 The kit defines the colour tokens for three themes × light/dark under shadcn/ui's token names, so the
 components taken from shadcn/ui read them unchanged. The theme and the effective light/dark in force are
 written onto the document root — inside React by a ThemeProvider, and before React starts by a synchronous
-apply function. The app decides which theme and mode are in force, and stores that choice itself.
+apply function. The app decides which theme and mode are in force, and stores that choice itself. An app
+that needs colours of its own defines them on the same contract, in the app.
 
 ## Terms
 
@@ -25,19 +26,15 @@ apply function. The app decides which theme and mode are in force, and stores th
   never stored.
 - **Token**: a CSS custom property a component reads a colour or a size from. Components read only tokens.
 - **General tokens**: the tokens every consumer gets from `@aloong-planet/ui/theme.css`.
-- **Agent Shed layer**: the tokens only Agent Shed uses, in `@aloong-planet/ui/agentshed.css`.
+- **App token**: a token an app defines for its own elements on the root contract (theming::REQ-009). The kit
+  defines none.
 
 ## Functional Requirements
 
-### theming::REQ-001 Three themes
+### theming::REQ-001 Three themes (direct acceptance)
 
 The kit provides the themes `purple`, `blue` and `amber`, each with a light and a dark set of values for the
-general tokens. The values are Agent Shed's, taken from `src/renderer/src/theme.css` of
-`aloong-planet/agentshed` at commit `14b6d5b` (2026-11-12) and mapped onto the kit's token names by the
-table in theming::REQ-004.
-
-- theming::REQ-001/AC-01: For each of the six combinations of theme and effective light/dark, every general
-  token resolves to the Agent Shed value its row in theming::REQ-004 names.
+general tokens; `purple` is the default.
 
 ### theming::REQ-002 Mode
 
@@ -63,42 +60,47 @@ dark. The general tokens are defined for the root element as purple light, and o
 
 ### theming::REQ-004 General tokens
 
-The general tokens use shadcn/ui's token names for every token the kit's components read. A colour shadcn/ui
-has no token for is added the shadcn/ui way, as a `--<name>` / `--<name>-foreground` pair, or as a
-`-strong` step of an existing token. Each takes its value from the Agent Shed token in the second column, in
-every theme and in light and dark.
+The general tokens use shadcn/ui's token names for every token the kit reads. A colour shadcn/ui has no
+token for is added the shadcn/ui way, as a `--<name>` / `--<name>-foreground` pair, or as a `-strong` step of
+an existing token.
 
-| Kit token | Agent Shed source | What it colours |
+| Kit token | What it colours | First value from |
 |---|---|---|
-| `--background` | `--bg` | The page; the ground of regular buttons, select triggers and the selected page tab |
-| `--foreground` | `--text` | Body text |
-| `--card` | `--card` | Cards |
-| `--card-foreground` | `--text` | Text on cards |
-| `--popover` | `--card` | Floating surfaces: select popups, drawers, dialogs |
-| `--popover-foreground` | `--text` | Text on floating surfaces |
-| `--primary` | `--accent` | The brand colour: selected text, the primary button's fill |
-| `--primary-foreground` | `--card` | Text and icons on a `--primary` fill |
-| `--primary-strong` | `--accent-deep` | The deeper brand text: the selected option's label, the selected pill tab |
-| `--muted` | `--bg` | Quiet grounds |
-| `--muted-foreground` | `--text-2` | Secondary text, placeholders, icons at rest |
-| `--accent` | `--accent-soft` | The hover wash, and the wash of a selected segment, pill tab or badge |
-| `--accent-foreground` | `--accent` | Text on the `--accent` wash when selected |
-| `--accent-strong` | `--accent-soft-deep` | The selected-row wash, one step deeper than hover |
-| `--destructive` | `--danger-bg` | The danger button's fill |
-| `--destructive-foreground` | `--danger-fg` | Text on it |
-| `--border` | `--line` | Dividers, card borders, skeleton blocks |
-| `--border-strong` | `--line-strong` | Borders of controls and floating surfaces |
-| `--input` | `--line-strong` | Borders of text fields |
-| `--ring` | `--accent` | The keyboard focus ring and a focused field's border |
-| `--success` / `--success-foreground` | `--ok-bg` / `--ok-fg` | Success toasts and badges |
-| `--warning` / `--warning-foreground` | `--warn-bg` / `--warn-fg` | Warning badges |
-| `--error` / `--error-foreground` | `--err-bg` / `--err-fg` | Error toasts |
-| `--note` / `--note-foreground` | `--note-bg` / `--note-fg` | Note badges |
-| `--risk` / `--risk-foreground` | `--risk-border` / `--risk-fg` | The dashed border and the text of a risk badge |
-| `--tooltip` / `--tooltip-foreground` | `--tip-bg` / `--tip-fg` | Tooltips, dark in every theme and in light and dark |
-| `--tooltip-warning` | `--tip-warn` | A warning line inside a tooltip |
-| `--overlay` | `rgba(0, 0, 0, 0.35)`, the scrim colour Agent Shed writes inline | The scrim behind drawers and dialogs, the same in light and dark |
-| `--shadow-pop` | `--shadow-pop` | The shadow of every floating surface |
+| `--background` | The page; the ground of regular buttons, select triggers and the selected page tab | `--bg` |
+| `--foreground` | Body text | `--text` |
+| `--card` | Cards | `--card` |
+| `--card-foreground` | Text on cards | `--text` |
+| `--popover` | Floating surfaces: select popups, drawers, dialogs | `--card` |
+| `--popover-foreground` | Text on floating surfaces | `--text` |
+| `--primary` | The brand colour: selected text, the primary button's fill | `--accent` |
+| `--primary-foreground` | Text and icons on a `--primary` fill | `--card` |
+| `--primary-strong` | The deeper brand text: the selected option's label, the selected pill tab | `--accent-deep` |
+| `--muted` | Quiet grounds | `--bg` |
+| `--muted-foreground` | Secondary text, placeholders, icons at rest | `--text-2` |
+| `--accent` | The hover wash, and the wash of a selected segment, pill tab or badge | `--accent-soft` |
+| `--accent-foreground` | Text on the `--accent` wash when selected | `--accent` |
+| `--accent-strong` | The selected-row wash, one step deeper than hover | `--accent-soft-deep` |
+| `--destructive` | The danger button's fill | `--danger-bg` |
+| `--destructive-foreground` | Text on it | `--danger-fg` |
+| `--border` | Dividers, card borders, skeleton blocks | `--line` |
+| `--border-strong` | Borders of controls and floating surfaces | `--line-strong` |
+| `--input` | Borders of text fields | `--line-strong` |
+| `--ring` | The keyboard focus ring and a focused field's border | `--accent` |
+| `--success` / `--success-foreground` | Success toasts and badges | `--ok-bg` / `--ok-fg` |
+| `--warning` / `--warning-foreground` | Warning badges | `--warn-bg` / `--warn-fg` |
+| `--error` / `--error-foreground` | Error toasts | `--err-bg` / `--err-fg` |
+| `--note` / `--note-foreground` | Note badges | `--note-bg` / `--note-fg` |
+| `--risk` / `--risk-foreground` | The dashed border and the text of a risk badge | `--risk-border` / `--risk-fg` |
+| `--tooltip` / `--tooltip-foreground` | Tooltips, dark in every theme and in light and dark | `--tip-bg` / `--tip-fg` |
+| `--tooltip-warning` | A warning line inside a tooltip | `--tip-warn` |
+| `--overlay` | The scrim behind drawers and dialogs, the same in light and dark | `rgba(0, 0, 0, 0.35)` |
+| `--shadow-pop` | The shadow of every floating surface | `--shadow-pop` |
+| `--scrollbar-thumb` / `--scrollbar-thumb-hover` | The scrollbar thumb at rest and under the pointer, the same in every theme | theming::REQ-010/AC-04, theming::REQ-010/AC-05 |
+
+> Pending: `@aloong-planet/ui/theme.css` does not yet define the token values. Their first values are copied
+> from `src/renderer/src/theme.css` of the Agent Shed app (`aloong-planet/agentshed`, commit `14b6d5b`):
+> each kit token takes, in every theme and in light and dark, the value of the source token in its row's
+> last column. That column is removed together with this note.
 
 `@aloong-planet/ui/theme.css` also maps each general token into Tailwind's theme, so that a consumer can use
 it in utility classes (`bg-primary`, `text-muted-foreground`, `border-border-strong`).
@@ -106,49 +108,6 @@ it in utility classes (`bg-primary`, `text-muted-foreground`, `border-border-str
 - theming::REQ-004/AC-01: Every row of the table is defined for every theme and for light and dark.
 - theming::REQ-004/AC-02: In a consumer, the utility classes of every general token (background, text and
   border colour) compile and render that token.
-
-### theming::REQ-005 Agent Shed layer
-
-`@aloong-planet/ui/agentshed.css` defines the colours only Agent Shed uses, under descriptive names. Each takes
-its value from the Agent Shed token in the second column. They differ between light and dark and, except
-`--markdown-h3`, do not change with the theme; `--markdown-h3` has a value per theme like the general tokens.
-
-| Kit token | Agent Shed source | What it colours |
-|---|---|---|
-| `--side-claude` / `--side-claude-foreground` | `--cl-bg` / `--cl-fg` | The Claude Code side badge |
-| `--side-codex` / `--side-codex-foreground` | `--cx-bg` / `--cx-fg` | The Codex side badge |
-| `--side-grok` / `--side-grok-foreground` | `--gk-bg` / `--gk-fg` | The Grok side badge |
-| `--side-antigravity` / `--side-antigravity-foreground` | `--ag-bg` / `--ag-fg` | The Antigravity side badge |
-| `--provider-anthropic` | `--p-anthropic` | Anthropic's provider colour |
-| `--provider-openai` | `--p-openai` | OpenAI's provider colour |
-| `--provider-google` | `--p-google` | Google's provider colour |
-| `--provider-xai` | `--p-xai` | xAI's provider colour |
-| `--provider-other` | `--p-other` | Any other provider |
-| `--usage-cache-read` | `--tc-rd` | The cache-read part of the token composition bar |
-| `--usage-input` | `--tc-in` | The uncached-input part |
-| `--usage-output` | `--tc-ou` | The output part |
-| `--markdown-h3` | `--md-h3` | The third-level heading of rendered markdown |
-| `--scrollbar-thumb` / `--scrollbar-thumb-hover` | `--scroll-thumb` / `--scroll-thumb-hover` | The scrollbar thumb at rest and under the pointer |
-
-`@aloong-planet/ui/agentshed.css` maps these into Tailwind's theme the same way `theme.css` does
-(`bg-side-claude`, `text-provider-openai`). No kit component reads them; Agent Shed composes its own
-elements from them.
-
-- theming::REQ-005/AC-01: With `@aloong-planet/ui/agentshed.css` imported, every row of the table is defined
-  for light and dark (and, for `--markdown-h3`, for every theme), and its utility classes compile.
-
-### theming::REQ-008 Type and radius scale
-
-`@aloong-planet/ui/theme.css` sets the type and radius scale the components are drawn with, distilled from
-Agent Shed into one scale: the sans-serif stack `-apple-system, 'PingFang SC', 'Microsoft YaHei',
-sans-serif`, the monospace stack `ui-monospace, Menlo, monospace`, body text at 13px, and the radius
-scale derived from shadcn/ui's `--radius`.
-
-> Pending: `@aloong-planet/ui/theme.css` does not yet define the type steps and the radius steps. Their values
-> are the ones the owner confirms on the Storybook stories ([components](components.md)
-> `components::CON-002`), and are written into this requirement then.
-
-- theming::REQ-008/AC-01: Kit components set their font family, font sizes and radii only from this scale.
 
 ### theming::REQ-006 ThemeProvider
 
@@ -177,6 +136,47 @@ It loads no React ([package](package.md) `package::REQ-001/AC-02`).
 - theming::REQ-007/AC-03: Given an unknown theme or mode, the apply function leaves the root element as it
   would for `purple` / `system`, and does not throw.
 
+### theming::REQ-008 Type and radius scale
+
+`@aloong-planet/ui/theme.css` sets the one type and radius scale the components are drawn with: the
+sans-serif stack `-apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif`, the monospace stack
+`ui-monospace, Menlo, monospace`, body text at 13px, and the radius scale derived from shadcn/ui's
+`--radius`.
+
+> Pending: `@aloong-planet/ui/theme.css` does not yet define the type steps and the radius steps. Their first
+> values are the sizes the Agent Shed app uses most (at commit `14b6d5b`), and their final values are the
+> ones the owner confirms on the Storybook stories ([components](components.md) `components::CON-002`),
+> written into this requirement then.
+
+- theming::REQ-008/AC-01: Kit components set their font family, font sizes and radii only from this scale.
+
+### theming::REQ-009 App tokens
+
+An app defines a token for its own elements on the same contract as the general tokens: a value for the root
+element, a value per `data-theme` value where it changes with the theme, and a value under `dark` where it
+changes with light/dark. It may map the token into Tailwind's theme the way `@aloong-planet/ui/theme.css`
+does. The kit defines no app token.
+
+- theming::REQ-009/AC-01: An app token declared this way changes with the theme and with light/dark exactly
+  as the general tokens do, whether the root element was written by the ThemeProvider or by the apply
+  function.
+
+### theming::REQ-010 Scrollbars
+
+`@aloong-planet/ui/theme.css` draws the scrollbar of every scrolling area on a page that imports it,
+vertical and horizontal, in place of the platform's.
+
+- theming::REQ-010/AC-01: The scrollbar is 6px wide (6px tall for a horizontal one), and its thumb has
+  rounded ends (a 3px radius).
+- theming::REQ-010/AC-02: There is no track: beside the thumb, and in the corner where a vertical and a
+  horizontal scrollbar meet, the surface beneath shows through.
+- theming::REQ-010/AC-03: The thumb shows whenever the area's content overflows, also while nothing
+  scrolls; an area whose content fits shows no scrollbar.
+- theming::REQ-010/AC-04: The thumb, `--scrollbar-thumb`, is a neutral grey that follows the effective
+  light/dark and not the theme: in light, black at 25% opacity; in dark, white at 22%.
+- theming::REQ-010/AC-05: Under the pointer the thumb darkens to `--scrollbar-thumb-hover`: in light, black at
+  40%; in dark, white at 36%.
+
 ## Constraints
 
 ### theming::CON-001 The kit stores nothing (direct acceptance)
@@ -200,9 +200,16 @@ same root element.
 - **Several windows**: each window's document has its own root element. When the preference changes in
   one window, the app passes the new value to the ThemeProvider of every other window; the kit does not
   synchronise windows.
-- **Electron locks light/dark through `nativeTheme.themeSource`**: the system appearance the renderer sees
-  follows that setting, so with mode `system` the kit follows the app's lock rather than the operating
+- **An Electron app locks light/dark through `nativeTheme.themeSource`**: the system appearance the renderer
+  sees follows that setting, so with mode `system` the kit follows the app's lock rather than the operating
   system's.
+- **macOS's overlay scrollbars and its "Show scroll bars" setting**: neither changes the scrollbar the kit
+  draws, which shows on overflow as theming::REQ-010/AC-03 says, with a mouse or a trackpad alike.
+- **An element that sets the standard `scrollbar-width` or `scrollbar-color`**: Chromium-based browsers then
+  ignore the kit's scrollbar rules for that element and draw the platform's scrollbar. The kit sets neither
+  on any element those browsers style.
+- **A browser without WebKit's scrollbar pseudo-elements** (Firefox): it draws its own thin scrollbar in the
+  `--scrollbar-thumb` colour, at the width it chooses and with no hover shade.
 
 ## Implementation Decisions
 
@@ -211,28 +218,32 @@ specs; see `AGENTS.md`).
 
 - **Light/dark is a class on the root element.** A web page cannot override `prefers-color-scheme`, so
   locking light or dark in a browser needs a class; it is also the dark variant shadcn/ui's components
-  are written against. Rejected: media queries alone, as in Agent Shed, which can lock only inside Electron.
-- **shadcn/ui's token names.** Components taken from shadcn/ui read them unchanged. Rejected: Agent Shed's
-  names, which would mean rewriting every shadcn/ui component's references — and Agent Shed's `--accent`
-  (the brand colour) means what shadcn/ui calls `--primary`, while shadcn/ui's `--accent` is the hover wash.
-- **The app stores the preference.** Each app already has its own settings store (Agent Shed keeps its
-  preferences in a file owned by the main process), and keys owned by the app cannot collide between apps
-  or windows. Rejected: the kit storing it in browser storage, or the kit doing both.
+  are written against. Rejected: media queries alone, which can lock light or dark only inside Electron,
+  through `nativeTheme`.
+- **shadcn/ui's token names.** Components taken from shadcn/ui read them unchanged. Rejected: names of the
+  kit's own, which would mean rewriting every shadcn/ui component's references.
+- **The app stores the preference.** Each app already has its own settings store (an Electron app typically
+  keeps its settings in a file owned by its main process), and keys owned by an app cannot collide with
+  another app's or window's. Rejected: the kit storing it in browser storage, or the kit doing both.
 - **One synchronous apply function behind both the ThemeProvider and the pre-render scripts.** The rules
   for the root element then exist once, so a change to them cannot miss an app's first-frame script.
-  Rejected: each app writing its own first-frame script. An inline `<head>` script is not the route for
-  Electron apps whose content security policy allows only `script-src 'self'`, as Agent Shed's packaged
-  build does; they pass the preference from the main process and apply it in the preload script.
-- **Agent Shed's own colours are in the kit, as a separate layer.** The owner's choice; the separate entry
-  keeps them out of every other app. Rejected: leaving them in Agent Shed; putting them among the general
-  tokens.
-- **The Agent Shed layer's tokens have descriptive names.** The owner's choice; a name says what it colours
-  to someone who does not know Agent Shed. Rejected: Agent Shed's own abbreviations (`--cl-bg`, `--p-xai`,
-  `--tc-rd`), which would have left Agent Shed's references to them unchanged on adoption.
+  Rejected: each app writing its own first-frame script. An inline `<head>` script is not the route for an
+  Electron app whose content security policy allows only `script-src 'self'`; such an app passes the
+  preference from its main process and applies it in its preload script.
+- **An app's own colours live in the app** (theming::REQ-009). The kit is shared by every app, and an app's
+  domain colours — the badges of its own categories, the colours of its own data — mean nothing to the
+  others. Rejected: a stylesheet in the kit holding one app's colours.
+- **The kit draws the scrollbars** (theming::REQ-010). The owner's choice: every page that uses the kit gets
+  the same slim scrollbar instead of the platform's, whose width, track and visibility vary by platform and
+  by system setting. Rejected: leaving scrollbars to each app.
 
 ## Out of Scope
 
-- **Storing the preference**: the app's job (theming::CON-001).
 - **Themes beyond the three, and high-contrast variants.**
 - **shadcn/ui's chart (`--chart-*`) and sidebar (`--sidebar-*`) tokens**: the first release has no chart or
   sidebar component.
+- **Colours for content the kit does not render**, such as headings of rendered markdown.
+- **A thumb that shows only while scrolling**, as macOS's overlay scrollbars do: a drawn scrollbar cannot
+  hide on its own, and showing it on scroll would take a script on every scrolling area.
+- **Native form controls in dark** (the platform's own pickers and inputs): the kit declares no
+  `color-scheme`.
