@@ -149,6 +149,8 @@ sans-serif stack `-apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif`, 
 > written into this requirement then.
 
 - theming::REQ-008/AC-01: Kit components set their font family, font sizes and radii only from this scale.
+- theming::REQ-008/AC-02: The scale's sans-serif and monospace stacks and its body text size are the ones
+  this requirement lists.
 
 ### theming::REQ-009 App tokens
 
@@ -176,6 +178,10 @@ vertical and horizontal, in place of the platform's.
   light/dark and not the theme: in light, black at 25% opacity; in dark, white at 22%.
 - theming::REQ-010/AC-05: Under the pointer the thumb darkens to `--scrollbar-thumb-hover`: in light, black at
   40%; in dark, white at 36%.
+- theming::REQ-010/AC-06: The stylesheet sets neither the standard `scrollbar-width` nor `scrollbar-color` on
+  any element that Chromium-based browsers style, since either makes them drop the drawn scrollbar.
+- theming::REQ-010/AC-07: A browser without WebKit's scrollbar pseudo-elements (Firefox) draws its own thin
+  scrollbar in the `--scrollbar-thumb` colour, at the width it chooses and with no hover shade.
 
 ## Constraints
 
@@ -206,10 +212,9 @@ same root element.
 - **macOS's overlay scrollbars and its "Show scroll bars" setting**: neither changes the scrollbar the kit
   draws, which shows on overflow as theming::REQ-010/AC-03 says, with a mouse or a trackpad alike.
 - **An element that sets the standard `scrollbar-width` or `scrollbar-color`**: Chromium-based browsers then
-  ignore the kit's scrollbar rules for that element and draw the platform's scrollbar. The kit sets neither
-  on any element those browsers style.
-- **A browser without WebKit's scrollbar pseudo-elements** (Firefox): it draws its own thin scrollbar in the
-  `--scrollbar-thumb` colour, at the width it chooses and with no hover shade.
+  ignore the kit's scrollbar rules for that element and draw the platform's scrollbar; the kit's stylesheet
+  never does this (theming::REQ-010/AC-06), but an app's own CSS can.
+- **A browser without WebKit's scrollbar pseudo-elements** (Firefox): see theming::REQ-010/AC-07.
 
 ## Implementation Decisions
 

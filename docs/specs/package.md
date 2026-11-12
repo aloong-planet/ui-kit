@@ -38,6 +38,7 @@ source so that the class names inside the kit components are compiled.
 
 - package::REQ-002/AC-01: In a consumer that has done both steps, every kit component renders with the kit's
   styles in every theme and light/dark.
+- package::REQ-002/AC-03: The package README states both steps.
 
 ## Constraints
 
@@ -68,8 +69,8 @@ dependency of the kit, so a consumer does not install it itself.
 - **A consumer on React 18**: the package manager reports the unmet peer dependency at install time
   (package::CON-002); the kit does not attempt to support React 18 at run time.
 - **A consumer that skips registering the package as a Tailwind source**: the components render without
-  the kit's styles and nothing reports an error. The two setup steps of package::REQ-002 are stated in the
-  package README; Storybook uses the kit exactly as a consumer does ([components](components.md)
+  the kit's styles and nothing reports an error. The README states both steps (package::REQ-002/AC-03), and
+  Storybook uses the kit exactly as a consumer does ([components](components.md)
   `components::REQ-015/AC-03`), so wrong steps show there first.
 
 ## Implementation Decisions
