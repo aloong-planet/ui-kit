@@ -29,3 +29,5 @@ test.each(['@aloong-planet/ui', '@aloong-planet/ui/apply-theme'])(
 test('a consumer cannot import a path the entry point table does not list', () => {
   expect(() => importInConsumer('@aloong-planet/ui/dist/index.mjs')).toThrow(/ERR_PACKAGE_PATH_NOT_EXPORTED/)
 })
+// gate probe 3: an unawaited promise
+Promise.resolve()
