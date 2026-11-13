@@ -55,7 +55,7 @@ const buttonVariants = cva(
       {
         variant: ["default", "primary", "danger", "ghost"],
         size: "icon",
-        class: "size-8 rounded-lg [&_svg:not([class*='size-'])]:size-4",
+        class: "size-7 rounded-md [&_svg:not([class*='size-'])]:size-4",
       },
       {
         variant: ["default", "primary", "danger", "ghost"],
@@ -71,24 +71,33 @@ const buttonVariants = cva(
 )
 
 type BaseProps = Omit<ButtonPrimitive.Props, "aria-label" | "children" | "className"> & {
-  variant?: "default" | "primary" | "danger" | "ghost" | "link"
   className?: string
 }
+type BoxVariant = { variant?: "default" | "primary" | "danger" | "ghost" }
 
 // components::CON-001: a button writes no text of its own. A text button's label is its children; an icon-only
 // button's accessible name is `aria-label`, which its sizes require, so a missing one fails the type check.
-type TextButtonProps = BaseProps & {
-  size?: "default" | "sm"
+type TextButtonProps = BaseProps &
+  BoxVariant & {
+    size?: "default" | "sm"
+    children: ReactNode
+    "aria-label"?: string
+  }
+type IconButtonProps = BaseProps &
+  BoxVariant & {
+    size: "icon" | "icon-sm"
+    children: ReactNode
+    "aria-label": string
+  }
+// A link is inline text in the size of the text around it, so it takes no size (components::REQ-002)
+type LinkButtonProps = BaseProps & {
+  variant: "link"
+  size?: never
   children: ReactNode
   "aria-label"?: string
 }
-type IconButtonProps = BaseProps & {
-  size: "icon" | "icon-sm"
-  children: ReactNode
-  "aria-label": string
-}
 
-export type ButtonProps = TextButtonProps | IconButtonProps
+export type ButtonProps = TextButtonProps | IconButtonProps | LinkButtonProps
 
 const iconClass = "inline-flex"
 

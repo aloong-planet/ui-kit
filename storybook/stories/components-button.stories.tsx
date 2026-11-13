@@ -101,7 +101,7 @@ export const Sizes: Story = {
     const sizes = {
       default: { width: undefined, height: 28, fontSize: '12.5px', radius: '7px' },
       sm: { width: undefined, height: 22, fontSize: '11px', radius: '7px' },
-      icon: { width: 32, height: 32, fontSize: undefined, radius: '8.75px' },
+      icon: { width: 28, height: 28, fontSize: undefined, radius: '7px' },
       'icon-sm': { width: 22, height: 22, fontSize: undefined, radius: '5.25px' },
     }
     for (const variant of boxVariants) {
