@@ -162,6 +162,26 @@ export const ValuesInEveryThemeAndLightDark: Story = {
   },
 }
 
+// theming::REQ-004/AC-03: the page itself takes `--background` and `--foreground`, in every state of the root
+export const PageFollowsTheTheme: Story = {
+  tags: ['!dev'],
+  render: () => <div />,
+  play: async () => {
+    const mismatches: string[] = []
+    for (const { name, write } of states) {
+      applyTheme('purple', 'light')
+      write()
+      const page = getComputedStyle(document.body)
+      const background = computed('color', 'var(--background)')
+      const text = computed('color', 'var(--foreground)')
+      if (page.backgroundColor !== background) mismatches.push(`${name}: background ${page.backgroundColor}`)
+      if (page.color !== text) mismatches.push(`${name}: text ${page.color}`)
+    }
+    await expect(new Set(states.map(({ values }) => values['--background'])).size).toBe(6)
+    await expect(mismatches).toEqual([])
+  },
+}
+
 const colourProperty = /^(all|.*color|background|border.*|outline|fill|stroke|box-shadow)$/
 
 // The properties of the element's transitions that animate a colour; CSS repeats the shorter of the two lists to the

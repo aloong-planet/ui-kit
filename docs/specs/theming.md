@@ -98,11 +98,14 @@ an existing token.
 | `--scrollbar-thumb` / `--scrollbar-thumb-hover` | The scrollbar thumb at rest and under the pointer, the same in every theme |
 
 `@aloong-planet/ui/theme.css` also maps each general token into Tailwind's theme, so that a consumer can use
-it in utility classes (`bg-primary`, `text-muted-foreground`, `border-border-strong`).
+it in utility classes (`bg-primary`, `text-muted-foreground`, `border-border-strong`), and colours the page
+itself with `--background` and `--foreground`.
 
 - theming::REQ-004/AC-01: Every row of the table is defined for every theme and for light and dark.
 - theming::REQ-004/AC-02: In a consumer, the utility classes of every general token (background, text and
   border colour) compile and render that token.
+- theming::REQ-004/AC-03: In a consumer, the page's body has `--background` as its background colour and
+  `--foreground` as its text colour, in every theme and light/dark.
 
 ### theming::REQ-006 ThemeProvider
 
