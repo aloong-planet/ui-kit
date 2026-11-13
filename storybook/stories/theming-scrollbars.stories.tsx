@@ -1,6 +1,6 @@
-// theming::REQ-010: the scrollbar theme.css draws for every scrolling area, measured in Chromium. The hover shade, the
-// macOS scrollbar settings and Firefox's own scrollbar are checked by eye on `OverflowingBothWays`; the stories tagged
-// `!dev` are hidden from the sidebar and run only as tests.
+// theming::REQ-010: the scrollbar theme.css draws for every scrolling area, measured in Chromium. The missing track and
+// corner, the hover shade, the macOS scrollbar settings and Firefox's own scrollbar are checked by eye on
+// `OverflowingBothWays`; the stories tagged `!dev` are hidden from the sidebar and run only as tests.
 import { applyTheme } from '@aloong-planet/ui/apply-theme'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect } from 'storybook/test'
