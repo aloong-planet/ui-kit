@@ -40,9 +40,10 @@ root.render(
 
 ### Before the first frame
 
-A page that renders before the ThemeProvider mounts shows purple light first. To make the first frame show the final
-theme and light/dark, call the apply function before anything renders: in an Electron preload script, or in a classic
-(not `type="module"`) script in the page's `<head>`, bundled from this:
+A page that renders before the ThemeProvider mounts first shows the root's defaults: purple, and light unless the root
+already carries `dark`. To make the first frame show the final theme and light/dark, call the apply function before
+anything renders: in an Electron preload script, or in a classic (not `type="module"`) script in the page's `<head>`,
+bundled from this:
 
 ```ts
 import { applyTheme } from '@aloong-planet/ui/apply-theme'
@@ -58,8 +59,9 @@ it in its preload script.
 
 `theme.css` defines the general colour tokens under shadcn/ui's names (`--background`, `--primary`,
 `--muted-foreground`, …) for every theme and light/dark, and maps each into Tailwind's theme, so that utilities such
-as `bg-primary`, `text-muted-foreground`, `border-border-strong` and `shadow-pop` follow the theme. Switching the
-theme or light/dark recolours the page at once.
+as `bg-primary`, `text-muted-foreground`, `border-border-strong` and `shadow-pop` follow the theme. It also colours the
+page itself: the body's background is `--background` and its text `--foreground`. Switching the theme or light/dark
+recolours the page at once.
 
 ## App tokens
 
