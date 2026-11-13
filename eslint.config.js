@@ -2,6 +2,7 @@
 import { fileURLToPath } from 'node:url'
 import js from '@eslint/js'
 import { defineConfig, includeIgnoreFile } from 'eslint/config'
+import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
@@ -25,6 +26,14 @@ export default defineConfig(
     files: ['packages/ui/src/**/*.{ts,tsx}', 'storybook/**/*.{ts,tsx}'],
     extends: [reactHooks.configs.flat['recommended-latest']],
     languageOptions: { globals: globals.browser },
+  },
+  // components::CON-001: a component writes no text of its own; what it shows or announces comes from its props. The rule
+  // rejects text written as a JSX child and any string written as an attribute value, so a value that is not text (a
+  // class list, a slot name) is written as an expression.
+  {
+    files: ['packages/ui/src/components/**/*.tsx'],
+    plugins: { react },
+    rules: { 'react/jsx-no-literals': ['error', { noStrings: true, ignoreProps: false, noAttributeStrings: true }] },
   },
   // Plain JavaScript that belongs to no tsconfig: no type information, so no type-aware rules
   {
