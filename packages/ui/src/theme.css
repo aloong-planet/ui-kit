@@ -1,6 +1,7 @@
 /* The kit's theme stylesheet (package::REQ-001): the general tokens for every theme and light/dark
-   (theming::REQ-004), their Tailwind theme mapping, and the scrollbars (theming::REQ-010). A consumer imports it
-   after `tailwindcss`, and the consumer's Tailwind CSS v4 compiles it (package::REQ-002).
+   (theming::REQ-004), their Tailwind theme mapping, the type and radius scale (theming::REQ-008), and the scrollbars
+   (theming::REQ-010). A consumer imports it after `tailwindcss`, and the consumer's Tailwind CSS v4 compiles it
+   (package::REQ-002).
 
    The tokens follow the document root contract (theming::REQ-003): the root element's `data-theme` holds the
    theme, and the class `dark` is on it exactly when the effective light/dark is dark.
@@ -55,6 +56,8 @@
   --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.14);
   --scrollbar-thumb: rgba(0, 0, 0, 0.25);
   --scrollbar-thumb-hover: rgba(0, 0, 0, 0.4);
+  /* The base of the radius steps below, the same in every theme and in light and dark */
+  --radius: 8.75px;
 }
 
 :root[data-theme="blue"] {
@@ -224,11 +227,40 @@
   --shadow-pop: var(--shadow-pop);
 }
 
+/* The type and radius scale (theming::REQ-008). Kit components set their font family, font sizes and radii only from
+   these steps, which `pnpm check:tokens` enforces on their source. The type steps keep Tailwind's own step names with
+   the kit's values, as shadcn/ui does for the radius steps, so the components keep shadcn/ui's class names and `cn`
+   merges them without being configured; an app that imports this stylesheet gets the same steps for its own
+   utilities. Tailwind's steps from `text-xl` up are left as they are and are not part of the scale. */
+@theme {
+  --font-sans: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: ui-monospace, Menlo, monospace;
+  --text-xs: 11px;
+  --text-xs--line-height: 1.5;
+  --text-sm: 12.5px;
+  --text-sm--line-height: 1.5;
+  --text-base: 13px;
+  --text-base--line-height: 1.5;
+  --text-lg: 15px;
+  --text-lg--line-height: 1.5;
+}
+
+/* The radius steps, from `--radius` by shadcn/ui's multipliers; `inline` makes a utility read `--radius` itself */
+@theme inline {
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
 @layer base {
-  /* The page and its body text (theming::REQ-004) */
+  /* The page, its body text and the body text size (theming::REQ-004, theming::REQ-008) */
   body {
     background-color: var(--background);
     color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
   }
 
   /* The scrollbar of every scrolling area (theming::REQ-010): a 6px thumb with rounded ends on no track, shown

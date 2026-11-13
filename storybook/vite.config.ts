@@ -18,6 +18,21 @@ export default defineConfig({
         },
       },
       {
+        // Stories driven by a real pointer and keyboard (Playwright's), which a story's play function cannot do: the
+        // browser applies `:hover` and `:focus-visible` only to input from the user
+        extends: true,
+        test: {
+          name: 'interaction',
+          include: ['tests/**/*.test.tsx'],
+          browser: {
+            enabled: true,
+            headless: true,
+            provider: playwright({ contextOptions: { colorScheme: 'dark' } }),
+            instances: [{ browser: 'chromium' }],
+          },
+        },
+      },
+      {
         // Every story runs as a test in a real browser
         extends: true,
         plugins: [storybookTest({ configDir: `${import.meta.dirname}/.storybook` })],
