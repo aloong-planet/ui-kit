@@ -2,3 +2,4 @@ docs/.workings/
 node_modules/
 dist/
 storybook-static/
+.vitest/

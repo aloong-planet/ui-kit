@@ -64,50 +64,48 @@ The general tokens use shadcn/ui's token names for every token the kit reads. A 
 token for is added the shadcn/ui way, as a `--<name>` / `--<name>-foreground` pair, or as a `-strong` step of
 an existing token.
 
-| Kit token | What it colours | First value from |
-|---|---|---|
-| `--background` | The page; the ground of regular buttons, select triggers and the selected page tab | `--bg` |
-| `--foreground` | Body text | `--text` |
-| `--card` | Cards | `--card` |
-| `--card-foreground` | Text on cards | `--text` |
-| `--popover` | Floating surfaces: select popups, drawers, dialogs | `--card` |
-| `--popover-foreground` | Text on floating surfaces | `--text` |
-| `--primary` | The brand colour: selected text, the primary button's fill | `--accent` |
-| `--primary-foreground` | Text and icons on a `--primary` fill | `--card` |
-| `--primary-strong` | The deeper brand text: the selected option's label, the selected pill tab | `--accent-deep` |
-| `--muted` | Quiet grounds | `--bg` |
-| `--muted-foreground` | Secondary text, placeholders, icons at rest | `--text-2` |
-| `--accent` | The hover wash, and the wash of a selected segment, pill tab or badge | `--accent-soft` |
-| `--accent-foreground` | Text on the `--accent` wash when selected | `--accent` |
-| `--accent-strong` | The selected-row wash, one step deeper than hover | `--accent-soft-deep` |
-| `--destructive` | The danger button's fill | `--danger-bg` |
-| `--destructive-foreground` | Text on it | `--danger-fg` |
-| `--border` | Dividers, card borders, skeleton blocks | `--line` |
-| `--border-strong` | Borders of controls and floating surfaces | `--line-strong` |
-| `--input` | Borders of text fields | `--line-strong` |
-| `--ring` | The keyboard focus ring and a focused field's border | `--accent` |
-| `--success` / `--success-foreground` | Success toasts and badges | `--ok-bg` / `--ok-fg` |
-| `--warning` / `--warning-foreground` | Warning badges | `--warn-bg` / `--warn-fg` |
-| `--error` / `--error-foreground` | Error toasts | `--err-bg` / `--err-fg` |
-| `--note` / `--note-foreground` | Note badges | `--note-bg` / `--note-fg` |
-| `--risk` / `--risk-foreground` | The dashed border and the text of a risk badge | `--risk-border` / `--risk-fg` |
-| `--tooltip` / `--tooltip-foreground` | Tooltips, dark in every theme and in light and dark | `--tip-bg` / `--tip-fg` |
-| `--tooltip-warning` | A warning line inside a tooltip | `--tip-warn` |
-| `--overlay` | The scrim behind drawers and dialogs, the same in light and dark | `rgba(0, 0, 0, 0.35)` |
-| `--shadow-pop` | The shadow of every floating surface | `--shadow-pop` |
-| `--scrollbar-thumb` / `--scrollbar-thumb-hover` | The scrollbar thumb at rest and under the pointer, the same in every theme | theming::REQ-010/AC-04, theming::REQ-010/AC-05 |
-
-> Pending: `@aloong-planet/ui/theme.css` does not yet define the token values. Their first values are copied
-> from `src/renderer/src/theme.css` of the Agent Shed app (`aloong-planet/agentshed`, commit `14b6d5b`):
-> each kit token takes, in every theme and in light and dark, the value of the source token in its row's
-> last column. That column is removed together with this note.
+| Kit token | What it colours |
+|---|---|
+| `--background` | The page; the ground of regular buttons, select triggers and the selected page tab |
+| `--foreground` | Body text |
+| `--card` | Cards |
+| `--card-foreground` | Text on cards |
+| `--popover` | Floating surfaces: select popups, drawers, dialogs |
+| `--popover-foreground` | Text on floating surfaces |
+| `--primary` | The brand colour: selected text, the primary button's fill |
+| `--primary-foreground` | Text and icons on a `--primary` fill |
+| `--primary-strong` | The deeper brand text: the selected option's label, the selected pill tab |
+| `--muted` | Quiet grounds |
+| `--muted-foreground` | Secondary text, placeholders, icons at rest |
+| `--accent` | The hover wash, and the wash of a selected segment, pill tab or badge |
+| `--accent-foreground` | Text on the `--accent` wash when selected |
+| `--accent-strong` | The selected-row wash, one step deeper than hover |
+| `--destructive` | The danger button's fill |
+| `--destructive-foreground` | Text on it |
+| `--border` | Dividers, card borders, skeleton blocks |
+| `--border-strong` | Borders of controls and floating surfaces |
+| `--input` | Borders of text fields |
+| `--ring` | The keyboard focus ring and a focused field's border |
+| `--success` / `--success-foreground` | Success toasts and badges |
+| `--warning` / `--warning-foreground` | Warning badges |
+| `--error` / `--error-foreground` | Error toasts |
+| `--note` / `--note-foreground` | Note badges |
+| `--risk` / `--risk-foreground` | The dashed border and the text of a risk badge |
+| `--tooltip` / `--tooltip-foreground` | Tooltips, dark in every theme and in light and dark |
+| `--tooltip-warning` | A warning line inside a tooltip |
+| `--overlay` | The scrim behind drawers and dialogs, the same in light and dark |
+| `--shadow-pop` | The shadow of every floating surface |
+| `--scrollbar-thumb` / `--scrollbar-thumb-hover` | The scrollbar thumb at rest and under the pointer, the same in every theme |
 
 `@aloong-planet/ui/theme.css` also maps each general token into Tailwind's theme, so that a consumer can use
-it in utility classes (`bg-primary`, `text-muted-foreground`, `border-border-strong`).
+it in utility classes (`bg-primary`, `text-muted-foreground`, `border-border-strong`), and colours the page
+itself with `--background` and `--foreground`.
 
 - theming::REQ-004/AC-01: Every row of the table is defined for every theme and for light and dark.
 - theming::REQ-004/AC-02: In a consumer, the utility classes of every general token (background, text and
   border colour) compile and render that token.
+- theming::REQ-004/AC-03: In a consumer, the page's body has `--background` as its background colour and
+  `--foreground` as its text colour, in every theme and light/dark.
 
 ### theming::REQ-006 ThemeProvider
 
@@ -126,8 +124,10 @@ theming::REQ-003. It stores nothing (theming::CON-001).
 
 `@aloong-planet/ui/apply-theme` exports a function that takes a theme and a mode and writes them on the root
 element by theming::REQ-003, synchronously, resolving `system` against the system appearance at the moment
-of the call. The ThemeProvider writes the root element through the same function, so the rules exist once.
-It loads no React ([package](package.md) `package::REQ-001/AC-02`).
+of the call. Called before the document has a root element, as an Electron preload script is, it writes them
+as soon as the root element is created, before the page runs any script of its own. The ThemeProvider writes
+the root element through the same function, so the rules exist once. It loads no React
+([package](package.md) `package::REQ-001/AC-02`).
 
 - theming::REQ-007/AC-01: Called before the first render — from an Electron preload script, or from a
   script in a page's `<head>` — it makes the first painted frame show the final theme and light/dark.

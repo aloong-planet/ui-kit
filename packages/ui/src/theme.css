@@ -1,2 +1,263 @@
-/* The theme stylesheet (package::REQ-001): the general tokens, their Tailwind theme mapping, the type and radius
-   scale, and the scrollbars. Empty for now. */
+/* The kit's theme stylesheet (package::REQ-001): the general tokens for every theme and light/dark
+   (theming::REQ-004), their Tailwind theme mapping, and the scrollbars (theming::REQ-010). A consumer imports it
+   after `tailwindcss`, and the consumer's Tailwind CSS v4 compiles it (package::REQ-002).
+
+   The tokens follow the document root contract (theming::REQ-003): the root element's `data-theme` holds the
+   theme, and the class `dark` is on it exactly when the effective light/dark is dark.
+   - `:root` holds every token as purple light, so a root without `data-theme` is purple, and `:root.dark` holds
+     every token as purple dark. Light and dark each declare every token, also where the two values are equal, so
+     what a token is in dark is read in the dark block rather than worked out from what it inherits.
+   - A `data-theme` block holds only the tokens that change with the theme, in light and in dark alike; the others
+     come from the two blocks above. Its dark block outranks both of them (three selector parts against two), so the
+     outcome does not depend on the order of the blocks.
+   An app declares a token of its own on the same selectors (theming::REQ-009). `pnpm check:tokens` checks that
+   every token is declared in every block where it belongs. */
+
+/* Tailwind's `dark:` variant follows the root's `dark` class, as the kit's light/dark does, and not the system's
+   `prefers-color-scheme`, which a locked light or dark does not change */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #f7f8f9;
+  --foreground: #37352f;
+  --card: #ffffff;
+  --card-foreground: #37352f;
+  --popover: #ffffff;
+  --popover-foreground: #37352f;
+  --primary: #8a67ab;
+  --primary-foreground: #ffffff;
+  --primary-strong: #6b4f92;
+  --muted: #f7f8f9;
+  --muted-foreground: #787774;
+  --accent: #f0ebf6;
+  --accent-foreground: #8a67ab;
+  --accent-strong: #e1d7e9;
+  --destructive: #b91c1c;
+  --destructive-foreground: #ffffff;
+  --border: #e8eaed;
+  --border-strong: #d9dce0;
+  --input: #d9dce0;
+  --ring: #8a67ab;
+  --success: #dcfce7;
+  --success-foreground: #166534;
+  --warning: #fdecdc;
+  --warning-foreground: #b3552f;
+  --error: #fee2e2;
+  --error-foreground: #991b1b;
+  --note: #fff6b8;
+  --note-foreground: #5c5100;
+  --risk: #d79a5b;
+  --risk-foreground: #b3703a;
+  --tooltip: #1b1b1f;
+  --tooltip-foreground: #ffffff;
+  --tooltip-warning: #f0bd8c;
+  --overlay: rgba(0, 0, 0, 0.35);
+  --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.14);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.25);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.4);
+}
+
+:root[data-theme="blue"] {
+  --background: #f6f5f3;
+  --foreground: #2c2a28;
+  --card: #fffcf9;
+  --card-foreground: #2c2a28;
+  --popover: #fffcf9;
+  --popover-foreground: #2c2a28;
+  --primary: #4a6fa5;
+  --primary-foreground: #fffcf9;
+  --primary-strong: #3a5a88;
+  --muted: #f6f5f3;
+  --muted-foreground: #6f6b66;
+  --accent: #eef2f7;
+  --accent-foreground: #4a6fa5;
+  --accent-strong: #d0d7e3;
+  --border: #e8e4de;
+  --border-strong: #d4cfc7;
+  --input: #d4cfc7;
+  --ring: #4a6fa5;
+}
+
+:root[data-theme="amber"] {
+  --background: #f7f3ec;
+  --foreground: #3a342c;
+  --card: #fffcf7;
+  --card-foreground: #3a342c;
+  --popover: #fffcf7;
+  --popover-foreground: #3a342c;
+  --primary: #6b5220;
+  --primary-foreground: #fffcf7;
+  --primary-strong: #534018;
+  --muted: #f7f3ec;
+  --muted-foreground: #7a7268;
+  --accent: #f3ead4;
+  --accent-foreground: #6b5220;
+  --accent-strong: #d9d0bf;
+  --border: #e8e0d4;
+  --border-strong: #d6ccbc;
+  --input: #d6ccbc;
+  --ring: #6b5220;
+}
+
+:root.dark {
+  --background: #18191b;
+  --foreground: #e6e6e5;
+  --card: #1f2124;
+  --card-foreground: #e6e6e5;
+  --popover: #1f2124;
+  --popover-foreground: #e6e6e5;
+  --primary: #a084c7;
+  --primary-foreground: #1f2124;
+  --primary-strong: #c9b3ec;
+  --muted: #18191b;
+  --muted-foreground: #9b9a97;
+  --accent: #2c2733;
+  --accent-foreground: #a084c7;
+  --accent-strong: #413b4e;
+  --destructive: #b91c1c;
+  --destructive-foreground: #ffffff;
+  --border: #2a2c30;
+  --border-strong: #34373c;
+  --input: #34373c;
+  --ring: #a084c7;
+  --success: #12301d;
+  --success-foreground: #86efac;
+  --warning: #3c2417;
+  --warning-foreground: #f0a884;
+  --error: #2a1416;
+  --error-foreground: #fca5a5;
+  --note: #3a3316;
+  --note-foreground: #f0dd8a;
+  --risk: #8a5f34;
+  --risk-foreground: #f0bd8c;
+  --tooltip: #1b1b1f;
+  --tooltip-foreground: #ffffff;
+  --tooltip-warning: #f0bd8c;
+  --overlay: rgba(0, 0, 0, 0.35);
+  --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.55);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.22);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.36);
+}
+
+:root.dark[data-theme="blue"] {
+  --background: #16181c;
+  --foreground: #e6e4e0;
+  --card: #1c1f24;
+  --card-foreground: #e6e4e0;
+  --popover: #1c1f24;
+  --popover-foreground: #e6e4e0;
+  --primary: #7a9dc4;
+  --primary-foreground: #1c1f24;
+  --primary-strong: #a8c0dc;
+  --muted: #16181c;
+  --muted-foreground: #9a9690;
+  --accent: #1e2a38;
+  --accent-foreground: #7a9dc4;
+  --accent-strong: #34404e;
+  --border: #2a2e34;
+  --border-strong: #3a4048;
+  --input: #3a4048;
+  --ring: #7a9dc4;
+}
+
+:root.dark[data-theme="amber"] {
+  --background: #1a1714;
+  --foreground: #ebe4d8;
+  --card: #221e1a;
+  --card-foreground: #ebe4d8;
+  --popover: #221e1a;
+  --popover-foreground: #ebe4d8;
+  --primary: #c4a46a;
+  --primary-foreground: #221e1a;
+  --primary-strong: #ddc48e;
+  --muted: #1a1714;
+  --muted-foreground: #a09888;
+  --accent: #2e2820;
+  --accent-foreground: #c4a46a;
+  --accent-strong: #4c412f;
+  --border: #332e28;
+  --border-strong: #453e36;
+  --input: #453e36;
+  --ring: #c4a46a;
+}
+
+/* Each general token in Tailwind's theme, for utilities such as `bg-primary`, `text-muted-foreground` and
+   `border-border-strong`. `inline` makes a utility read the token itself, so it follows the theme and light/dark;
+   `reference` emits no theme variables, since `--shadow-pop` would otherwise be declared as a variable of itself. */
+@theme inline reference {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-strong: var(--primary-strong);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-strong: var(--accent-strong);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-note: var(--note);
+  --color-note-foreground: var(--note-foreground);
+  --color-risk: var(--risk);
+  --color-risk-foreground: var(--risk-foreground);
+  --color-tooltip: var(--tooltip);
+  --color-tooltip-foreground: var(--tooltip-foreground);
+  --color-tooltip-warning: var(--tooltip-warning);
+  --color-overlay: var(--overlay);
+  --color-scrollbar-thumb: var(--scrollbar-thumb);
+  --color-scrollbar-thumb-hover: var(--scrollbar-thumb-hover);
+  --shadow-pop: var(--shadow-pop);
+}
+
+@layer base {
+  /* The page and its body text (theming::REQ-004) */
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+
+  /* The scrollbar of every scrolling area (theming::REQ-010): a 6px thumb with rounded ends on no track, shown
+     whenever the content overflows. Chromium-based browsers and Safari draw a scrollbar styled this way as a classic
+     one, never as an overlay one, so it looks the same whatever the platform or its scrollbar setting. The corner
+     where two scrollbars meet is cleared too, or it stays an opaque square. */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+
+  /* The Firefox-only block: a browser without the pseudo-elements above (Firefox) draws its own thin scrollbar in
+     the thumb colour. The standard properties stay inside this block, because Chromium-based browsers drop the
+     scrollbar drawn above on any element that sets either of them (theming::REQ-010/AC-06). */
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--scrollbar-thumb) transparent;
+    }
+  }
+}
