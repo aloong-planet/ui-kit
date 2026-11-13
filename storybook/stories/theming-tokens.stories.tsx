@@ -82,6 +82,30 @@ function utility(canvas: HTMLElement, name: string): Element {
   return element
 }
 
+// theming::REQ-004/AC-02 and package::REQ-002/AC-01: each token's background, text and border utilities render the
+// token in the root's present state. The two stories that use it check two states, so a utility fixed to one fails.
+function utilityMismatches(canvas: HTMLElement): string[] {
+  const state = `${root.getAttribute('data-theme')}${root.classList.contains('dark') ? ' dark' : ''}`
+  const mismatches: string[] = []
+  for (const { token } of colourTokens) {
+    if (getComputedStyle(root).getPropertyValue(token) === '') mismatches.push(`${state}: ${token} is not defined`)
+    const expected = computed('color', `var(${token})`)
+    for (const [name, property] of [
+      ['bg', 'background-color'],
+      ['text', 'color'],
+      ['border', 'border-top-color'],
+    ] as const) {
+      const actual = getComputedStyle(utility(canvas, `${token} ${name}`)).getPropertyValue(property)
+      if (actual !== expected) mismatches.push(`${state}: ${name}-${token.slice(2)} is ${actual}, not ${expected}`)
+    }
+  }
+  // Tailwind's shadow utilities put empty ring and inset layers before the shadow itself
+  const shadow = getComputedStyle(utility(canvas, '--shadow-pop shadow')).boxShadow
+  if (!shadow.endsWith(`, ${computed('box-shadow', 'var(--shadow-pop)')}`))
+    mismatches.push(`${state}: shadow-pop is ${shadow}`)
+  return mismatches
+}
+
 export const Tokens: Story = {
   render: () => (
     <ul className="grid grid-cols-[repeat(auto-fill,minmax(18rem,1fr))] gap-x-6 gap-y-2">
@@ -101,32 +125,22 @@ export const Tokens: Story = {
       </li>
     </ul>
   ),
-  // theming::REQ-004/AC-02 and package::REQ-002/AC-01: each token's background, text and border utilities render the
-  // token, in the toolbar's state and again in another theme and light/dark, so a utility fixed to one state fails
+  // The utilities in the toolbar's state. The sheet is what the owner switches with the toolbar, so checking it leaves
+  // the root as the toolbar set it; the other state is checked by `UtilitiesFollowTheRoot`.
+  play: async ({ canvasElement, globals }) => {
+    await expect(colourTokens).toHaveLength(36)
+    await expect(utilityMismatches(canvasElement)).toEqual([])
+    await expect(root.getAttribute('data-theme')).toBe(globals.theme)
+  },
+}
+
+// The utilities after the root moves to a theme and light/dark the toolbar's default does not show
+export const UtilitiesFollowTheRoot: Story = {
+  tags: ['!dev'],
+  render: Tokens.render,
   play: async ({ canvasElement }) => {
-    for (const write of [() => undefined, () => applyTheme('amber', 'dark')]) {
-      write()
-      const state = `${root.getAttribute('data-theme')}${root.classList.contains('dark') ? ' dark' : ''}`
-      const mismatches: string[] = []
-      for (const { token } of colourTokens) {
-        if (getComputedStyle(root).getPropertyValue(token) === '') mismatches.push(`${state}: ${token} is not defined`)
-        const expected = computed('color', `var(${token})`)
-        for (const [name, property] of [
-          ['bg', 'background-color'],
-          ['text', 'color'],
-          ['border', 'border-top-color'],
-        ] as const) {
-          const actual = getComputedStyle(utility(canvasElement, `${token} ${name}`)).getPropertyValue(property)
-          if (actual !== expected) mismatches.push(`${state}: ${name}-${token.slice(2)} is ${actual}, not ${expected}`)
-        }
-      }
-      // Tailwind's shadow utilities put empty ring and inset layers before the shadow itself
-      const shadow = getComputedStyle(utility(canvasElement, '--shadow-pop shadow')).boxShadow
-      if (!shadow.endsWith(`, ${computed('box-shadow', 'var(--shadow-pop)')}`))
-        mismatches.push(`${state}: shadow-pop is ${shadow}`)
-      await expect(colourTokens).toHaveLength(36)
-      await expect(mismatches).toEqual([])
-    }
+    applyTheme('amber', 'dark')
+    await expect(utilityMismatches(canvasElement)).toEqual([])
   },
 }
 
