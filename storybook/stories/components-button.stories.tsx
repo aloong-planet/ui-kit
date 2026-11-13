@@ -7,6 +7,7 @@ import { Button } from '@aloong-planet/ui'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Copy, Plus, X } from 'lucide-react'
 import { expect, fn } from 'storybook/test'
+import { button } from './support/button'
 import { computed } from './support/computed'
 
 const meta = {
@@ -16,12 +17,6 @@ const meta = {
 export default meta
 
 type Story = StoryObj<typeof meta>
-
-function button(canvas: HTMLElement, name: string): HTMLElement {
-  const element = canvas.querySelector<HTMLElement>(`[data-button="${name}"]`)
-  if (!element) throw new Error(`no button ${name}`)
-  return element
-}
 
 const boxVariants = ['default', 'primary', 'danger', 'ghost'] as const
 
@@ -127,8 +122,9 @@ export const Sizes: Story = {
   },
 }
 
-// components::REQ-002/AC-03: an icon-only button is named by the text the caller passes, and its icon is hidden from
-// screen readers
+// components::REQ-002/AC-03: an icon-only button is named by the text the caller passes, and the button hides its
+// icon from screen readers, whatever the icon: lucide-react hides its own icons, so the last button holds an icon of
+// the caller's own that does not
 export const IconOnly: Story = {
   render: () => (
     <div className="flex items-center gap-3">
@@ -138,15 +134,27 @@ export const IconOnly: Story = {
       <Button variant="ghost" size="icon-sm" aria-label="Copy path">
         <Copy />
       </Button>
+      <Button variant="primary" size="icon" aria-label="Record">
+        <svg viewBox="0 0 16 16" fill="currentColor">
+          <circle cx="8" cy="8" r="5" />
+        </svg>
+      </Button>
     </div>
   ),
   play: async ({ canvas }) => {
-    for (const name of ['Close drawer', 'Copy path']) {
+    for (const name of ['Close drawer', 'Copy path', 'Record']) {
       const element = canvas.getByRole('button', { name })
       const icon = element.querySelector('svg')
-      await expect(icon).not.toBeNull()
-      await expect(icon?.closest('[aria-hidden="true"]')).not.toBeNull()
+      // The element that hides the icon lies between the icon and the button
+      const hidden = icon?.parentElement?.closest('[aria-hidden="true"]')
+      await expect({ name, hiddenInsideTheButton: hidden ? element.contains(hidden) : false }).toEqual({
+        name,
+        hiddenInsideTheButton: true,
+      })
     }
+    await expect(canvas.getByRole('button', { name: 'Record' }).querySelector('svg')?.hasAttribute('aria-hidden')).toBe(
+      false,
+    )
   },
 }
 
@@ -185,7 +193,7 @@ export const Disabled: StoryObj<{ onClick: () => void }> = {
   play: async ({ canvasElement }) => {
     for (const name of ['default', 'primary', 'danger', 'ghost', 'icon', 'link']) {
       const element = button(canvasElement, name)
-      await expect({ name, disabled: (element as HTMLButtonElement).disabled, opacity: getComputedStyle(element).opacity }).toEqual({
+      await expect({ name, disabled: element.disabled, opacity: getComputedStyle(element).opacity }).toEqual({
         name,
         disabled: true,
         opacity: '0.45',
@@ -208,36 +216,46 @@ export const KeyboardFocus: Story = {
   },
 }
 
-// components::REQ-001/AC-05: a label longer than the space stays on one line and is cut with an ellipsis
+// components::REQ-001/AC-05: a label longer than the space stays on one line and is cut with an ellipsis, whatever
+// shape it is passed in: a string, an icon and a string, an element (as a translation component renders), or text
+// with a value in it
 export const LongLabel: Story = {
   render: () => (
     <div className="flex w-36 flex-col items-start gap-3 border border-dashed border-border-strong p-2">
-      <Button data-button="default">Remove every conversation from this project</Button>
-      <Button data-button="sm" size="sm" variant="ghost">
+      <Button data-button="string">Remove every conversation from this project</Button>
+      <Button data-button="icon and string" size="sm" variant="ghost">
         <Plus />
         Install to every agent on this machine
       </Button>
+      <Button data-button="element" variant="primary">
+        <span>Rename every project on this side</span>
+      </Button>
+      <Button data-button="value in text">{3} conversations to remove from this project</Button>
     </div>
   ),
   play: async ({ canvasElement }) => {
-    for (const [name, height] of [
-      ['default', 28],
-      ['sm', 22],
-    ] as const) {
+    const column = canvasElement.querySelector('div')?.getBoundingClientRect()
+    if (!column) throw new Error('no column')
+    const labels = {
+      string: ['Remove every conversation from this project', 28],
+      'icon and string': ['Install to every agent on this machine', 22],
+      element: ['Rename every project on this side', 28],
+      'value in text': ['3 conversations to remove from this project', 28],
+    } as const
+    for (const [name, [label, height]] of Object.entries(labels)) {
       const element = button(canvasElement, name)
-      const label = element.querySelector('span')
-      if (!label) throw new Error(`no label in ${name}`)
-      const style = getComputedStyle(label)
-      await expect({ name, whiteSpace: style.whiteSpace, textOverflow: style.textOverflow }).toEqual({
-        name,
-        whiteSpace: 'nowrap',
-        textOverflow: 'ellipsis',
+      const rect = element.getBoundingClientRect()
+      // The element that cuts the label holds the whole of it, and cuts it with an ellipsis
+      const cut = [element, ...element.querySelectorAll('*')].filter((node) => {
+        const style = getComputedStyle(node)
+        return style.textOverflow === 'ellipsis' && style.overflowX === 'hidden' && node.scrollWidth > node.clientWidth
       })
-      await expect(label.scrollWidth).toBeGreaterThan(label.clientWidth)
-      await expect(element.getBoundingClientRect().height).toBe(height)
-      await expect(element.getBoundingClientRect().right).toBeLessThanOrEqual(
-        canvasElement.querySelector('div')?.getBoundingClientRect().right ?? 0,
-      )
+      await expect({ name, cutLabels: cut.map((node) => node.textContent), height: rect.height }).toEqual({
+        name,
+        cutLabels: [label],
+        height,
+      })
+      await expect(rect.right).toBeLessThanOrEqual(column.right)
     }
   },
 }

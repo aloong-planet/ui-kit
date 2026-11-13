@@ -7,19 +7,19 @@
 // - Every token declaration is a listed general token in one of those blocks, or `--radius` in `:root`, so a misspelt
 //   or misplaced one, which would leave the real token on its purple value, is reported.
 // - theming::REQ-010/AC-06: `scrollbar-width` and `scrollbar-color` appear only inside the Firefox-only block.
-// The component source, every file under src/components (its class names, the other strings it writes, its imports
-// and the object literals it passes as styles):
-// - components::CON-004: no colour literal (a hex colour, a colour function, a colour of Tailwind's palette, an
-//   arbitrary colour value, a general token with an opacity modifier, a colour property written as a style), and no
-//   branch on the theme or on light/dark (the `dark:` variant, `data-theme`, `prefers-color-scheme`, the theming
-//   modules).
-// - components::REQ-001/AC-04: no colour transition (`transition`, `transition-all`, `transition-colors`,
-//   `transition-shadow`, a colour property or `all` in an arbitrary or a style transition).
+// The component source, every file under src/components: each class in it is judged by the CSS Tailwind compiles it
+// to with this stylesheet, so it is caught whatever form it is written in; the strings it writes, its imports, its
+// style objects and the colour attributes of its elements are read too.
+// - components::CON-004: no colour literal, no colour of Tailwind's own theme, no named colour or general token
+//   changed by a modifier, and no branch on the theme or on light/dark (a selector or condition on `.dark`,
+//   `data-theme` or `prefers-color-scheme`, the class `dark` or `dataset.theme` in script, the theming modules).
+// - components::REQ-001/AC-04: no transition of a colour property or of `all`.
 // - theming::REQ-008/AC-01: font families, font sizes and radii only from the scale theme.css defines.
 import { readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parse, type AtRule, type Node, type Rule } from 'postcss'
+import { __unstable__loadDesignSystem } from 'tailwindcss'
 import ts from 'typescript'
 
 // The general tokens: the rows of the token table in docs/specs/theming.md (theming::REQ-004)
@@ -129,104 +129,77 @@ sheet.walkDecls(/^scrollbar-(width|color)$/, (decl) => {
 
 // ---- The component source ----
 
-const colourPrefix =
-  /^(bg|text|border(?:-[xytrblse])?|outline|ring|ring-offset|inset-ring|decoration|divide|fill|stroke|accent|caret|shadow|inset-shadow|drop-shadow|placeholder|from|via|to)-(.+)$/
-const palette =
-  /^(?:(?:red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|zinc|neutral|stone|mauve|olive|mist|taupe)-\d{2,3}|black|white)$/
-const tailwindTextSizes = new Set(['xs', 'sm', 'base', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl', '8xl', '9xl'])
-const fontWeights = new Set(['thin', 'extralight', 'light', 'normal', 'medium', 'semibold', 'bold', 'extrabold', 'black'])
-const tailwindFonts = new Set(['sans', 'serif', 'mono'])
-const radiusSide = '(?:-(?:t|r|b|l|s|e|tl|tr|br|bl|ss|se|es|ee))?'
-const radiusUtility = new RegExp(`^rounded${radiusSide}(?:-(.+))?$`)
-const colourProperty =
-  /\b(all|color|background(-color)?|border(-[a-z]+)?-color|border|outline(-color)?|text-decoration(-color)?|fill|stroke|caret-color|accent-color|box-shadow|shadow)\b/
-const colourTransitions = new Set(['transition', 'transition-all', 'transition-colors', 'transition-shadow'])
-const colourLiteral = /#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{3,4})\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color|color-mix|light-dark)\(/i
-const themeBranchString = /data-theme|prefers-color-scheme/
-const themingModule = /(^|\/)(theming|apply-theme|theme-provider)$/
-const styleScaleProperties = /^(fontSize|font-size|fontFamily|font-family|font|borderRadius|border(-[a-z]+)?-radius|border[A-Z][a-zA-Z]*Radius)$/
-const styleTransitionProperties = /^(transition|transitionProperty|transition-property)$/
-const styleColourProperties =
-  /^(color|background|backgroundColor|background-color|border(-[a-z]+)?-color|border[A-Z][a-zA-Z]*Color|borderColor|outline|outlineColor|outline-color|fill|stroke|boxShadow|box-shadow|textDecorationColor|text-decoration-color|caretColor|caret-color|accentColor|accent-color)$/
+// Tailwind's design system with the kit's stylesheet, as a consumer compiles it. A class of the component source is
+// judged by the CSS Tailwind turns it into, so it is caught whatever form it is written in: a utility, an arbitrary
+// value or property, any variant.
+const tailwindDir = join(dirname(fileURLToPath(import.meta.resolve('tailwindcss'))), '..')
+const designSystem = await __unstable__loadDesignSystem(
+  `${readFileSync(join(tailwindDir, 'index.css'), 'utf8')}\n${readFileSync(file, 'utf8')}`,
+  { base: tailwindDir },
+)
 
-// Splits a class at its top-level colons into its variants and its utility
-function splitClass(name: string): { variants: string[]; utility: string } {
-  const parts: string[] = []
-  let depth = 0
-  let start = 0
-  for (let i = 0; i < name.length; i++) {
-    const c = name[i]
-    if (c === '[' || c === '(') depth++
-    else if (c === ']' || c === ')') depth--
-    else if (c === ':' && depth === 0) {
-      parts.push(name.slice(start, i))
-      start = i + 1
+type Declaration = { prop: string; value: string; context: string[] }
+
+// The declarations of some CSS, each with the selectors and at-rule conditions it sits under; `@property`
+// registrations are Tailwind's own and are left out
+function declarations(css: string): Declaration[] {
+  const found: Declaration[] = []
+  parse(css).walkDecls((decl) => {
+    const context: string[] = []
+    for (let node: Node | undefined = decl.parent; node && node.type !== 'root'; node = node.parent) {
+      if (isAtRule(node) && node.name === 'property') return
+      context.push(isRule(node) ? node.selector : isAtRule(node) ? `@${node.name} ${node.params}` : '')
     }
-  }
-  const utility = name.slice(start).replace(/^!|!$/g, '').replace(/^-/, '')
-  return { variants: parts, utility }
-}
-
-// Splits a utility's value at a top-level slash into the value and its modifier
-function splitModifier(value: string): { base: string; modifier?: string } {
-  let depth = 0
-  for (let i = 0; i < value.length; i++) {
-    const c = value[i]
-    if (c === '[' || c === '(') depth++
-    else if (c === ']' || c === ')') depth--
-    else if (c === '/' && depth === 0) return { base: value.slice(0, i), modifier: value.slice(i + 1) }
-  }
-  return { base: value }
-}
-
-const isArbitrary = (value: string) => value.startsWith('[') || value.startsWith('(')
-const isLength = (value: string) => /^[[(](length:)?-?\d+(\.\d+)?(px|rem|em)?[\])]$/.test(value)
-
-// What is wrong with one class of the component source, if anything
-function classProblems(name: string): string[] {
-  const found: string[] = []
-  const { variants, utility } = splitClass(name)
-  if (variants.some((variant) => variant === 'dark' || /\.dark\b|theme/.test(variant)))
-    found.push(`\`${name}\` branches on the theme or on light/dark`)
-
-  if (colourTransitions.has(utility)) found.push(`\`${name}\` transitions colours`)
-  const transition = /^transition-([[(].*)$/.exec(utility)
-  if (transition && colourProperty.test(transition[1])) found.push(`\`${name}\` transitions colours`)
-
-  const radius = radiusUtility.exec(utility)
-  if (radius) {
-    const step = radius[1]
-    if (step === undefined || !(themeNames.radius.has(step) || step === 'none' || step === 'full'))
-      found.push(`\`${name}\` is a radius off the scale (${[...themeNames.radius].join(', ')}, none, full)`)
-  }
-
-  const font = /^font-(.+)$/.exec(utility)
-  if (font) {
-    const value = font[1]
-    const weight = /^[[(]\d+[\])]$/.test(value) || fontWeights.has(value)
-    if (!weight && (isArbitrary(value) || (tailwindFonts.has(value) && !themeNames.font.has(value))))
-      found.push(`\`${name}\` is a font family off the scale (${[...themeNames.font].join(', ')})`)
-  }
-
-  const colour = colourPrefix.exec(utility)
-  if (colour) {
-    const [, prefix, value] = colour
-    if (isArbitrary(value)) {
-      if (prefix === 'text' && !colourLiteral.test(value) && !/^[[(](color:|var\()/.test(value))
-        found.push(`\`${name}\` is a font size off the scale (${[...themeNames.text].join(', ')})`)
-      else if (!(isLength(value) && prefix !== 'text' && prefix !== 'bg'))
-        found.push(`\`${name}\` is a colour that is not a general token`)
-    } else {
-      const { base, modifier } = splitModifier(value)
-      if (themeNames.color.has(base)) {
-        if (modifier !== undefined) found.push(`\`${name}\` changes a general token's colour with a modifier`)
-      } else if (palette.test(base)) found.push(`\`${name}\` is a colour of Tailwind's palette, not a general token`)
-      else if (prefix === 'text' && tailwindTextSizes.has(base) && !themeNames.text.has(base))
-        found.push(`\`${name}\` is a font size off the scale (${[...themeNames.text].join(', ')})`)
-    }
-  }
+    found.push({ prop: decl.prop, value: decl.value, context })
+  })
   return found
 }
+
+// The values the scale's own classes compile to, which are the only ones a component may set
+function valuesOf(classes: string[], prop: RegExp): Set<string> {
+  const css = designSystem.candidatesToCss(classes).join('\n')
+  return new Set(declarations(css).filter((decl) => prop.test(decl.prop)).map((decl) => decl.value))
+}
+const fontSizes = valuesOf([...themeNames.text].map((step) => `text-${step}`), /^font-size$/)
+const fontFamilies = valuesOf([...themeNames.font].map((step) => `font-${step}`), /^font-family$/)
+const radii = valuesOf(
+  [...[...themeNames.radius].map((step) => `rounded-${step}`), 'rounded-none', 'rounded-full'],
+  /radius$/,
+)
+const scaleList = (prefix: string, names: Set<string>, extra: string[] = []) =>
+  [...[...names].map((name) => `${prefix}-${name}`), ...extra].join(', ')
+
+const colourLiteral = /#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{3,4})\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color|color-mix|light-dark)\(/i
+const themeBranch = /\.dark\b|data-theme|prefers-color-scheme/
+const colourProperty = /(^|-)colou?r$|^(fill|stroke|background)$/
+const colourKeyword = /^(transparent|currentcolor|inherit|initial|unset|revert|none)$/i
+const colourTransition =
+  /\b(all|color|background(-color)?|border(-[a-z]+)*-color|outline-color|text-decoration-color|fill|stroke|caret-color|accent-color|box-shadow|text-shadow|column-rule-color|scrollbar-color)\b|--tw-gradient/
+const themingModule = /(^|\/)(theming|apply-theme|theme-provider)$/
+
+// What is wrong with one declaration a component sets, if anything
+function declarationProblems({ prop, value, context }: Declaration): string[] {
+  const found: string[] = []
+  if (context.some((condition) => themeBranch.test(condition))) found.push('branches on the theme or on light/dark')
+  if (colourLiteral.test(value)) found.push(`sets ${prop} to a colour literal, ${value}`)
+  for (const [, name] of value.matchAll(/var\(--color-([a-z0-9-]+)/g))
+    if (!themeNames.color.has(name)) found.push(`sets ${prop} to --color-${name}, a colour of Tailwind's theme`)
+  if (colourProperty.test(prop) && !/^var\(/.test(value) && !colourKeyword.test(value) && !colourLiteral.test(value))
+    found.push(`sets ${prop} to ${value}, which is not a general token`)
+  if (prop === 'font-size' && !fontSizes.has(value))
+    found.push(`sets a font size off the scale (${scaleList('text', themeNames.text)})`)
+  if ((prop === 'font-family' && !fontFamilies.has(value)) || prop === 'font')
+    found.push(`sets a font family off the scale (${scaleList('font', themeNames.font)})`)
+  if (/radius$/.test(prop) && !radii.has(value))
+    found.push(`sets a radius off the scale (${scaleList('rounded', themeNames.radius, ['rounded-none', 'rounded-full'])})`)
+  if ((prop === 'transition-property' || prop === 'transition') && colourTransition.test(value))
+    found.push(`transitions colours (${value})`)
+  return found
+}
+
+const kebab = (name: string) => name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
+const literalText = (node: ts.Expression | undefined): string | undefined =>
+  node && (ts.isStringLiteralLike(node) || ts.isNumericLiteral(node)) ? node.text : undefined
 
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -245,18 +218,30 @@ for (const path of componentFiles) {
   const report = (node: ts.Node, problem: string) => problems.push(`${where(node)}: ${problem}`)
 
   const visit = (node: ts.Node) => {
+    // An import of the theming modules, whose only use in a component would be to branch on the theme
     if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) && node.moduleSpecifier) {
       const specifier = (node.moduleSpecifier as ts.StringLiteral).text
       if (themingModule.test(specifier)) report(node, `imports ${specifier}, a branch on the theme or on light/dark`)
       return
     }
+    // A string: a colour literal, a branch on the theme or on light/dark in script (`data-theme`, the media query,
+    // the class `dark`), and each class in it, by the CSS Tailwind compiles it to
     if (ts.isStringLiteralLike(node) || ts.isTemplateHead(node) || ts.isTemplateMiddle(node) || ts.isTemplateTail(node)) {
       const text = node.text
+      const words = text.split(/\s+/).filter(Boolean)
       if (colourLiteral.test(text)) report(node, `"${text}" writes a colour literal`)
-      if (themeBranchString.test(text)) report(node, `"${text}" branches on the theme or on light/dark`)
-      for (const name of text.split(/\s+/).filter(Boolean)) for (const problem of classProblems(name)) report(node, problem)
+      if (/data-theme|prefers-color-scheme/.test(text) || words.includes('dark'))
+        report(node, `"${text}" branches on the theme or on light/dark`)
+      const compiled = designSystem.candidatesToCss(words)
+      words.forEach((word, i) => {
+        const css = compiled[i]
+        if (css) for (const decl of declarations(css)) for (const problem of declarationProblems(decl)) report(node, `\`${word}\` ${problem}`)
+      })
     }
-    // A property of a style object: an object given to a `style` attribute or under a `style` key
+    // `dataset.theme` read in script
+    if (ts.isPropertyAccessExpression(node) && node.name.text === 'theme' && /\bdataset$/.test(node.expression.getText(source)))
+      report(node, 'reads dataset.theme, a branch on the theme')
+    // A style object: an object given to a `style` attribute or under a `style` key
     const styleObject =
       node.parent &&
       ts.isObjectLiteralExpression(node.parent) &&
@@ -265,13 +250,27 @@ for (const path of componentFiles) {
         node.parent.parent.parent.name.getText(source) === 'style') ||
         (ts.isPropertyAssignment(node.parent.parent) && node.parent.parent.name.getText(source) === 'style'))
     if (styleObject && ts.isPropertyAssignment(node) && (ts.isIdentifier(node.name) || ts.isStringLiteral(node.name))) {
-      const key = node.name.text
-      const value = ts.isStringLiteralLike(node.initializer) ? node.initializer.text : undefined
-      if (styleScaleProperties.test(key)) report(node, `the style \`${key}\` sets a font or a radius off the scale`)
-      if (styleTransitionProperties.test(key) && (value === undefined || colourProperty.test(value)))
-        report(node, `the style \`${key}\` may transition colours`)
-      if (styleColourProperties.test(key) && !(value !== undefined && /^var\(--[a-z-]+\)$/.test(value)))
-        report(node, `the style \`${key}\` writes a colour that is not a general token`)
+      const prop = kebab(node.name.text)
+      const value = literalText(node.initializer)
+      if (value === undefined) {
+        if (/^(font-size|font-family|font|transition|transition-property)$|radius$/.test(prop) || colourProperty.test(prop))
+          report(node, `the style \`${node.name.text}\` takes a value that cannot be checked against the tokens and the scale`)
+      } else
+        for (const problem of declarationProblems({ prop, value, context: [] }))
+          report(node, `the style \`${node.name.text}\` ${problem}`)
+    }
+    // A colour written as an attribute of an element (`fill`, `stroke`, `color`, `stopColor` …)
+    if (ts.isJsxAttribute(node) && node.initializer) {
+      const prop = kebab(node.name.getText(source))
+      const initializer = node.initializer
+      const value = ts.isStringLiteral(initializer)
+        ? initializer.text
+        : ts.isJsxExpression(initializer)
+          ? literalText(initializer.expression)
+          : undefined
+      if (value !== undefined && colourProperty.test(prop))
+        for (const problem of declarationProblems({ prop, value, context: [] }))
+          report(node, `the attribute \`${node.name.getText(source)}\` ${problem}`)
     }
     ts.forEachChild(node, visit)
   }
@@ -288,6 +287,6 @@ console.log(
 )
 console.log(
   `src/components: ${componentFiles.length} file(s) use only general tokens and the scale ` +
-    `(text-${[...themeNames.text].join('/')}, rounded-${[...themeNames.radius].join('/')}, ` +
-    `font-${[...themeNames.font].join('/')}), with no colour transition and no theme branch`,
+    `(${scaleList('text', themeNames.text)}; ${scaleList('rounded', themeNames.radius)}; ` +
+    `${scaleList('font', themeNames.font)}), with no colour transition and no branch on the theme or light/dark`,
 )

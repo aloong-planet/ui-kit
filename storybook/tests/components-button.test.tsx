@@ -8,6 +8,7 @@ import { afterEach, expect, test } from 'vitest'
 import { userEvent } from 'vitest/browser'
 import preview from '../.storybook/preview'
 import * as stories from '../stories/components-button.stories'
+import { button } from '../stories/support/button'
 import { computed } from '../stories/support/computed'
 
 const { Variants, Disabled } = composeStories(stories, preview)
@@ -28,12 +29,6 @@ afterEach(() => {
   mounted?.container.remove()
   mounted = undefined
 })
-
-function button(canvas: HTMLElement, name: string): HTMLButtonElement {
-  const element = canvas.querySelector<HTMLButtonElement>(`[data-button="${name}"]`)
-  if (!element) throw new Error(`no button ${name}`)
-  return element
-}
 
 // The colours a button shows; the border's and the underline's only where it has them (`link` has no border and is
 // the only one underlined)

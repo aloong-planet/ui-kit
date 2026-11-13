@@ -1,15 +1,15 @@
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva } from "class-variance-authority"
 import { cn } from "cn"
-import { Children, type ReactNode } from "react"
+import type { ReactNode } from "react"
 
 // components::REQ-002, restyled from shadcn/ui's Mira button to the kit's look and scale (components::CON-003).
-// Shared by every variant: the label stays on one line and is cut with an ellipsis (components::REQ-001/AC-05),
-// keyboard focus shows a 2px `--ring` outline 2px outside the button while pointer focus shows none
-// (components::REQ-001/AC-01), and a disabled button is muted and ignores the pointer (components::REQ-001/AC-02).
-// No colour changes with a transition, so a theme switch recolours the button at once (components::REQ-001/AC-04).
+// Shared by every variant: keyboard focus shows a 2px `--ring` outline 2px outside the button while pointer focus shows
+// none (components::REQ-001/AC-01), a disabled button is muted and lets the pointer through, so it shows no hover and
+// takes no click (components::REQ-001/AC-02), and no colour changes with a transition, so a theme switch recolours the
+// button at once (components::REQ-001/AC-04).
 const buttonVariants = cva(
-  "inline-flex max-w-full min-w-0 shrink-0 cursor-pointer items-center justify-center gap-1.25 border whitespace-nowrap outline-none select-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  "max-w-full min-w-0 cursor-pointer border whitespace-nowrap outline-none select-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none",
   {
     variants: {
       variant: {
@@ -27,17 +27,30 @@ const buttonVariants = cva(
         "icon-sm": "",
       },
     },
-    // A size sets the box, so it applies to every variant but `link`
+    // A size sets the box, so it applies to every variant but `link`. A text button is a line of inline content that
+    // its box cuts with an ellipsis, whatever shape the label is passed in (components::REQ-001/AC-05); the line height
+    // fills the box inside its border, which centres the label, and an icon before the label sits on its middle. An
+    // icon-only button is a fixed square with its icon centred.
     compoundVariants: [
       {
         variant: ["default", "primary", "danger", "ghost"],
+        size: ["default", "sm"],
+        class: "inline-block truncate text-center align-middle [&>svg]:inline-block [&>svg]:align-middle",
+      },
+      {
+        variant: ["default", "primary", "danger", "ghost"],
         size: "default",
-        class: "h-7 rounded-md px-3.5 text-sm [&_svg:not([class*='size-'])]:size-3.5",
+        class: "h-7 rounded-md px-3.5 text-sm leading-6.5 [&>svg]:me-1.25 [&_svg:not([class*='size-'])]:size-3.5",
       },
       {
         variant: ["default", "primary", "danger", "ghost"],
         size: "sm",
-        class: "h-5.5 rounded-md px-2.5 text-xs [&_svg:not([class*='size-'])]:size-3",
+        class: "h-5.5 rounded-md px-2.5 text-xs leading-5 [&>svg]:me-1 [&_svg:not([class*='size-'])]:size-3",
+      },
+      {
+        variant: ["default", "primary", "danger", "ghost"],
+        size: ["icon", "icon-sm"],
+        class: "inline-grid shrink-0 place-items-center",
       },
       {
         variant: ["default", "primary", "danger", "ghost"],
@@ -77,7 +90,6 @@ type IconButtonProps = BaseProps & {
 
 export type ButtonProps = TextButtonProps | IconButtonProps
 
-const labelClass = "min-w-0 truncate"
 const iconClass = "inline-flex"
 
 function Button({ className, variant = "default", size = "default", children, ...props }: ButtonProps) {
@@ -90,14 +102,7 @@ function Button({ className, variant = "default", size = "default", children, ..
           {children}
         </span>
       ) : (
-        // A text child goes into a span of its own: the text of a flex container cannot be cut with an ellipsis
-        Children.map(children, (child) =>
-          typeof child === "string" || typeof child === "number" ? (
-            <span className={labelClass}>{child}</span>
-          ) : (
-            child
-          )
-        )
+        children
       )}
     </ButtonPrimitive>
   )
