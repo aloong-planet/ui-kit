@@ -27,6 +27,7 @@
     "react-dom": "^19.0.0"
   },
   "dependencies": {
+    "cn": "^0.5.2",
     "lucide-react": "^1.72.0"
   },
   "devDependencies": {
