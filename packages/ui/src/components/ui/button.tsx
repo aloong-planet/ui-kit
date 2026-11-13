@@ -7,7 +7,8 @@ import type { ReactNode } from "react"
 // Shared by every variant: keyboard focus shows a 2px `--ring` outline 2px outside the button while pointer focus shows
 // none (components::REQ-001/AC-01), a disabled button is muted and lets the pointer through, so it shows no hover and
 // takes no click (components::REQ-001/AC-02), and no colour changes with a transition, so a theme switch recolours the
-// button at once (components::REQ-001/AC-04).
+// button at once (components::REQ-001/AC-04). Focus sets `outline-solid` besides `outline-2`: `outline-none` leaves
+// the outline style variable that `outline-2` reads at `none`, and the outline would not show.
 const buttonVariants = cva(
   "max-w-full min-w-0 cursor-pointer border whitespace-nowrap outline-none select-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none",
   {

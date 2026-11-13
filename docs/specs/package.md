@@ -26,8 +26,7 @@ The package exposes these entry points, and no others:
 | `@aloong-planet/ui/apply-theme` | The synchronous theme apply function ([theming](theming.md) `theming::REQ-007`) |
 | `@aloong-planet/ui/theme.css` | The theme stylesheet: the general tokens for every theme and light/dark, their Tailwind theme mapping, the type and radius scale, and the scrollbars |
 
-> Pending: `@aloong-planet/ui` provides the ThemeProvider but no component yet, and
-> `@aloong-planet/ui/theme.css` does not yet hold the type and radius scale.
+> Pending: of the components, `@aloong-planet/ui` provides only the Button yet.
 
 - package::REQ-001/AC-01: Each entry point in the table resolves when imported from a consumer project.
 - package::REQ-001/AC-02: A bundle that imports only `@aloong-planet/ui/apply-theme` contains no React

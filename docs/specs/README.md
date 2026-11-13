@@ -14,5 +14,5 @@ that spec's file.
 | Spec | In one line |
 |---|---|
 | [Package](package.md) | How apps consume the kit: the npm package, its entry points, React 19, and Tailwind CSS v4 in the consumer |
-| [Theming](theming.md) | The three themes in light and dark, their tokens, how the theme and mode reach the document root, and the scrollbars |
+| [Theming](theming.md) | The three themes in light and dark, their tokens, how the theme and mode reach the document root, the type and radius scale, and the scrollbars |
 | [Components](components.md) | The twelve first-release components, each in one standard form, their variants and states, and Storybook |
