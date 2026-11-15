@@ -63,8 +63,9 @@ documentation (secondary sources add Firefox 128, which that documentation was n
 
 ### package::CON-004 Icons come from lucide-react (direct acceptance)
 
-Applies to: every icon inside a kit component. Icons are taken from the `lucide-react` package, which is a
-dependency of the kit, so a consumer does not install it itself.
+Applies to: every icon a kit component draws itself. Icons are taken from the `lucide-react` package, which is a
+dependency of the kit, so a consumer does not install it for those icons. An icon the caller passes into a component,
+such as into a button, comes from the caller's own dependencies.
 
 ## Failure modes and boundaries
 
