@@ -1,6 +1,7 @@
 import { Input as InputPrimitive } from "@base-ui/react/input"
 import { cn } from "cn"
 import { Search } from "lucide-react"
+import type { AccessibleNameProps } from "../../lib/props"
 
 // components::REQ-003, restyled from shadcn/ui's Mira input-group, its inline-start addon and its input to the kit's
 // look and scale (components::CON-003). The field is 28px tall, as tall as a `default` button, with a `--card` ground
@@ -27,8 +28,7 @@ type BaseProps = Omit<
 // components::CON-001: a search box writes no text of its own. Its placeholder and its accessible name, an
 // `aria-label` or an `aria-labelledby` pointing at a label on the page, are required, so a missing one fails the type
 // check.
-export type SearchBoxProps = BaseProps &
-  ({ "aria-label": string; "aria-labelledby"?: string } | { "aria-label"?: string; "aria-labelledby": string })
+export type SearchBoxProps = BaseProps & AccessibleNameProps
 
 const fieldType = "text"
 const fieldRole = "searchbox"

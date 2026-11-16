@@ -2,6 +2,7 @@ import { Tabs as TabsPrimitive } from "@base-ui/react/tabs"
 import { cva } from "class-variance-authority"
 import { cn } from "cn"
 import { useState, type ReactNode } from "react"
+import type { AccessibleNameProps, SelectedValueProps } from "../../lib/props"
 
 // components::REQ-013, restyled from shadcn/ui's Mira tabs to the kit's look and scale (components::CON-003), and taking
 // its tabs as data, as the segmented control takes its options: a row of tabs over their panels, each tab carrying its
@@ -84,14 +85,11 @@ type BaseProps<V extends string> = Omit<
 }
 
 // components::REQ-013/AC-05: tabs always have a selected tab, so they take `value` or `defaultValue`, one of their
-// tabs, and fail the type check without either
-type ValueProps<V extends string> = { value: NoInfer<V>; defaultValue?: never } | { value?: never; defaultValue: NoInfer<V> }
-
+// tabs, and fail the type check without either.
+//
 // components::CON-001: tabs write no text of their own. The tab row's accessible name, an `aria-label` or an
 // `aria-labelledby` pointing at a label on the page, is required, so a missing one fails the type check.
-type NameProps = { "aria-label": string; "aria-labelledby"?: string } | { "aria-label"?: string; "aria-labelledby": string }
-
-export type TabsProps<V extends string = string> = BaseProps<V> & ValueProps<V> & NameProps
+export type TabsProps<V extends string = string> = BaseProps<V> & SelectedValueProps<V> & AccessibleNameProps
 
 function Tabs<V extends string>({
   className,
