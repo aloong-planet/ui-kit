@@ -78,7 +78,7 @@ export const Error: Story = {
 }
 
 // components::REQ-011/AC-04: three toasts at the bottom centre of the window, the lowest 18px above its bottom edge,
-// 8px apart, the newest at the bottom
+// 8px apart, the newest at the bottom, each drawn in front of the older ones above it, so that its shadow falls on them
 export const Stack: Story = {
   render: () => (
     <App
@@ -98,11 +98,13 @@ export const Stack: Story = {
       bottom: px(window.innerHeight - boxes[2].bottom),
       centres: boxes.map((box) => px(box.left + box.width / 2 - document.documentElement.clientWidth / 2)),
       gaps: [px(boxes[1].top - boxes[0].bottom), px(boxes[2].top - boxes[1].bottom)],
+      inFront: shown.map((element) => Number(getComputedStyle(element).zIndex)).every((z, i, all) => i === 0 || z > all[i - 1]),
     }).toEqual({
       texts: ['Saved the first file', 'Could not save the second file', 'Saved the third file'],
       bottom: 18,
       centres: [0, 0, 0],
       gaps: [8, 8],
+      inFront: true,
     })
   },
 }

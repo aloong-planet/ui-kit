@@ -79,7 +79,8 @@ function newestInView(column: HTMLElement, toasts: Set<Element>): { element: Ele
 // lets the older toasts above it move down into its place, as in a column that fits the window: the newest toast in
 // view is then one below it, or it is one the browser has scrolled 18px inside the column as it took the focus on a
 // press, with the next newer one in view below it. Scrolled to the newest, the column stays there, and shows the toast
-// that arrives.
+// that arrives. Each toast is drawn in front of the older ones above it, so that its shadow falls on them and theirs
+// not on it, although it comes before them in the page.
 function Column({ label }: { label: string }) {
   const { toasts } = ToastPrimitive.useToastManager()
   const column = useRef<HTMLDivElement>(null)
@@ -106,9 +107,10 @@ function Column({ label }: { label: string }) {
 
   return (
     <ToastPrimitive.Viewport ref={column} aria-label={label} className={viewportClass}>
-      {toasts.map((item) => (
+      {toasts.map((item, index) => (
         <ToastPrimitive.Root
           key={item.id}
+          style={{ zIndex: toasts.length - index }}
           ref={(element: HTMLDivElement | null) => {
             if (!element) return undefined
             elements.current.add(element)
