@@ -375,7 +375,7 @@ specs; see `AGENTS.md`).
 - **The confirm dialog ignores clicks on the scrim.** A confirm dialog is closed by a choice, so a stray
   click beside it cannot dismiss the question. Rejected: cancelling on a scrim click.
 - **Starting from the Mira style.** It is shadcn/ui's style for dense interfaces and the closest to the kit's
-  scale (its default button is 28px tall with 12px text, against the kit's controls of about 28–30px with
+  scale (its default button is 28px tall with 12px text, against the kit's `default` controls, 28px tall with
   12.5px text). Rejected: Nova (32px, 14px text) and Vega (36px, 14px text), both further from it.
 - **The toast is shadcn/ui's `toast`, on Base UI.** Rejected: shadcn/ui's `sonner`, which depends on
   `next-themes` and would compete with the kit's ThemeProvider for the root element.
