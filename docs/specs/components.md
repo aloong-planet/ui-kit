@@ -402,6 +402,9 @@ Applies to: every consumer. A document has at most one Toaster, since every Toas
   text.
 - **A select, a segmented control or tabs without a selected value**: the type check fails; none has a state without
   a selection (components::REQ-004/AC-09, components::REQ-005/AC-06, components::REQ-013/AC-05).
+- **A select, a segmented control or tabs whose option values are typed only as `string`**, such as options built from
+  data fetched at run time: the type check lets any string through as the selected value, and rejects only a value the
+  options' types rule out (components::REQ-004/AC-09, components::REQ-005/AC-06, components::REQ-013/AC-05).
 - **Something interactive inside a `selectable` card**, such as a button in its action: not supported. The card is a
   button itself, and a control inside a button cannot be used reliably by pointer, keyboard or screen reader; a card
   that needs an action of its own is a `default` card.
