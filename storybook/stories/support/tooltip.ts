@@ -1,7 +1,7 @@
 // The open Tooltip that the Tooltip's stories and tests read. Base UI renders it in a portal at the end of the page, as
 // a popup inside a positioner, so it is looked up in the document rather than in the story's canvas.
 
-const frame = () => new Promise((resolve) => requestAnimationFrame(resolve))
+import { frame } from './frames'
 
 function openPopups(): HTMLElement[] {
   return [...document.querySelectorAll<HTMLElement>('[data-base-ui-portal] > [role="presentation"] > [data-open]')]

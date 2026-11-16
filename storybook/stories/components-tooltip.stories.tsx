@@ -9,9 +9,8 @@ import { RefreshCw } from 'lucide-react'
 import { expect, userEvent, waitFor } from 'storybook/test'
 import { computed } from './support/computed'
 import { castShadows, positionerAncestorsWith } from './support/floating'
+import { frame } from './support/frames'
 import { isOpen, tooltip } from './support/tooltip'
-
-const frame = () => new Promise((resolve) => requestAnimationFrame(resolve))
 
 const meta = {
   title: 'Components/Tooltip',
@@ -202,7 +201,8 @@ export const KeyboardFocus: Story = {
   },
 }
 
-// components::REQ-014/AC-01 and AC-02: a tooltip above an area that scrolls, on a page that scrolls, for the tests
+// components::REQ-014/AC-01 and AC-02: a tooltip above an area that scrolls, and one at the end of that area's content,
+// on a page that scrolls, for the tests
 export const InScrollingArea: Story = {
   render: () => (
     <div className="flex flex-col gap-3">
@@ -212,6 +212,9 @@ export const InScrollingArea: Story = {
       </div>
       <div data-area className="h-[40vh] overflow-y-auto border border-dashed border-border-strong p-2">
         <p className="h-[1600px] text-muted-foreground">An area that scrolls</p>
+        <Tooltip text="Open the last file">
+          <Button>In the area</Button>
+        </Tooltip>
       </div>
       <div className="h-[150vh]" />
     </div>
