@@ -248,6 +248,8 @@ appear in. A toast takes keyboard focus, so it shows the keyboard focus ring of 
 - components::REQ-011/AC-07: A toast can be swiped away, down or to the right, with the pointer.
 - components::REQ-011/AC-08: Every toast raised stays in the column until it disappears: however many are raised,
   none is hidden to make room for another.
+- components::REQ-011/AC-09: A toast raised while no Toaster is mounted is held, and appears when a Toaster mounts;
+  it disappears 3200ms after it appears (components::REQ-011/AC-01).
 
 ### components::REQ-012 Skeleton
 
@@ -351,6 +353,9 @@ Applies to: every consumer. A document has at most one Toaster, since every Toas
 - **A `link` button given a size**: the type check fails (components::REQ-002/AC-04).
 - **A select whose options do not fit the window**: the popup scrolls inside its own height
   (components::REQ-004/AC-02).
+- **A toast raised before any Toaster is mounted** — at startup, or by code that runs before React has rendered the
+  Toaster: it is held and appears when a Toaster mounts (components::REQ-011/AC-09). If no Toaster ever mounts, the
+  toasts held are never shown, and nothing reports it.
 
 ## Implementation Decisions
 
@@ -401,6 +406,9 @@ specs; see `AGENTS.md`).
   variant; Base UI's toasts need a provider and a region in the app's React tree. Rejected: shadcn/ui's Toaster that
   wraps the app's tree, which makes the app restructure its root; and the kit mounting a React root of its own on the
   first toast, beside the app's, which would still need a setup call for the region's label.
+- **A toast raised before a Toaster mounts is held until one does** (components::REQ-011/AC-09). Raising a toast
+  before React has rendered the Toaster is an ordinary path in an app, at startup or from module code. Rejected:
+  Base UI's dropping it, which loses the message with nothing to report it.
 - **A toast can be swiped away.** The owner's choice: with no close button, a swipe is the only way to clear a toast
   early, and it is Base UI's. Rejected: toasts that leave only on their timer.
 - **No cap on the toasts shown.** The owner's choice: every toast's message stays readable for its 3200ms. Rejected:
