@@ -5,19 +5,19 @@ React components and themes built on shadcn/ui (Base UI), styled by your app's o
 The kit is one npm package, `@aloong-planet/ui`, which carries the components and the theme stylesheet; an app
 installs it and compiles the styles with its own Tailwind CSS v4. It provides twelve components (button, search box,
 select, segmented control, card, badge, tooltip, drawer, confirm dialog, toast, skeleton and tabs) and three themes
-(purple, blue and amber), each in light and dark. It requires React 19 and belongs to no app in particular.
+(purple, blue and amber), each in light and dark. It requires React 19.
 
 How to set up and use the package in an app is in the package's own readme,
 [`packages/ui/README.md`](packages/ui/README.md).
 
 ## Layout
 
-This repository is a pnpm workspace with two packages:
+This repository is a pnpm workspace. Besides its private root, it has two packages:
 
 | Directory | Contents |
 |---|---|
 | `packages/ui` | The package `@aloong-planet/ui`: the components, the ThemeProvider, the apply function, the theme stylesheet, and the package's own tests |
-| `storybook` | Storybook, which uses the package exactly as an app does: a story for every component and theme, and the browser tests that drive them. It is private and never published |
+| `storybook` | Storybook, which uses the package exactly as an app does: stories for every component and for the theming, and the browser tests that drive them. It is private and never published |
 
 ## Development
 
@@ -38,7 +38,8 @@ pnpm --filter @aloong-planet/ui-storybook exec playwright install chromium
 | `pnpm test` | Runs both packages' tests with Vitest, in Node and in headless Chromium; every story runs as a test |
 | `pnpm --filter @aloong-planet/ui-storybook build-storybook` | Builds a static Storybook into `storybook/storybook-static` |
 
-CI runs `pnpm build`, `pnpm typecheck`, `pnpm lint`, `pnpm check:tokens` and `pnpm test`, in that order, on Node 26.
+CI's Kit checks job runs `pnpm build`, `pnpm typecheck`, `pnpm lint`, `pnpm check:tokens` and `pnpm test`, in that
+order, on Node 26.
 
 ## Specs
 
