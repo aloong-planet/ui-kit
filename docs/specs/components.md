@@ -235,6 +235,7 @@ with the newest at the bottom. Any code in the app can raise one, of a variant a
 through one Toaster (components::CON-005), which carries the label screen readers announce for the region the toasts
 appear in. A toast takes keyboard focus, so it shows the keyboard focus ring of components::REQ-001/AC-01. Its text
 is `text-sm`, with `rounded-lg` corners and 10px of padding above and below and 16px beside, and wraps within 440px.
+Each toast is drawn in front of the older ones above it, so its shadow falls on them and theirs not on it.
 
 | Variant | Look |
 |---|---|

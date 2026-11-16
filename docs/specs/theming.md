@@ -71,7 +71,7 @@ an existing token.
 | `--card` | Cards, the search box and the pill tabs |
 | `--card-foreground` | Text on cards |
 | `--popover` | Floating surfaces: select popups, drawers, dialogs |
-| `--popover-foreground` | Text on floating surfaces |
+| `--popover-foreground` | Text on select popups, drawers and dialogs |
 | `--primary` | The brand colour: selected text, the primary button's fill |
 | `--primary-foreground` | Text and icons on a `--primary` fill |
 | `--primary-strong` | The deeper brand text: the selected option's label, the selected pill tab |
@@ -83,7 +83,7 @@ an existing token.
 | `--destructive` | The danger button's fill |
 | `--destructive-foreground` | Text on it |
 | `--border` | Dividers, card borders, skeleton blocks |
-| `--border-strong` | Borders of controls and floating surfaces |
+| `--border-strong` | Borders of controls, select popups, drawers and dialogs |
 | `--input` | Borders of text fields |
 | `--ring` | The keyboard focus ring and a focused field's border |
 | `--success` / `--success-foreground` | Success toasts and badges |
