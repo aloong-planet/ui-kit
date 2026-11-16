@@ -7,15 +7,19 @@
 // view below it, and toasts leave on their timer oldest first. Measured in Chromium only: the toasts in view are held
 // in place by the kit's own code in every browser, with the browser's scroll anchoring turned off, so Safari, which has
 // none, runs the same code; it has not been run there.
-import { toast } from '@aloong-planet/ui'
+import { Button, ConfirmDialog, Drawer, toast, Toaster } from '@aloong-planet/ui'
 import { composeStories } from '@storybook/react-vite'
+import { useState } from 'react'
 import { afterEach, expect, test, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import preview from '../.storybook/preview'
 import * as stories from '../stories/components-toast.stories'
 import { computed } from '../stories/support/computed'
+import { opened } from '../stories/support/dialog'
+import { inFront } from '../stories/support/floating'
 import { frames } from '../stories/support/frames'
 import { region, shown, toasts } from '../stories/support/toast'
+import { button } from './support/button'
 import { mount, unmount } from './support/mount'
 
 const { Success } = composeStories(stories, preview)
@@ -263,4 +267,63 @@ test('Tab after F6 brings each toast into view as it takes the focus', async () 
     reached.push({ text: element.textContent, whole: px(box.top) >= 18 && px(window.innerHeight - box.bottom) >= 18 })
   }
   expect(reached).toEqual([8, 7, 6, 5, 4, 3, 2, 1].map((index) => ({ text: `Saved file ${index}`, whole: true })))
+})
+
+// An app whose one Toaster mounts with it, and which raises a toast from inside its drawer or its confirm dialog, opened
+// after the Toaster
+function RaisingFrom({ surface }: { surface: 'drawer' | 'confirm dialog' }) {
+  const [open, setOpen] = useState(false)
+  const raise = <Button onClick={() => toast.success('Copied the link')}>Copy the link</Button>
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Open</Button>
+      {surface === 'drawer' ? (
+        <Drawer open={open} onOpenChange={setOpen} title="Release notes" closeLabel="Close">
+          {raise}
+        </Drawer>
+      ) : (
+        <ConfirmDialog
+          open={open}
+          onOpenChange={setOpen}
+          title="Publish the release?"
+          cancelLabel="Cancel"
+          confirmLabel="Publish"
+          onConfirm={() => {}}
+        >
+          {raise}
+        </ConfirmDialog>
+      )}
+      <Toaster aria-label="Messages" />
+    </>
+  )
+}
+
+// components::REQ-001/AC-06: a toast raised from inside an open drawer or confirm dialog stands in front of it, though
+// the Toaster mounted first. In a window 1600px wide the toast stands over the scrim, beside the drawer's panel and
+// below the dialog's box.
+test.each([
+  ['drawer', 'dialog'],
+  ['confirm dialog', 'alertdialog'],
+] as const)('a toast raised from an open %s shows over it', async (surface, role) => {
+  await page.viewport(1600, 800)
+  const canvas = mount(<RaisingFrom surface={surface} />)
+  await userEvent.click(button(canvas, 'Open'))
+  await userEvent.click(button(await opened(role), 'Copy the link'))
+  const [element] = await toasts(1)
+  const box = element.getBoundingClientRect()
+  expect(inFront(element, box.left + box.width / 2, box.top + box.height / 2)).toBe(true)
+})
+
+// components::REQ-001/AC-06: a press on a toast standing over an open drawer's scrim leaves the drawer open, where a
+// press on the scrim closes it (components::REQ-009/AC-01)
+test('a press on a toast over an open drawer leaves the drawer open', async () => {
+  await page.viewport(1600, 800)
+  const canvas = mount(<RaisingFrom surface="drawer" />)
+  await userEvent.click(button(canvas, 'Open'))
+  const panel = await opened('dialog')
+  await userEvent.click(button(panel, 'Copy the link'))
+  const [element] = await toasts(1)
+  await userEvent.click(element)
+  await frames(2)
+  expect(panel.isConnected).toBe(true)
 })

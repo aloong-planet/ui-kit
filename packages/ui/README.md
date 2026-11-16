@@ -80,6 +80,31 @@ toast.error(dict.saveFailed)
   If no Toaster ever mounts, it is never shown.
 - Use one Toaster per document: every Toaster shows every toast raised.
 
+## Drawers and confirm dialogs
+
+Your app holds whether a drawer or a confirm dialog is open, and is told when the user closes it:
+
+```tsx
+import { ConfirmDialog } from '@aloong-planet/ui'
+
+<ConfirmDialog
+  open={asking}
+  onOpenChange={setAsking}
+  title={dict.deleteFile}
+  cancelLabel={dict.cancel}
+  confirmLabel={dict.delete}
+  destructive
+  onConfirm={() => remove(file)}
+>
+  {dict.deleteFileBody}
+</ConfirmDialog>
+```
+
+- `onConfirm` is called once, before `onOpenChange(false)`.
+- On closing, focus returns to the element that had it when the drawer or dialog opened. When the confirmed action has
+  removed that element, a dialog opened inside an open drawer moves focus into the drawer; anywhere else focus is left
+  on the page, and your app moves it to where the work goes on, such as the next row of a list.
+
 ## Tokens
 
 `theme.css` defines the general colour tokens under shadcn/ui's names (`--background`, `--primary`,

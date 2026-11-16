@@ -11,6 +11,8 @@ export {
   CardTitle,
   type CardProps,
 } from './components/ui/card'
+export { ConfirmDialog, type ConfirmDialogProps } from './components/ui/confirm-dialog'
+export { Drawer, type DrawerProps } from './components/ui/drawer'
 export { SearchBox, type SearchBoxProps } from './components/ui/search-box'
 export { SegmentedControl, type SegmentedControlProps } from './components/ui/segmented-control'
 export { Select, type SelectProps } from './components/ui/select'

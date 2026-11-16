@@ -5,9 +5,24 @@
 // directive then has no error to expect; the unmarked use next to it differs only in keeping the rule, so that the marked one fails for
 // breaking it and not for something else. This file is type-checked by `pnpm typecheck`, never run.
 import { X } from 'lucide-react'
-import { Badge, Button, Card, SearchBox, SegmentedControl, Select, Tabs, toast, Toaster, Tooltip } from '../src'
+import {
+  Badge,
+  Button,
+  Card,
+  ConfirmDialog,
+  Drawer,
+  SearchBox,
+  SegmentedControl,
+  Select,
+  Tabs,
+  toast,
+  Toaster,
+  Tooltip,
+} from '../src'
 
 declare const name: string
+declare const setOpen: (open: boolean) => void
+declare const confirm: () => void
 
 export const badges = [
   // @ts-expect-error a badge needs its text
@@ -150,3 +165,53 @@ export function raiseToasts() {
   toast.error()
   toast.error(name)
 }
+
+// A drawer needs its title, the close button's accessible name and its content
+export const drawers = [
+  // @ts-expect-error a drawer needs its title
+  <Drawer key="no title" open onOpenChange={setOpen} closeLabel={name}>
+    {name}
+  </Drawer>,
+  // @ts-expect-error a drawer needs the close button's accessible name
+  <Drawer key="no close label" open onOpenChange={setOpen} title={name}>
+    {name}
+  </Drawer>,
+  // @ts-expect-error a drawer needs its content
+  <Drawer key="no content" open onOpenChange={setOpen} title={name} closeLabel={name} />,
+  <Drawer key="drawer" open onOpenChange={setOpen} title={name} closeLabel={name}>
+    {name}
+  </Drawer>,
+]
+
+// A confirm dialog needs its title, its body and the labels of its two buttons
+export const confirmDialogs = [
+  // @ts-expect-error a confirm dialog needs its title
+  <ConfirmDialog key="no title" open onOpenChange={setOpen} cancelLabel={name} confirmLabel={name} onConfirm={confirm}>
+    {name}
+  </ConfirmDialog>,
+  // @ts-expect-error a confirm dialog needs its body
+  <ConfirmDialog key="no body" open onOpenChange={setOpen} title={name} cancelLabel={name} confirmLabel={name} onConfirm={confirm} />,
+  // @ts-expect-error a confirm dialog needs its cancel button's label
+  <ConfirmDialog key="no cancel label" open onOpenChange={setOpen} title={name} confirmLabel={name} onConfirm={confirm}>
+    {name}
+  </ConfirmDialog>,
+  // @ts-expect-error a confirm dialog needs its confirming action's label
+  <ConfirmDialog key="no confirm label" open onOpenChange={setOpen} title={name} cancelLabel={name} onConfirm={confirm}>
+    {name}
+  </ConfirmDialog>,
+  <ConfirmDialog key="dialog" open onOpenChange={setOpen} title={name} cancelLabel={name} confirmLabel={name} onConfirm={confirm}>
+    {name}
+  </ConfirmDialog>,
+  <ConfirmDialog
+    key="destructive"
+    open
+    onOpenChange={setOpen}
+    title={name}
+    cancelLabel={name}
+    confirmLabel={name}
+    destructive
+    onConfirm={confirm}
+  >
+    {name}
+  </ConfirmDialog>,
+]

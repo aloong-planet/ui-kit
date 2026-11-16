@@ -28,12 +28,6 @@ there.
 
 ## Functional Requirements
 
-> Pending: of these components only the button, the search box, the select, the segmented control, the tooltip, the
-> toast, the card, the badge, the skeleton and the tabs are built. Each other one's first sizes (padding, heights, font
-> sizes, weights, radii) are taken from the matching element of the Agent Shed app (`aloong-planet/agentshed`, commit
-> `14b6d5b`, `src/renderer/src/theme.css`) and then confirmed by the owner in Storybook (components::CON-002): drawer
-> `.file-drawer`; confirm dialog `.reader.dlg`.
-
 ### components::REQ-001 Shared states
 
 Applies to every interactive component in this spec.
@@ -52,6 +46,9 @@ Applies to every interactive component in this spec.
 - components::REQ-001/AC-05: The labels of buttons, select triggers and options, segments, tabs and badges
   stay on one line and are cut with an ellipsis when the space runs out; the text of toasts, tooltips,
   dialogs and drawers wraps.
+- components::REQ-001/AC-06: The floating surfaces stand in one order, front to back: a tooltip; the toasts; then
+  select popups, drawers and confirm dialogs with their scrims, the one opened last in front. A toast raised while a
+  drawer or a confirm dialog is open shows over it, and a press on the toast leaves the drawer or the dialog open.
 
 ### components::REQ-002 Button
 
@@ -226,32 +223,54 @@ stands 4px below the text.
 
 A panel along the right edge of the window, the full window height, `min(720px, 80vw)` wide, with a header
 holding its title in `--primary` and an icon-only close button at its top-right corner, over a scrim in
-`--overlay`.
+`--overlay`. Below the header, its body holds the content the caller passes. The app opens it and closes it: it
+shows while the app says it is open, and reports each way of closing it to the app.
+
+The panel has a 1px `--border-strong` border on its left edge. Its header has 16px of padding above, 12px below and
+18px at its left, keeps 48px at its right clear for the close button, and is ruled off from the body by a 1px
+`--border` line; the title is `text-lg` bold. The close button is an `icon` button 12px from the panel's top and right
+edges. The body has 10px of padding.
 
 - components::REQ-009/AC-01: Esc, a click on the scrim, and the close button each close it.
 - components::REQ-009/AC-02: While open, keyboard focus moves into it and stays inside it, the page behind
   it does not scroll, and it is announced as a dialog under its title; on closing, focus returns to the
-  element that opened it.
+  element that had focus when it opened.
 - components::REQ-009/AC-03: The close button carries the accessible name the caller passes
   (components::CON-001).
 - components::REQ-009/AC-04: The panel runs along the right edge of the window for its full height,
   `min(720px, 80vw)` wide, over a scrim in `--overlay`; its header shows the title in `--primary` and the
   close button at its top-right corner.
+- components::REQ-009/AC-05: Content taller than the panel scrolls inside the body, while the header and its close
+  button stay in view.
 
 ### components::REQ-010 Confirm dialog
 
-A box centred near the top of the window over a scrim in `--overlay`, with a title, a body the caller
-passes, and its buttons at the bottom right — cancel first, then the confirming action.
+A box `min(520px, 88vw)` wide, centred near the top of the window over a scrim in `--overlay`, with a title, a body
+the caller passes, and its buttons at the bottom right — cancel first, then the confirming action. The app opens it and
+closes it, as it does the drawer, and is told separately when the confirming action is chosen.
+
+The box's top is 7% of the window's height below the window's top, and it is at most 82% of the window's height tall.
+It has `rounded-xl` corners and 22px of padding above and below and 26px beside. The title is `text-lg` bold; the body
+is `text-sm` in `--muted-foreground` with a line height of 1.7, 12px below the title and 14px above the buttons, which
+stand 8px apart.
 
 - components::REQ-010/AC-01: The cancel button is a `default` button; the confirming action is a `danger`
   button when the caller marks the action destructive, and a `primary` button otherwise.
 - components::REQ-010/AC-02: Esc and the cancel button cancel; a click on the scrim does nothing, so the
   choice is always made by a button.
 - components::REQ-010/AC-03: On opening, keyboard focus moves to the cancel button and stays inside the
-  dialog, and the dialog is announced under its title; on closing, focus returns to the element that opened it.
-- components::REQ-010/AC-04: Activating the confirming action runs the caller's action and closes the dialog.
-- components::REQ-010/AC-05: The box sits centred near the top of the window over a scrim in `--overlay`,
-  showing its title, the caller's body, and its buttons at the bottom right with cancel first.
+  dialog, and the dialog is announced under its title; on closing, focus returns to the element that had focus when
+  it opened.
+- components::REQ-010/AC-04: Activating the confirming action runs the caller's action once and closes the dialog.
+- components::REQ-010/AC-05: The box, `min(520px, 88vw)` wide, sits centred near the top of the window over a scrim
+  in `--overlay`, showing its title, the caller's body, and its buttons at the bottom right with cancel first.
+- components::REQ-010/AC-06: The body is announced as the dialog's description.
+- components::REQ-010/AC-07: The box never runs past the window: a body taller than the room left scrolls inside the
+  box, while the title and the buttons stay in view.
+- components::REQ-010/AC-08: Opened from inside an open drawer, the dialog sits over a scrim of its own, which dims
+  the drawer as well as the page.
+- components::REQ-010/AC-09: While it is open over an open drawer, Esc closes only the dialog, and the drawer stays
+  open.
 
 ### components::REQ-011 Toast
 
@@ -349,8 +368,9 @@ Applies to the select popup and the tooltip.
 ### components::CON-001 No text built into the components (direct acceptance)
 
 Applies to: every component in this spec. A component writes no text of its own: every visible or announced
-text it needs — the accessible name of an icon-only button, the drawer's close button, the label of a
-segmented control, the placeholder of a search box, the accessible name of a search box, a select or a tab row (an
+text it needs — the accessible name of an icon-only button, the title of a drawer and the accessible name of its
+close button, the title, the body and the two button labels of a confirm dialog, the label of a segmented control,
+the placeholder of a search box, the accessible name of a search box, a select or a tab row (an
 `aria-label`, or an `aria-labelledby` pointing at a label on the page), the text of a tooltip, the label of the
 Toaster's region, the text of a toast, the content of a `selectable` card, which names the button it is — is
 required, as a prop or as the argument of the call that raises a toast, so a missing one fails the type check. The
@@ -397,9 +417,22 @@ Applies to: every consumer. A document has at most one Toaster, since every Toas
 
 - **A label longer than its control**: it stays on one line and is cut with an ellipsis, while running text
   wraps (components::REQ-001/AC-05).
-- **An icon-only button, a drawer, a segmented control, a search box, a select, tabs, a `selectable` card, a tooltip,
-  a Toaster or a toast without their text**: the type check fails (components::CON-001); nothing renders a fallback
-  text.
+- **An icon-only button, a drawer, a confirm dialog, a segmented control, a search box, a select, tabs, a `selectable`
+  card, a tooltip, a Toaster or a toast without their text**: the type check fails (components::CON-001); nothing
+  renders a fallback text.
+- **A caller that wants more in a drawer or a confirm dialog** — a description under the drawer's title, an action
+  beside it, buttons pinned under the drawer's body, a third button in the dialog: the drawer's header holds only its
+  title and close button, it has no footer, and the dialog has only its two buttons. Anything else goes in the body
+  the caller passes, and scrolls with it (components::REQ-009/AC-05, REQ-010/AC-07).
+- **A long unbroken word in a drawer or a confirm dialog** (a path, a URL): it breaks onto the next line instead of
+  running past the panel or the box (components::REQ-001/AC-05).
+- **The element that had focus when a drawer or a confirm dialog opened is gone when it closes** (the confirmed action
+  removed it): a confirm dialog opened from inside an open drawer moves focus into the drawer; otherwise focus is left
+  on the page, for the app to move on to where its work flow continues.
+- **A confirm dialog opened from inside an open drawer**: it dims the drawer under its own scrim, and Esc closes the
+  dialog alone (components::REQ-010/AC-08, AC-09).
+- **An open drawer or confirm dialog removed from the page** (the app leaves the view that holds it while it is
+  open): the page behind it scrolls again, and focus returns as it does on closing.
 - **A select, a segmented control or tabs without a selected value**: the type check fails; none has a state without
   a selection (components::REQ-004/AC-09, components::REQ-005/AC-06, components::REQ-013/AC-05).
 - **A select, a segmented control or tabs whose option values are typed only as `string`**, such as options built from
@@ -536,6 +569,55 @@ specs; see `AGENTS.md`).
   standing above the window's top edge, which neither the pointer nor the keyboard reaches.
 - **The drawer is shadcn/ui's `sheet`**, a panel from the side of the window. Rejected: shadcn/ui's `drawer`,
   which slides up from the bottom.
+- **The drawer and the confirm dialog are each one component whose props carry what the kit guarantees.** The kit
+  draws the drawer's header — its title and its close button — and the confirm dialog's title, buttons and scrim, so
+  the type check requires every text they show (components::CON-001) and the kit holds the order and variants of the
+  buttons and the focus on cancel; the drawer's body is the content the caller passes. The drawer takes its title,
+  the close button's accessible name and its content; the confirm dialog takes its title, its body, the labels of its
+  two buttons, and whether the action is destructive. Rejected: shadcn/ui's compound parts (a header, a footer, a
+  title, a cancel and an action part), with which each caller would assemble these, so that neither the type check
+  nor the kit could hold them; and slots for more in the header or the footer, which can be added later without
+  breaking a caller, while a slot once shipped cannot be removed without breaking one.
+- **The app opens and closes them.** Each shows while the app's `open` is set and reports every way of closing
+  through `onOpenChange(false)`: Esc, a scrim click and the close button for the drawer, Esc and cancel for the
+  confirm dialog. The confirming action is reported through `onConfirm`, called once, before the dialog reports
+  closing. A drawer or a confirm dialog is opened by the app's own logic — an action on a row, a menu item, a
+  shortcut — and one controlled pair, as in Base UI's dialogs and the kit's Select, covers every one of them; focus
+  returns to whatever had it when it opened, as the WAI-ARIA dialog pattern asks. Rejected: a trigger part beside
+  the controlled props, which gives two ways of opening the same thing.
+- **When the element that opened a drawer or a confirm dialog is gone, the kit moves focus only where it knows the
+  work flow continues.** The WAI-ARIA APG modal dialog pattern sends focus, when the invoking element no longer exists,
+  to "another element that provides logical work flow", which only the app knows; the kit knows one case, a confirm
+  dialog opened from inside an open drawer, where the work goes on in the drawer, and otherwise leaves focus on the
+  page. Rejected: Base UI's fallback, the element that had focus before some earlier dialog or popup opened, which can
+  lie behind the open drawer or have nothing to do with the dialog; and a prop naming where focus returns, which can be
+  added later without breaking a caller once an app needs it.
+- **The confirm dialog is at most 520px wide**, `min(520px, 88vw)`: the width of Ant Design's Modal, chosen by the
+  owner (「Ant Design's 520px」, 2026-11-16) as a confirm dialog's width from an established design system. Rejected:
+  a 720px box, a width made for reading documents; and shadcn/ui's 384px.
+- **The caller marks the confirming action destructive, rather than choosing its button.** The caller says what the
+  action is and the kit picks the `danger` or the `primary` button. Rejected: a prop naming the button's variant,
+  which would admit looks this spec does not give a confirming action.
+- **Content taller than the window scrolls inside the drawer's body and the dialog's body.** The drawer's close
+  button and the dialog's buttons stay within reach however long the content is, and a pointer answers the dialog
+  only with its buttons (components::REQ-010/AC-02). Rejected: scrolling the whole panel or box, which scrolls them
+  out of view.
+- **A confirm dialog opened inside a drawer draws its own scrim.** Base UI leaves out the scrim of a dialog opened
+  inside another one; the kit draws it, so the question always sits over a scrim and looks the same wherever the app
+  renders it. Rejected: Base UI's default, under which the drawer behind the question stays undimmed when the app
+  renders the dialog inside the drawer, and is dimmed when the app renders it outside.
+- **Neither the drawer nor the confirm dialog moves as it opens or closes**: both appear and disappear at once. The
+  kit's floating surfaces share one form, and the select popup does not move; shadcn/ui's motion classes come from
+  `tw-animate-css`, which the kit does not depend on. Rejected: shadcn/ui's slide and fade of the panel, and the fade
+  and zoom of the dialog.
+- **The floating surfaces stand in a fixed order** (components::REQ-001/AC-06): tooltips in front, then toasts, then
+  select popups, drawers and confirm dialogs, among which the one opened last is in front. A toast reports what the
+  user has just done, often from inside a drawer or a dialog, and the Toaster mounts before them; a tooltip is
+  short-lived and anchored to what the pointer or focus is on, so it stays readable over a toast. MUI's and Chakra UI's
+  z-index scales order them the same way (MUI: drawer 1200, modal 1300, snackbar 1400, tooltip 1500; Chakra UI:
+  overlay 1300, modal 1400, popover 1500, toast 1700, tooltip 1800). Rejected: one level for every surface, under which
+  a toast raised from an open drawer or dialog is drawn under it; and raising only the toasts, which puts a toast over
+  a tooltip.
 - **One floating shadow, `--shadow-pop`, for every floating surface.** Rejected: a shadow per kind of
   surface, which gives the same depth several looks.
 
