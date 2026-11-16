@@ -64,7 +64,7 @@ async function checkBlocks(canvasElement: HTMLElement, ground: string) {
   }
 }
 
-// The default block, in `--border`
+// The default block, in `--border`: a skeleton given no variant
 export const Default: Story = {
   render: () => <Row />,
   play: async ({ canvasElement }) => {

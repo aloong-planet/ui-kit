@@ -73,12 +73,13 @@ function badge(canvasElement: HTMLElement, variant: string): HTMLElement {
 }
 
 // components::REQ-007/AC-01 and AC-04: every variant in a row, each as its row describes, in the same 18px box with
-// `rounded-sm` corners (5.25px), except `count`, whose ends are fully rounded and which is at least as wide as tall
+// `rounded-sm` corners (5.25px), except `count`, whose ends are fully rounded and which is at least as wide as tall.
+// The `neutral` badge is given no variant, as a badge without one is `neutral`.
 export const Variants: Story = {
   render: () => (
     <div className="flex flex-wrap items-center gap-2">
       {(Object.keys(labels) as Variant[]).map((variant) => (
-        <Badge key={variant} data-variant={variant} variant={variant}>
+        <Badge key={variant} data-variant={variant} {...(variant === 'neutral' ? {} : { variant })}>
           {labels[variant]}
         </Badge>
       ))}

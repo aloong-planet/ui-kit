@@ -53,10 +53,10 @@ function Full(props: CardProps & { 'data-card': string }) {
   )
 }
 
-// components::REQ-006/AC-01 `default` row, AC-04, and package::REQ-002/AC-01: the `--card` ground, a 1px `--border`
-// border, `--card-foreground` text in `text-sm` (12.5px) and `rounded-lg` corners (8.75px); the title in `text-sm`
-// semibold, the description under it in `text-xs` (11px) and `--muted-foreground`, the action at the header's top-right
-// corner beside them, and the footer's items in a row
+// components::REQ-006/AC-01 `default` row on a card given no variant, AC-04, and package::REQ-002/AC-01: the `--card`
+// ground, a 1px `--border` border, `--card-foreground` text in `text-sm` (12.5px) and `rounded-lg` corners (8.75px);
+// the title in `text-sm` semibold, the description under it in `text-xs` (11px) and `--muted-foreground`, the action
+// at the header's top-right corner beside them, and the footer's items in a row
 export const Default: Story = {
   render: () => <Full data-card="default" className="w-80" />,
   play: async ({ canvasElement }) => {

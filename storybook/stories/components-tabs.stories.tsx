@@ -97,10 +97,10 @@ async function checkPanel(canvasElement: HTMLElement, selected: HTMLElement) {
   return panels[0]
 }
 
-// components::REQ-013/AC-01 `page` row, AC-02's name, AC-03, AC-06, and package::REQ-002/AC-01: folder tabs above a
-// 1px `--border` rule, the tab row announced as a tab list under the name passed. The selected tab takes the
-// `--background` ground, a 1px `--border` border on its top and sides and `--primary` text in a heavier weight, and
-// covers the rule under it, joining the panel, which starts directly under the rule; the others show
+// components::REQ-013/AC-01 `page` row on tabs given no variant, AC-02's name, AC-03, AC-06, and package::REQ-002/AC-01:
+// folder tabs above a 1px `--border` rule, the tab row announced as a tab list under the name passed. The selected tab
+// takes the `--background` ground, a 1px `--border` border on its top and sides and `--primary` text in a heavier
+// weight, and covers the rule under it, joining the panel, which starts directly under the rule; the others show
 // `--muted-foreground` text. Each tab is 28px tall, in `text-sm` (12.5px), 13px from its sides to its label, with
 // `rounded-md` top corners (7px); the tabs stand 2px apart, and a count shows 4px after its label in a lighter tone.
 export const Page: StoryObj<{ onValueChange: (value: Section) => void }> = {

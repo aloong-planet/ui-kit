@@ -33,15 +33,17 @@ const listVariants = cva("flex min-w-0", {
 })
 
 // A tab is one line of inline content that its box cuts with an ellipsis; the line height fills the box inside its
-// border, which centres the label. A `page` tab reaches 1px below the row onto the rule, so the selected one, whose
-// bottom border takes the `--background` ground, covers the rule under it and joins the panel below it.
+// border, which centres the label. Under the pointer an unselected tab of either variant shows `--foreground` text and
+// keeps its ground and border; the selected tab keeps its look. A `page` tab reaches 1px below the row onto the rule,
+// so the selected one, whose bottom border takes the `--background` ground, covers the rule under it and joins the
+// panel below it.
 const tabVariants = cva(
   "block min-w-0 cursor-pointer truncate border outline-none select-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:opacity-45",
   {
     variants: {
       variant: {
         page: "-mb-px h-7 rounded-t-md border-transparent px-3.25 text-sm leading-6.5 text-muted-foreground not-data-active:hover:text-foreground data-active:border-border data-active:border-b-background data-active:bg-background data-active:font-semibold data-active:text-primary",
-        pill: "h-5.5 rounded-md border-border-strong bg-card px-2.5 text-xs leading-5 font-semibold text-muted-foreground data-active:border-primary data-active:bg-accent data-active:text-primary-strong",
+        pill: "h-5.5 rounded-md border-border-strong bg-card px-2.5 text-xs leading-5 font-semibold text-muted-foreground not-data-active:hover:text-foreground data-active:border-primary data-active:bg-accent data-active:text-primary-strong",
       },
     },
   }

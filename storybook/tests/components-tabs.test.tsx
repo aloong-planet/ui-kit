@@ -9,7 +9,7 @@ import * as stories from '../stories/components-tabs.stories'
 import { computed } from '../stories/support/computed'
 import { mount, unmount } from './support/mount'
 
-const { Page, Disabled } = composeStories(stories, preview)
+const { Page, Pill, Disabled } = composeStories(stories, preview)
 
 afterEach(unmount)
 
@@ -36,7 +36,7 @@ function reported() {
 
 function look(element: Element) {
   const style = getComputedStyle(element)
-  return { ground: style.backgroundColor, text: style.color, weight: style.fontWeight }
+  return { ground: style.backgroundColor, border: style.borderTopColor, text: style.color, weight: style.fontWeight }
 }
 
 function outline(element: Element) {
@@ -44,18 +44,26 @@ function outline(element: Element) {
   return { style: style.outlineStyle, width: style.outlineWidth, colour: style.outlineColor, offset: style.outlineOffset }
 }
 
-// components::REQ-013/AC-01 `page` row under the pointer: an unselected tab shows `--foreground` text, while the
-// selected one keeps its look
-test('an unselected page tab under the pointer shows --foreground text, the selected one keeps its look', async () => {
-  const canvas = mount(<Page />)
-  const overview = tab(canvas, 'Overview')
-  const activity = tab(canvas, 'Activity')
-  const selected = look(overview)
-  await userEvent.hover(activity)
-  expect(look(activity)).toEqual({ ground: computed('color', 'transparent'), text: computed('color', 'var(--foreground)'), weight: '400' })
-  expect(look(overview)).toEqual(selected)
-  await userEvent.hover(overview)
-  expect(look(overview)).toEqual(selected)
+// components::REQ-013/AC-01 under the pointer, for each variant: an unselected tab shows `--foreground` text and keeps
+// its ground and border, while the selected one keeps its look
+test.each([
+  { variant: 'page', Story: Page, selected: 'Overview', other: 'Activity', ground: 'transparent', border: 'transparent', weight: '400' },
+  { variant: 'pill', Story: Pill, selected: 'All', other: 'Open', ground: 'var(--card)', border: 'var(--border-strong)', weight: '600' },
+])('an unselected $variant tab under the pointer shows --foreground text, the selected one keeps its look', async ({ Story, selected, other, ground, border, weight }) => {
+  const canvas = mount(<Story />)
+  const selectedTab = tab(canvas, selected)
+  const otherTab = tab(canvas, other)
+  const selectedLook = look(selectedTab)
+  await userEvent.hover(otherTab)
+  expect(look(otherTab)).toEqual({
+    ground: computed('color', ground),
+    border: computed('color', border),
+    text: computed('color', 'var(--foreground)'),
+    weight,
+  })
+  expect(look(selectedTab)).toEqual(selectedLook)
+  await userEvent.hover(selectedTab)
+  expect(look(selectedTab)).toEqual(selectedLook)
 })
 
 // components::REQ-013/AC-02 and AC-03: Tab reaches the selected tab, the arrow keys move between the tabs and select

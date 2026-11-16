@@ -163,7 +163,8 @@ with `rounded-lg` corners; the title is in `text-sm` semibold, the description i
 | `selectable` | As `default`, as a button; under the pointer, a `--primary` border and the wash; when selected, also a 1px `--primary` ring and its title in `--primary` |
 | `dashed` | `--background` ground, 1px dashed `--border-strong` border, `--muted-foreground` text — for empty states and notes |
 
-A `selectable` card starts unpressed unless the caller passes whether it is pressed.
+A card is `default` unless the caller names another variant. A `selectable` card starts unpressed unless the
+caller passes whether it is pressed.
 
 - components::REQ-006/AC-01: Each variant renders as its row describes.
 - components::REQ-006/AC-02: A `selectable` card is a button that reports whether it is pressed, and takes
@@ -177,8 +178,8 @@ A `selectable` card starts unpressed unless the caller passes whether it is pres
 ### components::REQ-007 Badge
 
 A small label in one shape: 18px tall whether or not its variant shows a border, in `text-xs` with `rounded-sm`
-corners and 6px between its sides and its text. A leading icon is 10px, 3px before the text. It comes in these
-variants:
+corners and 6px between its sides and its text. A leading icon is 10px, 3px before the text. It is `neutral` unless
+the caller names another of these variants:
 
 | Variant | Look |
 |---|---|
@@ -266,8 +267,9 @@ with the newest at the bottom. Any code in the app can raise one.
 
 ### components::REQ-012 Skeleton
 
-A placeholder block in `--border` (`deep`: `--border-strong`), with `rounded-sm` corners and the size the caller's
-classes give it, that pulses between 55% and full opacity over 1.6s, eased in and out, repeating.
+A placeholder block in `--border` (`deep`, when the caller asks for it: `--border-strong`), with `rounded-sm` corners
+and the size the caller's classes give it, that pulses between 55% and full opacity over 1.6s, eased in and out,
+repeating.
 
 - components::REQ-012/AC-01: When the system asks for reduced motion, the block does not pulse.
 - components::REQ-012/AC-02: The block is hidden from screen readers and does not react to the pointer.
@@ -279,12 +281,12 @@ classes give it, that pulses between 55% and full opacity over 1.6s, eased in an
 ### components::REQ-013 Tabs
 
 A row of tabs over their panels: each tab the caller passes carries its label and its panel, and the selected tab's
-panel shows below the row. Tabs always have a selected tab.
+panel shows below the row. Tabs always have a selected tab. Tabs are `page` unless the caller names `pill`.
 
 | Variant | Use | Look |
 |---|---|---|
 | `page` | Switching the sections of a page | Folder tabs above a 1px `--border` rule; the selected tab takes the `--background` ground, a 1px `--border` border on its top and sides, and `--primary` text in a heavier weight, and joins the panel below it; the others show `--muted-foreground` text, `--foreground` under the pointer |
-| `pill` | Switching between categories of a list | Separate pill buttons on a `--card` ground with a 1px `--border-strong` border and `--muted-foreground` text; the selected one shows the wash, `--primary-strong` text and a `--primary` border |
+| `pill` | Switching between categories of a list | Separate pill buttons on a `--card` ground with a 1px `--border-strong` border and `--muted-foreground` text, `--foreground` under the pointer; the selected one shows the wash, `--primary-strong` text and a `--primary` border |
 
 A tab of either variant can show a count after its label, in a lighter tone, 4px after the label. A `page` tab is
 28px tall, as tall as a `default` button, in `text-sm`, with 13px between its sides and its label and `rounded-md`
@@ -422,6 +424,11 @@ specs; see `AGENTS.md`).
 - **The card keeps shadcn/ui's parts and sizes**: a header with a title, a description and an action, the content
   and a footer, at two spacings. An app gets a ready layout for what a card holds. The owner's choice. Rejected: one
   container, the app laying out its content.
+- **Each component without a named variant takes its base form**: a `default` card, a `neutral` badge, the plain
+  skeleton and `page` tabs; the other variants are opt-in. A status colour is chosen on purpose; GitHub Primer's
+  Label likewise defaults to its `default` variant, drawn with no ground and the default text and border colours, and
+  Atlassian's Lozenge to its `default` appearance, which its `neutral` maps to. Base UI's components have no
+  variants of their own, so none conflicts. Rejected: requiring a variant on every use.
 - **The select popup is at least as wide as its trigger, on the trigger's left edge.** Options keep their full
   labels where there is room, and the popup reads as opening from the trigger. Rejected: a popup exactly as wide as
   the trigger, which cuts every longer option, and one on the trigger's right edge, which suits only a trigger at the
