@@ -77,13 +77,13 @@ an existing token.
 | `--primary-strong` | The deeper brand text: the selected option's label, the selected pill tab |
 | `--muted` | Quiet grounds |
 | `--muted-foreground` | Secondary text, placeholders, icons at rest |
-| `--accent` | The hover wash, and the wash of a selected segment, pill tab or badge |
+| `--accent` | The hover wash, and the wash of a selected segment, pill tab or selectable card, and of a badge |
 | `--accent-foreground` | Text on the `--accent` wash when selected |
 | `--accent-strong` | The selected-row wash, one step deeper than hover |
 | `--destructive` | The danger button's fill |
 | `--destructive-foreground` | Text on it |
-| `--border` | Dividers, card borders, skeleton blocks |
-| `--border-strong` | Borders of controls and floating surfaces |
+| `--border` | Dividers, card borders, the rule and the selected tab's border of page tabs, the ground of the muted badge, skeleton blocks |
+| `--border-strong` | Borders of controls and floating surfaces, of `neutral` and `dashed` badges and of dashed cards; the deep skeleton block |
 | `--input` | Borders of text fields |
 | `--ring` | The keyboard focus ring and a focused field's border |
 | `--success` / `--success-foreground` | Success toasts and badges |

@@ -432,6 +432,10 @@ specs; see `AGENTS.md`).
   Base UI's fallback for tabs that hold their own selection, which moves it to the first enabled tab, or to none when
   no tab is enabled, and handing the selection to the first enabled tab whoever holds it, which would report a change
   to an app that holds the selection when no one made one.
+- **A badge is a plain label.** It has no pointer or keyboard behaviour of its own and shows no hover or focus
+  state, so it is a `<span>` without shadcn/ui's `render` prop and its link looks; a clickable tag would be a
+  component of its own, with states this spec does not define for badges. Rejected: a badge that can render as a
+  link.
 - **The card keeps shadcn/ui's parts and sizes**: a header with a title, a description and an action, the content
   and a footer, at two spacings. An app gets a ready layout for what a card holds. The owner's choice. Rejected: one
   container, the app laying out its content.
