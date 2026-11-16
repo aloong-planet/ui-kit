@@ -60,27 +60,33 @@ function EverySurface() {
   )
 }
 
-// The ground, the border and the layers of shadow an open surface draws. The border is read on its top edge, and on
-// the drawer on its left edge, with its top edge after it.
-function look(surface: HTMLElement, edge: 'top' | 'left' = 'top') {
+// The ground, the border on each of its edges (top, right, bottom and left) and the layers of shadow an open surface
+// draws. An edge with a border is read as its width, style and colour; an edge with none as its width alone, since a
+// border of no width draws nothing.
+function look(surface: HTMLElement) {
   const style = getComputedStyle(surface)
   return {
     ground: style.backgroundColor,
-    border:
-      edge === 'top'
-        ? [style.borderTopWidth, style.borderTopColor]
-        : [style.borderLeftWidth, style.borderLeftColor, style.borderTopWidth],
+    border: ['top', 'right', 'bottom', 'left'].map((edge) => {
+      const width = style.getPropertyValue(`border-${edge}-width`)
+      return width === '0px'
+        ? width
+        : [width, style.getPropertyValue(`border-${edge}-style`), style.getPropertyValue(`border-${edge}-color`)]
+    }),
     shadow: castShadows(style.boxShadow),
   }
 }
 
+// A 1px solid border in a colour, on an edge
+const line = (color: string) => ['1px', 'solid', color]
+
 // components::REQ-001/AC-03: the select popup, the drawer and the confirm dialog stand on the `--popover` ground with a
-// 1px `--border-strong` border, the drawer's on its left edge (components::REQ-009); the tooltip stands on the
+// 1px `--border-strong` border, the drawer's on its left edge alone (components::REQ-009); the tooltip stands on the
 // `--tooltip` ground with no border (components::REQ-008/AC-04); a `success` toast stands on the `--success` ground
 // with a 1px `--success-foreground` border (components::REQ-011/AC-05); and all five cast the one `--shadow-pop` shadow.
 // Purple light and amber dark: the components' own stories check their surface in the toolbar's default, purple and the
 // system's dark, which the tests run under; purple light shows a surface fixed to dark values, amber dark one fixed to
-// purple's. The tooltip's border is read as its width alone, since a border of no width draws nothing.
+// purple's.
 test.each([
   ['purple', 'light'],
   ['amber', 'dark'],
@@ -104,7 +110,7 @@ test.each([
   await vi.waitFor(() => expect(isSelectOpen()).toBe(false))
 
   await userEvent.click(button(canvas, 'Open the drawer'))
-  const drawer = look(await opened('dialog'), 'left')
+  const drawer = look(await opened('dialog'))
   await userEvent.keyboard('{Escape}')
   await vi.waitFor(() => expect(isDialogOpen('dialog')).toBe(false))
 
@@ -119,22 +125,16 @@ test.each([
   const message = look(raised)
 
   const popover = computed('color', 'var(--popover)')
-  const strong = computed('color', 'var(--border-strong)')
+  const strong = line(computed('color', 'var(--border-strong)'))
+  const success = line(computed('color', 'var(--success-foreground)'))
   const shadow = [computed('box-shadow', 'var(--shadow-pop)')]
-  expect({
-    state,
-    select,
-    tooltip: { ...tip, border: tip.border.slice(0, 1) },
-    toast: message,
-    drawer,
-    dialog,
-  }).toEqual({
+  expect({ state, select, tooltip: tip, toast: message, drawer, dialog }).toEqual({
     state: [theme, mode === 'dark'],
-    select: { ground: popover, border: ['1px', strong], shadow },
-    tooltip: { ground: computed('color', 'var(--tooltip)'), border: ['0px'], shadow },
-    toast: { ground: computed('color', 'var(--success)'), border: ['1px', computed('color', 'var(--success-foreground)')], shadow },
-    drawer: { ground: popover, border: ['1px', strong, '0px'], shadow },
-    dialog: { ground: popover, border: ['1px', strong], shadow },
+    select: { ground: popover, border: [strong, strong, strong, strong], shadow },
+    tooltip: { ground: computed('color', 'var(--tooltip)'), border: ['0px', '0px', '0px', '0px'], shadow },
+    toast: { ground: computed('color', 'var(--success)'), border: [success, success, success, success], shadow },
+    drawer: { ground: popover, border: ['0px', '0px', '0px', strong], shadow },
+    dialog: { ground: popover, border: [strong, strong, strong, strong], shadow },
   })
 })
 
