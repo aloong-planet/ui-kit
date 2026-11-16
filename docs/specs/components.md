@@ -188,7 +188,7 @@ warning line in `--tooltip-warning` when the caller passes one apart from the te
 - components::REQ-008/AC-02: It sits 6px from its trigger on the side the caller chooses, below by default,
   and moves to the opposite side when there is not room.
 - components::REQ-008/AC-03: Its text is the trigger's description for screen readers; the tooltip itself
-  takes no focus and lets the pointer pass through it.
+  takes no focus, and the pointer can move onto it without it closing.
 - components::REQ-008/AC-04: It shows the `--tooltip` ground, `--tooltip-foreground` text and no border; a
   warning line the caller passes shows after the text, in `--tooltip-warning`.
 - components::REQ-008/AC-05: It opens as soon as the pointer is over its trigger, with no delay.
@@ -354,6 +354,8 @@ Applies to: every consumer. A document has at most one Toaster, since every Toas
 - **A `link` button given a size**: the type check fails (components::REQ-002/AC-04).
 - **A select whose options do not fit the window**: the popup scrolls inside its own height
   (components::REQ-004/AC-02).
+- **A consumer that wants an arrow on a tooltip**: the kit's tooltip draws none and takes no option for one, and Base
+  UI's `Tooltip.Arrow` cannot be added through it; such a consumer builds that tooltip on Base UI itself.
 - **A toast raised before any Toaster is mounted** — at startup, or by code that runs before React has rendered the
   Toaster: it is held and appears when a Toaster mounts (components::REQ-011/AC-09). If no Toaster ever mounts, the
   toasts held are never shown, and nothing reports it.
@@ -388,8 +390,8 @@ specs; see `AGENTS.md`).
 - **A `link` button takes no size.** It is text inside a sentence, and a box of its own would push it off the line
   of the text around it. Rejected: sizes on a link, and a size accepted and ignored, which gives the caller no sign.
 - **Base UI's behaviour for keyboard, focus and screen readers.** Base UI provides Esc handling, focus
-  containment, dialog semantics and announced toasts. Rejected: a plainer behaviour without them, which
-  would mean writing code to switch Base UI's off.
+  containment, dialog semantics and announced toasts; Esc also closes an open tooltip. Rejected: a plainer behaviour
+  without them, which would mean writing code to switch Base UI's off.
 - **The confirm dialog ignores clicks on the scrim.** A confirm dialog is closed by a choice, so a stray
   click beside it cannot dismiss the question. Rejected: cancelling on a scrim click.
 - **Starting from the Mira style.** It is shadcn/ui's style for dense interfaces and the closest to the kit's
@@ -397,8 +399,16 @@ specs; see `AGENTS.md`).
   12.5px text). Rejected: Nova (32px, 14px text) and Vega (36px, 14px text), both further from it.
 - **The tooltip opens with no delay, and a click on its trigger closes it.** The owner's choice. It shows as soon as
   the pointer reaches its trigger, as shadcn/ui's tooltip does; once the trigger is clicked, the click's own result
-  takes over from the hint, which is how Base UI and Radix, and so shadcn/ui, close a tooltip by default. Rejected:
-  Base UI's 600ms delay, and a tooltip that stays open on a click.
+  takes over from the hint, which is Base UI's default (`closeOnClick`), kept by shadcn/ui's tooltip. Rejected: Base
+  UI's 600ms delay, and a tooltip that stays open on a click.
+- **The pointer can move onto an open tooltip without it closing** (components::REQ-008/AC-03). WCAG 2.1 SC 1.4.13
+  (AA) asks that content shown on hover can be reached by the pointer without disappearing, and it is Base UI's
+  default (`disableHoverablePopup` false, Base UI 1.9.0); while open, a tooltip therefore takes the pointer over the
+  area it covers. Rejected: a tooltip the pointer passes through, which disappears when the pointer moves onto it.
+- **The tooltip has no arrow, and neither the tooltip nor a toast moves as it appears or leaves.** The kit's floating
+  surfaces share one form, and the select popup has neither; shadcn/ui's motion classes come from `tw-animate-css`,
+  which the kit does not depend on. Base UI ships the arrow as a separate, optional part (`Tooltip.Arrow`). Rejected:
+  shadcn/ui's arrow and its fade and zoom, and an option for an arrow, for which no general need has been shown.
 - **One warning line, passed apart from the tooltip's text.** The caller never styles a line itself, and a tooltip
   stays a short description rather than a layout of its own. Rejected: several lines, any of them markable as a
   warning.
