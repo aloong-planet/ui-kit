@@ -1,5 +1,6 @@
 // What the stories and tests of the floating surfaces (the select popup, the tooltip) read of an open surface that Base
-// UI renders in a portal: what could clip it, and the shadow it casts (components::REQ-001/AC-03).
+// UI renders in a portal: what could clip it, the shadow it casts (components::REQ-001/AC-03), and what stands in front
+// (components::REQ-001/AC-06).
 
 // The ancestors of a popup's positioner that would set up a box clipping it: any with a transform, a filter or a
 // perspective, which would also become the box it is placed in
@@ -16,4 +17,10 @@ export function positionerAncestorsWith(surface: HTMLElement): string[] {
 // rings and inset shadows, which the browser computes as transparent layers of no size
 export function castShadows(value: string): string[] {
   return value.split(/,(?![^(]*\))/).map((layer) => layer.trim()).filter((layer) => !/^rgba\(0, 0, 0, 0\) 0px 0px 0px 0px$/.test(layer))
+}
+
+// Whether `surface` is what the pointer meets at the point (`x`, `y`) of the window: the element there is it or inside it
+export function inFront(surface: Element, x: number, y: number): boolean {
+  const hit = document.elementFromPoint(x, y)
+  return hit !== null && surface.contains(hit)
 }

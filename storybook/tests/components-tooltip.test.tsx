@@ -5,13 +5,17 @@
 // scroll in the very frame it opens (no scroll there is taken as a focus's), and one that closes in the frame it opens
 // stops waiting for that frame. Untested because no spec states it: a render on a server, where the description element
 // waits for the browser.
+import { Button, toast, Toaster, Tooltip } from '@aloong-planet/ui'
 import { composeStories } from '@storybook/react-vite'
 import { afterEach, expect, test, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import preview from '../.storybook/preview'
 import * as stories from '../stories/components-tooltip.stories'
+import { inFront } from '../stories/support/floating'
 import { frames } from '../stories/support/frames'
+import { toasts } from '../stories/support/toast'
 import { isOpen, tooltip } from '../stories/support/tooltip'
+import { button } from './support/button'
 import { mount, unmount } from './support/mount'
 
 const { Default, InScrollingArea } = composeStories(stories, preview)
@@ -24,15 +28,6 @@ afterEach(async () => {
   window.scrollTo(0, 0)
   await page.viewport(viewport.width, viewport.height)
 })
-
-
-function button(canvas: HTMLElement, name: string): HTMLElement {
-  const element = [...canvas.querySelectorAll<HTMLElement>('button')].find(
-    (candidate) => (candidate.getAttribute('aria-label') ?? candidate.textContent) === name,
-  )
-  if (!element) throw new Error(`no button ${name}`)
-  return element
-}
 
 // components::REQ-008/AC-01 and AC-05: the tooltip is open within two frames of the pointer reaching its trigger, so
 // it has no delay, and closes once the pointer has left
@@ -249,4 +244,37 @@ test('a resize of the window closes the open tooltip', async () => {
   await tooltip()
   await page.viewport(viewport.width - 60, viewport.height + 200)
   await vi.waitFor(() => expect(isOpen()).toBe(false))
+})
+
+// A trigger fixed at the bottom centre of the window, whose tooltip opens above it over the toasts standing there, beside
+// the app's one Toaster
+function OverToasts() {
+  return (
+    <>
+      <div style={{ position: 'fixed', bottom: 4, left: '50%', transform: 'translateX(-50%)' }}>
+        <Tooltip text="Reload the list from disk" side="top">
+          <Button>Refresh</Button>
+        </Tooltip>
+      </div>
+      <Toaster aria-label="Messages" />
+    </>
+  )
+}
+
+// components::REQ-001/AC-06: a tooltip stands in front of a toast it overlaps
+test('a tooltip shows over a toast', async () => {
+  mount(<OverToasts />)
+  toast.success('Saved the settings of every list in this window')
+  const [element] = await toasts(1)
+  await userEvent.tab()
+  const popup = await tooltip()
+  const [a, b] = [popup.getBoundingClientRect(), element.getBoundingClientRect()]
+  const overlap = {
+    left: Math.max(a.left, b.left),
+    right: Math.min(a.right, b.right),
+    top: Math.max(a.top, b.top),
+    bottom: Math.min(a.bottom, b.bottom),
+  }
+  expect(overlap.right > overlap.left && overlap.bottom > overlap.top).toBe(true)
+  expect(inFront(popup, (overlap.left + overlap.right) / 2, (overlap.top + overlap.bottom) / 2)).toBe(true)
 })

@@ -21,10 +21,11 @@ const focusClose = "trigger-focus"
 // It sits 6px from its trigger on the side the caller chooses, below by default, and moves to the opposite side when
 // there is not room, never to a side on the other axis; along its side it shifts to stay in the window
 // (components::REQ-008/AC-02). Base UI renders it in a portal at the end of the page, out of any ancestor of the
-// trigger that clips.
+// trigger that clips. It stands in front of every other floating surface, the toasts included
+// (components::REQ-001/AC-06).
 const sideOffset = 6
 const collisionAvoidance = { side: "flip", align: "shift", fallbackAxisSide: "none" } as const
-const positionerClass = "z-50"
+const positionerClass = "z-70"
 
 // A floating surface with its own ground: `--tooltip`, `--tooltip-foreground` text, no border, and `--shadow-pop`
 // (components::REQ-008/AC-04, components::REQ-001/AC-03). Its text wraps within 440px (components::REQ-001/AC-05). It

@@ -44,8 +44,11 @@ const limit = Number.POSITIVE_INFINITY
 // the keyboard reaches is scrolled into view 18px inside it. The 18px also leave room for the toasts' shadows and focus
 // outline, which the scrolling column clips. The browser's own scroll anchoring is off: Safari has none, so `Column`
 // holds the toasts in view in place itself, the same way in every browser, Chromium included, where the tests run.
+//
+// The column stands in front of the select popup, the drawer and the confirm dialog, which open after the Toaster
+// mounts and would otherwise cover it, and behind a tooltip (components::REQ-001/AC-06).
 const viewportClass =
-  "pointer-events-none fixed inset-x-4 bottom-0 z-50 flex max-h-dvh scroll-py-[18px] flex-col-reverse items-center gap-2 overflow-y-auto py-[18px] outline-none [overflow-anchor:none]"
+  "pointer-events-none fixed inset-x-4 bottom-0 z-60 flex max-h-dvh scroll-py-[18px] flex-col-reverse items-center gap-2 overflow-y-auto py-[18px] outline-none [overflow-anchor:none]"
 
 // A floating surface in its variant's ground and text with a 1px border in the text's colour, and `--shadow-pop`
 // (components::REQ-011/AC-05, components::REQ-001/AC-03). Its text wraps within 440px (components::REQ-001/AC-05). It

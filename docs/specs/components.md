@@ -52,6 +52,9 @@ Applies to every interactive component in this spec.
 - components::REQ-001/AC-05: The labels of buttons, select triggers and options, segments, tabs and badges
   stay on one line and are cut with an ellipsis when the space runs out; the text of toasts, tooltips,
   dialogs and drawers wraps.
+- components::REQ-001/AC-06: The floating surfaces stand in one order, front to back: a tooltip; the toasts; then
+  select popups, drawers and confirm dialogs with their scrims, the one opened last in front. A toast raised while a
+  drawer or a confirm dialog is open shows over it, and a press on the toast leaves the drawer or the dialog open.
 
 ### components::REQ-002 Button
 
