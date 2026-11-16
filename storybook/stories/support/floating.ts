@@ -1,6 +1,5 @@
-// What the stories and tests of the floating surfaces (the select popup, the tooltip) read of an open surface that Base
-// UI renders in a portal: what could clip it, the shadow it casts (components::REQ-001/AC-03), and what stands in front
-// (components::REQ-001/AC-06).
+// What the stories and tests of the floating surfaces read of an open surface that Base UI renders in a portal: what
+// could clip it, the shadow it casts (components::REQ-001/AC-03), and what stands in front (components::REQ-001/AC-06).
 
 // The ancestors of a popup's positioner that would set up a box clipping it: any with a transform, a filter or a
 // perspective, which would also become the box it is placed in
