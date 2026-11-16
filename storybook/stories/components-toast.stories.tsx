@@ -132,6 +132,32 @@ export const Many: Story = {
   },
 }
 
+// components::REQ-011/AC-08 and the boundary "More toasts than the window holds", for the owner to confirm: thirty
+// toasts, more than the window holds, raised at once. The column stays inside the window and shows the newest, 18px
+// above the window's bottom edge, while the oldest are out of view above it, reached with the wheel over the toasts.
+export const MoreThanTheWindowHolds: Story = {
+  render: () => (
+    <App
+      label="Save thirty"
+      raise={() => {
+        for (let index = 1; index <= 30; index++) toast.success(`Saved file ${index}`)
+      }}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const shown = await raise(canvasElement, 30)
+    const [oldest] = shown
+    const newest = shown[shown.length - 1]
+    const column = region().getBoundingClientRect()
+    await expect({
+      newest: newest.textContent,
+      newestBottom: px(window.innerHeight - newest.getBoundingClientRect().bottom),
+      oldestOutOfView: oldest.getBoundingClientRect().bottom <= column.top,
+      columnInWindow: column.top >= 0 && column.bottom <= window.innerHeight,
+    }).toEqual({ newest: 'Saved file 30', newestBottom: 18, oldestOutOfView: true, columnInWindow: true })
+  },
+}
+
 // components::REQ-001/AC-05: text longer than the toast's 440px wraps onto more lines and is not cut
 export const LongText: Story = {
   render: () => (

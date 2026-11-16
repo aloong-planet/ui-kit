@@ -1,7 +1,7 @@
 // The toasts that the Toast's stories and tests read. Base UI renders the Toaster's region in a portal at the end of
 // the page, so the toasts are looked up in the document rather than in the story's canvas.
 
-const frame = () => new Promise((resolve) => requestAnimationFrame(resolve))
+import { frame } from './frames'
 
 // The region the toasts appear in
 export function region(): HTMLElement {
@@ -10,9 +10,11 @@ export function region(): HTMLElement {
   return element
 }
 
-// The toasts on the page, from top to bottom
+// The toasts on the page, from top to bottom as they stand in the window, whatever their order in the document
 export function shown(): HTMLElement[] {
-  return [...document.querySelectorAll<HTMLElement>('[data-base-ui-portal] [role="region"] [role="dialog"]')]
+  return [...document.querySelectorAll<HTMLElement>('[data-base-ui-portal] [role="region"] [role="dialog"]')].sort(
+    (a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top,
+  )
 }
 
 // The toasts once `count` of them are on the page and laid out, read two frames after
