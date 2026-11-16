@@ -1,11 +1,11 @@
 // The uses of a component its props reject. components::CON-001: every text a component needs is a required prop, so a
-// component used without it fails the type check; components::REQ-002: a link takes no size; components::REQ-004/AC-09
-// and REQ-005/AC-06: a select and a segmented control take a selected value, one of their options. Each use marked
-// `@ts-expect-error` breaks one of these, and typecheck fails if one of them compiles, since its directive then has no
-// error to expect; the unmarked use next to it differs only in keeping the rule, so that the marked one fails for
+// component used without it fails the type check; components::REQ-002: a link takes no size; components::REQ-004/AC-09,
+// REQ-005/AC-06 and REQ-013/AC-05: a select, a segmented control and tabs take a selected value, one of their options.
+// Each use marked `@ts-expect-error` breaks one of these, and typecheck fails if one of them compiles, since its
+// directive then has no error to expect; the unmarked use next to it differs only in keeping the rule, so that the marked one fails for
 // breaking it and not for something else. This file is type-checked by `pnpm typecheck`, never run.
 import { X } from 'lucide-react'
-import { Badge, Button, SearchBox, SegmentedControl, Select } from '../src'
+import { Badge, Button, SearchBox, SegmentedControl, Select, Tabs } from '../src'
 
 declare const name: string
 
@@ -78,6 +78,23 @@ export const segmentedControls = [
   <SegmentedControl key="no value" options={ranges} aria-label={name} />,
   // @ts-expect-error the selected value is one of its options
   <SegmentedControl key="other value" options={ranges} defaultValue="month" aria-label={name} />,
+]
+
+const sections = [
+  { value: 'day', label: name, panel: name },
+  { value: 'week', label: name, panel: name },
+] as const
+
+// Tabs need the accessible name of their row, and a selected value (components::REQ-013/AC-05)
+export const tabs = [
+  // @ts-expect-error tabs need the accessible name of their row
+  <Tabs key="no name" tabs={sections} defaultValue="day" />,
+  <Tabs key="label" tabs={sections} defaultValue="day" aria-label={name} />,
+  <Tabs key="labelled by" tabs={sections} value="week" aria-labelledby={name} />,
+  // @ts-expect-error tabs need a selected value
+  <Tabs key="no value" tabs={sections} aria-label={name} />,
+  // @ts-expect-error the selected value is one of their tabs
+  <Tabs key="other value" tabs={sections} defaultValue="month" aria-label={name} />,
 ]
 
 // A select needs its accessible name, and a selected value (components::REQ-004/AC-09)
