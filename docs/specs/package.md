@@ -26,8 +26,7 @@ The package exposes these entry points, and no others:
 | `@aloong-planet/ui/apply-theme` | The synchronous theme apply function ([theming](theming.md) `theming::REQ-007`) |
 | `@aloong-planet/ui/theme.css` | The theme stylesheet: the general tokens for every theme and light/dark, their Tailwind theme mapping, the type and radius scale, and the scrollbars |
 
-> Pending: `@aloong-planet/ui` provides the ThemeProvider but no component yet, and
-> `@aloong-planet/ui/theme.css` does not yet hold the type and radius scale.
+> Pending: of the components, `@aloong-planet/ui` provides only the Button yet.
 
 - package::REQ-001/AC-01: Each entry point in the table resolves when imported from a consumer project.
 - package::REQ-001/AC-02: A bundle that imports only `@aloong-planet/ui/apply-theme` contains no React
@@ -64,8 +63,9 @@ documentation (secondary sources add Firefox 128, which that documentation was n
 
 ### package::CON-004 Icons come from lucide-react (direct acceptance)
 
-Applies to: every icon inside a kit component. Icons are taken from the `lucide-react` package, which is a
-dependency of the kit, so a consumer does not install it itself.
+Applies to: every icon a kit component draws itself. Icons are taken from the `lucide-react` package, which is a
+dependency of the kit, so a consumer does not install it for those icons. An icon the caller passes into a component,
+such as into a button, comes from the caller's own dependencies.
 
 ## Failure modes and boundaries
 

@@ -63,6 +63,15 @@ as `bg-primary`, `text-muted-foreground`, `border-border-strong` and `shadow-pop
 page itself: the body's background is `--background` and its text `--foreground`. Switching the theme or light/dark
 recolours the page at once.
 
+## Type and radius scale
+
+`theme.css` sets the scale the components are drawn with, under the names of Tailwind's own utilities: `font-sans`
+and `font-mono`, the type steps `text-xs` (11px), `text-sm` (12.5px), `text-base` (13px, the body text) and `text-lg`
+(15px), and the radius steps `rounded-sm` to `rounded-xl`, derived from `--radius`. It also sets the page's body text
+in `font-sans` at `text-base`. Your app's own utilities of these names take the kit's values too, so your elements
+match the components; Tailwind's other steps (`text-xl` and up; `rounded`, `rounded-xs`, `rounded-2xl` and up) keep
+Tailwind's values.
+
 ## App tokens
 
 Colours that only your app needs stay in your app. Declare them on the same root element, in your own stylesheet:

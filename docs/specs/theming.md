@@ -138,19 +138,33 @@ the root element through the same function, so the rules exist once. It loads no
 
 ### theming::REQ-008 Type and radius scale
 
-`@aloong-planet/ui/theme.css` sets the one type and radius scale the components are drawn with: the
-sans-serif stack `-apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif`, the monospace stack
-`ui-monospace, Menlo, monospace`, body text at 13px, and the radius scale derived from shadcn/ui's
-`--radius`.
+`@aloong-planet/ui/theme.css` sets the one type and radius scale the components are drawn with:
 
-> Pending: `@aloong-planet/ui/theme.css` does not yet define the type steps and the radius steps. Their first
-> values are the sizes the Agent Shed app uses most (at commit `14b6d5b`), and their final values are the
-> ones the owner confirms on the Storybook stories ([components](components.md) `components::CON-002`),
-> written into this requirement then.
+| Step | Value |
+|---|---|
+| `font-sans` | `-apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif` |
+| `font-mono` | `ui-monospace, Menlo, monospace` |
+| `text-xs` | 11px |
+| `text-sm` | 12.5px |
+| `text-base` | 13px, the body text |
+| `text-lg` | 15px |
+| `rounded-sm` | 0.6 × `--radius` (5.25px) |
+| `rounded-md` | 0.8 × `--radius` (7px) |
+| `rounded-lg` | `--radius` (8.75px) |
+| `rounded-xl` | 1.4 × `--radius` (12.25px) |
+
+The type steps have a line height of 1.5, `--radius` is 8.75px, and the radius steps are derived from it by
+shadcn/ui's multipliers. The page's body text is in the sans-serif stack at 13px.
+
+Each step takes the name of Tailwind's utility of that size, so a consumer that imports the stylesheet gets these
+values for its own `text-xs` … `text-lg`, `rounded-sm` … `rounded-xl`, `font-sans` and `font-mono` as well.
+Tailwind's other steps (`text-xl` and up; `rounded`, `rounded-xs`, `rounded-2xl` and up) keep Tailwind's values and
+are not part of the scale.
 
 - theming::REQ-008/AC-01: Kit components set their font family, font sizes and radii only from this scale.
 - theming::REQ-008/AC-02: The scale's sans-serif and monospace stacks and its body text size are the ones
   this requirement lists.
+- theming::REQ-008/AC-03: In a consumer, each step's utility renders the value the table lists for it.
 
 ### theming::REQ-009 App tokens
 
@@ -238,6 +252,11 @@ specs; see `AGENTS.md`).
 - **An app's own colours live in the app** (theming::REQ-009). The kit is shared by every app, and an app's
   domain colours — the badges of its own categories, the colours of its own data — mean nothing to the
   others. Rejected: a stylesheet in the kit holding one app's colours.
+- **The scale's steps take the names of Tailwind's utilities** (theming::REQ-008). shadcn/ui's components and `cn`,
+  the class merger they import, know these names, so the components keep their class names, and `cn` merges a
+  caller's size class with theirs without being configured; an app that uses the kit gets the same scale for its own
+  elements. Rejected: steps under names of the kit's own beside Tailwind's, which `cn` must be told about, since it
+  drops an unknown size class that sits beside a text colour class.
 - **The kit draws the scrollbars** (theming::REQ-010). The owner's choice: every page that uses the kit gets
   the same slim scrollbar instead of the platform's, whose width, track and visibility vary by platform and
   by system setting. Rejected: leaving scrollbars to each app.

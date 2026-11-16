@@ -27,6 +27,9 @@
     "react-dom": "^19.0.0"
   },
   "dependencies": {
+    "@base-ui/react": "^1.9.0",
+    "class-variance-authority": "^0.7.1",
+    "cn": "^0.5.2",
     "lucide-react": "^1.72.0"
   },
   "devDependencies": {
@@ -38,6 +41,7 @@
     "postcss": "^8.5.32",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "tailwindcss": "^4.3.5",
     "tsdown": "^0.23.7",
     "typescript": "~6.0.3",
     "vitest": "^5.1.0"

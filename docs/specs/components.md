@@ -28,11 +28,10 @@ there.
 
 ## Functional Requirements
 
-> Pending: none of these components is built yet. Each one's first sizes (padding, heights, font sizes,
-> weights, radii) are taken from the matching element of the Agent Shed app (`aloong-planet/agentshed`,
+> Pending: of these components only the button is built. Each other one's first sizes (padding, heights, font
+> sizes, weights, radii) are taken from the matching element of the Agent Shed app (`aloong-planet/agentshed`,
 > commit `14b6d5b`, `src/renderer/src/theme.css` unless named otherwise) and then confirmed by the owner in
-> Storybook (components::CON-002): button `.cfg-btn` (`danger` `.cfg-btn.danger`, `ghost` `.sback`, `link`
-> `.stat-link`, size `sm` `.ins`, `icon` `.drawer-close`, `icon-sm` `.sact`); search box `.sbar input`, with
+> Storybook (components::CON-002): search box `.sbar input`, with
 > the icon placement of `.sh`; select `.lang-trigger`, `.lang-pop`, `.lang-opt`, `.lang-sep`; segmented
 > control `.seg.seg-field` (size `sm` `.seg`); card `.card` (`selectable` `.theme-card`, `dashed`
 > `.settings-foot`); badge `.pill` (`count` `.cnt-b`); tooltip `TIP_LOOK` in `FloatingBox.tsx`; drawer
@@ -46,8 +45,8 @@ Applies to every interactive component in this spec.
 - components::REQ-001/AC-01: Keyboard focus shows a 2px `--ring` outline. It sits 2px outside the element,
   except inside a container that clips its children (the segmented control), where it sits 2px inside.
   Pointer focus shows no outline.
-- components::REQ-001/AC-02: A disabled control shows its muted look, does not react to hover, and cannot be
-  activated by pointer or keyboard.
+- components::REQ-001/AC-02: A disabled control shows its muted look, the control at 45% opacity, does not react
+  to hover, and cannot be activated by pointer or keyboard.
 - components::REQ-001/AC-03: Select popups, drawers and dialogs use the `--popover` ground and a 1px
   `--border-strong` border; tooltips and toasts take their own grounds (components::REQ-008,
   components::REQ-011). Every floating surface casts the `--shadow-pop` shadow.
@@ -68,19 +67,24 @@ pointer, a `--primary` border and the wash.
 | `primary` | `--primary` fill, `--primary-foreground` text — for an app's prominent main action |
 | `danger` | `--destructive` fill and border, `--destructive-foreground` text |
 | `ghost` | No ground or border, `--muted-foreground` text; under the pointer, the wash and `--primary` text |
-| `link` | Inline text underlined in `--border-strong`; under the pointer, `--foreground` text and an underline in the text colour |
+| `link` | Inline text in the font of the text around it, underlined in `--border-strong`; under the pointer, `--foreground` text and an underline in the text colour |
 
-| Size | Use |
-|---|---|
-| `default` | Buttons in forms, dialogs and toolbars |
-| `sm` | Actions on a list row |
-| `icon` | An icon-only button |
-| `icon-sm` | A small icon-only button on a row or inside a note |
+The sizes apply to every variant but `link`, which takes no size. An icon-only size is as tall as the text size it
+pairs with, so buttons of one row line up.
+
+| Size | Use | Box |
+|---|---|---|
+| `default` | Buttons in forms, dialogs and toolbars | 28px tall, `text-sm`, `rounded-md`; an icon before the label is 14px, 5px from it |
+| `sm` | Actions on a list row | 22px tall, `text-xs`, `rounded-md`; an icon before the label is 12px, 4px from it |
+| `icon` | An icon-only button | 28 × 28px, `rounded-md`, a 16px icon |
+| `icon-sm` | A small icon-only button on a row or inside a note | 22 × 22px, `rounded-sm`, a 14px icon |
 
 - components::REQ-002/AC-01: Each variant renders as its row describes, at rest and under the pointer.
-- components::REQ-002/AC-02: Each size renders at its step of the scale; the two icon sizes are square.
+- components::REQ-002/AC-02: Each size renders the box its row describes, with steps of the scale
+  ([theming](theming.md) `theming::REQ-008`); the two icon sizes are square.
 - components::REQ-002/AC-03: An icon-only button carries the accessible name the caller passes
   (components::CON-001); its icon is hidden from screen readers.
+- components::REQ-002/AC-04: A `link` given a size fails the type check.
 
 ### components::REQ-003 Search box
 
@@ -310,6 +314,7 @@ on light/dark.
   wraps (components::REQ-001/AC-05).
 - **An icon-only button, a drawer or a segmented control without its text**: the type check fails
   (components::CON-001); nothing renders a fallback text.
+- **A `link` button given a size**: the type check fails (components::REQ-002/AC-04).
 - **A select whose options do not fit the window**: the popup scrolls inside its own height
   (components::REQ-004/AC-02).
 
@@ -323,6 +328,11 @@ specs; see `AGENTS.md`).
   drift apart. Rejected: several forms of a component for the same purpose.
 - **A filled `primary` button.** Apps need a prominent main action; its text takes the card colour, which
   reads on the brand colour in every theme. Rejected: outlined buttons only.
+- **An icon-only button as tall as the text button of its size.** Icon-only and text buttons sit side by side in
+  toolbars and on rows, and line up only when they are equally tall. Rejected: a 32px `icon` button, which stands
+  above the 28px text buttons beside it.
+- **A `link` button takes no size.** It is text inside a sentence, and a box of its own would push it off the line
+  of the text around it. Rejected: sizes on a link, and a size accepted and ignored, which gives the caller no sign.
 - **Base UI's behaviour for keyboard, focus and screen readers.** Base UI provides Esc handling, focus
   containment, dialog semantics and announced toasts. Rejected: a plainer behaviour without them, which
   would mean writing code to switch Base UI's off.
