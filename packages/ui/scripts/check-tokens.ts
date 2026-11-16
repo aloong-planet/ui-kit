@@ -26,51 +26,22 @@ import { fileURLToPath } from 'node:url'
 import { parse, type AtRule, type Node, type Rule } from 'postcss'
 import { __unstable__loadDesignSystem } from 'tailwindcss'
 import ts from 'typescript'
+import { tableTokens, TokenTableError } from './token-table.ts'
 
 // The general tokens: the Kit token column of the token table under theming::REQ-004 in docs/specs/theming.md, one
-// or more tokens to a row. The check reads the spec itself, so a row added to the table is checked like the others.
+// or more tokens to a row. The check reads the spec itself, so a row added to the table is checked like the others; a
+// table it cannot read stops it at once.
 const specFile = fileURLToPath(new URL('../../../docs/specs/theming.md', import.meta.url))
-const tokens = tableTokens(readFileSync(specFile, 'utf8').split(/\r?\n/))
+const tokens = readTokens(readFileSync(specFile, 'utf8').split(/\r?\n/))
 
-// A table the check cannot read as the token table stops it at once: read any other way, it would check fewer tokens
-// than the spec lists, and pass
-function stopAt(line: number, problem: string): never {
-  console.error(`docs/specs/theming.md:${line}: ${problem}`)
-  process.exit(1)
-}
-
-function tableTokens(lines: string[]): string[] {
-  const heading = lines.findIndex((line) => line.startsWith('### theming::REQ-004 '))
-  if (heading === -1) stopAt(1, 'cannot find the token table: no heading "### theming::REQ-004 …"')
-  const next = lines.findIndex((line, i) => i > heading && /^#{1,3} /.test(line))
-  const end = next === -1 ? lines.length : next
-  let first = heading + 1
-  while (first < end && !lines[first].startsWith('|')) first++
-  if (first === end) stopAt(heading + 1, 'cannot find the token table under this heading')
-  let last = first
-  while (last < end && lines[last].startsWith('|')) last++
-  const cells = (line: string) =>
-    line
-      .trim()
-      .replace(/^\||\|$/g, '')
-      .split('|')
-      .map((cell) => cell.trim())
-  const column = cells(lines[first]).indexOf('Kit token')
-  if (column === -1) stopAt(first + 1, 'the token table has no "Kit token" column')
-  if (first + 1 === last || !cells(lines[first + 1]).every((cell) => /^:?-+:?$/.test(cell)))
-    stopAt(first + 2, 'the token table has no delimiter row under its header')
-  const found: string[] = []
-  for (let i = first + 2; i < last; i++) {
-    const cell = cells(lines[i])[column] ?? ''
-    if (!/^`--[a-z0-9-]+`( \/ `--[a-z0-9-]+`)*$/.test(cell))
-      stopAt(i + 1, `the Kit token cell "${cell}" is not one or more \`--name\` joined by " / "`)
-    for (const [, token] of cell.matchAll(/`(--[a-z0-9-]+)`/g)) {
-      if (found.includes(token)) stopAt(i + 1, `${token} is in the token table twice`)
-      found.push(token)
-    }
+function readTokens(lines: string[]): string[] {
+  try {
+    return tableTokens(lines)
+  } catch (error) {
+    if (!(error instanceof TokenTableError)) throw error
+    console.error(`docs/specs/theming.md:${error.line}: ${error.message}`)
+    process.exit(1)
   }
-  if (found.length === 0) stopAt(first + 1, 'the token table has no rows')
-  return found
 }
 
 // The base of the radius steps (theming::REQ-008), declared once in `:root`
