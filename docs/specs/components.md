@@ -28,15 +28,13 @@ there.
 
 ## Functional Requirements
 
-> Pending: of these components only the button is built. Each other one's first sizes (padding, heights, font
-> sizes, weights, radii) are taken from the matching element of the Agent Shed app (`aloong-planet/agentshed`,
-> commit `14b6d5b`, `src/renderer/src/theme.css` unless named otherwise) and then confirmed by the owner in
-> Storybook (components::CON-002): search box `.sbar input`, with
-> the icon placement of `.sh`; select `.lang-trigger`, `.lang-pop`, `.lang-opt`, `.lang-sep`; segmented
-> control `.seg.seg-field` (size `sm` `.seg`); card `.card` (`selectable` `.theme-card`, `dashed`
-> `.settings-foot`); badge `.pill` (`count` `.cnt-b`); tooltip `TIP_LOOK` in `FloatingBox.tsx`; drawer
-> `.file-drawer`; confirm dialog `.reader.dlg`; toast `.toasts`, `.toast`; skeleton `.sk-ph`; tabs `.tab`
-> (`pill` `.ptab`).
+> Pending: of these components only the button, the search box, the select and the segmented control are built.
+> Each other one's first sizes (padding, heights, font sizes, weights, radii) are taken from the matching element of
+> the Agent Shed app (`aloong-planet/agentshed`, commit `14b6d5b`, `src/renderer/src/theme.css` unless named
+> otherwise) and then confirmed by the owner in Storybook (components::CON-002): card `.card` (`selectable`
+> `.theme-card`, `dashed` `.settings-foot`); badge `.pill` (`count` `.cnt-b`); tooltip `TIP_LOOK` in
+> `FloatingBox.tsx`; drawer `.file-drawer`; confirm dialog `.reader.dlg`; toast `.toasts`, `.toast`; skeleton
+> `.sk-ph`; tabs `.tab` (`pill` `.ptab`).
 
 ### components::REQ-001 Shared states
 
@@ -89,7 +87,8 @@ pairs with, so buttons of one row line up.
 
 ### components::REQ-003 Search box
 
-One form: a text field with a leading search icon.
+One form: a text field with a leading search icon, in `text-sm` with `rounded-md` corners. The icon is 13px, 9px
+from the field's leading edge and centred on its height; typed text starts 28px from that edge.
 
 - components::REQ-003/AC-01: The search icon sits inside the field at the leading edge, and typed text starts
   after it.
@@ -101,6 +100,9 @@ One form: a text field with a leading search icon.
 ### components::REQ-004 Select
 
 One form: a trigger and a popup of options. A select always has a selected option; it has no state without one.
+The trigger shows its label in `text-sm` semibold, with `rounded-md` corners and a 14px chevron in
+`--muted-foreground`. The popup has `rounded-lg` corners and 4px of padding around its options, which are 32px
+tall, in `text-sm` semibold, with `rounded-md` corners and a 14px check.
 
 - components::REQ-004/AC-01: The trigger shows the selected option's label in a `--background` ground with a
   1px `--border-strong` border; under the pointer and while open, a `--primary` border and the wash; its
@@ -115,20 +117,20 @@ One form: a trigger and a popup of options. A select always has a selected optio
   returns focus to the trigger; a click outside closes it.
 - components::REQ-004/AC-06: The trigger is 28px tall, as tall as a `default` button.
 - components::REQ-004/AC-07: The popup is at least as wide as the trigger, and as wide as its longest option within
-  the space available, with its left edge on the trigger's; an option longer than that is cut with an ellipsis
-  (components::REQ-001/AC-05).
+  the room from the trigger's left edge to the window's right edge, with its left edge on the trigger's wherever the
+  trigger stands; an option longer than that room is cut with an ellipsis (components::REQ-001/AC-05).
 - components::REQ-004/AC-08: A click outside the open popup also acts on the element it lands on, as it would with
   the popup closed.
 - components::REQ-004/AC-09: A select used without a selected value fails the type check.
 
 ### components::REQ-005 Segmented control
 
-Segments side by side in one bordered container, one of them selected.
+Segments side by side in one bordered container with `rounded-md` corners, one of them selected.
 
 | Size | Use | Box |
 |---|---|---|
-| `default` | Settings and forms | 28px tall, as tall as a `default` button |
-| `sm` | Inline in toolbars and headers | 22px tall, as tall as an `sm` button |
+| `default` | Settings and forms | 28px tall, as tall as a `default` button, `text-sm` |
+| `sm` | Inline in toolbars and headers | 22px tall, as tall as an `sm` button, `text-xs` |
 
 - components::REQ-005/AC-01: The selected segment shows the wash, `--accent-foreground` text and a heavier
   weight; the others show `--muted-foreground` text, and `--foreground` text on the `--background` ground
@@ -136,8 +138,9 @@ Segments side by side in one bordered container, one of them selected.
 - components::REQ-005/AC-02: It is announced as a group of mutually exclusive options under the label the
   caller passes (components::CON-001), and arrow keys move between its segments.
 - components::REQ-005/AC-03: Selecting a segment deselects the one selected before; the container's 1px
-  `--border-strong` border clips the segments at its rounded corners.
-- components::REQ-005/AC-04: Each size renders the height its row gives.
+  `--border-strong` border clips the segments at its rounded corners, and a 1px `--border-strong` line parts
+  neighbouring segments, so a selected and a hovered segment side by side read as two.
+- components::REQ-005/AC-04: Each size renders the height and text size its row gives.
 - components::REQ-005/AC-05: Activating the selected segment again leaves it selected.
 - components::REQ-005/AC-06: A segmented control used without a selected value fails the type check.
 
@@ -264,7 +267,9 @@ A placeholder block in `--border` (`deep`: `--border-strong`) that pulses betwee
 Applies to the select popup and the tooltip.
 
 - components::REQ-014/AC-01: When anything outside an open select popup or tooltip scrolls, it closes; a
-  scroll inside the popup does not close it.
+  scroll inside the popup does not close it. A scroll that comes within 150ms of a window resize belongs to the
+  resize, since the browser fires one when a resize shortens a scrolled area, and leaves an open select popup open
+  (components::REQ-014/AC-02).
 - components::REQ-014/AC-02: When the window is resized, an open tooltip closes and an open select popup
   moves to stay beside its trigger.
 
