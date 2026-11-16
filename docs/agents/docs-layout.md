@@ -30,6 +30,7 @@ redone on the real one. `/prototype` is still used for logic prototypes (state m
 | `docs/prototypes/` | Logic prototypes: design references for state models | `/prototype` |
 | `docs/postmortems/` | The causal chain of an incident | `/implement` |
 | `docs/ops/` | This project's runbooks (the actual values for signing, releasing and the like) | Defined per project |
+| `docs/dispatcher.md` | How the dispatcher session hands out tickets, what it decides for the owner and where it stops; only the dispatcher session follows it | Defined per project |
 
 **Process** — answers "how it was done at the time":
 
