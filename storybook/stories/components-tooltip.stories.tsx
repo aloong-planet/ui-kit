@@ -11,6 +11,8 @@ import { computed } from './support/computed'
 import { castShadows, positionerAncestorsWith } from './support/floating'
 import { isOpen, tooltip } from './support/tooltip'
 
+const frame = () => new Promise((resolve) => requestAnimationFrame(resolve))
+
 const meta = {
   title: 'Components/Tooltip',
 } satisfies Meta
@@ -29,13 +31,19 @@ const refresh = (
 // a fractional size, or beside a trigger at a fractional place, stands up to half a pixel off its gap
 const gap = (from: number, to: number) => Math.round(to - from)
 
-// Opens the tooltip of the trigger named `name` with the pointer and returns the trigger and the open tooltip
+// Opens the tooltip of the trigger named `name` with the pointer and returns the trigger and the open tooltip. Base UI
+// listens for the pointer on a trigger from an effect that can run after the story's first frame, so a hover sent
+// before then goes unheard; the pointer leaves and comes back until the tooltip opens.
 async function open(canvasElement: HTMLElement, name: string) {
   const trigger = [...canvasElement.querySelectorAll<HTMLElement>('button')].find(
     (candidate) => (candidate.getAttribute('aria-label') ?? candidate.textContent) === name,
   )
   if (!trigger) throw new Error(`no trigger ${name}`)
-  await userEvent.hover(trigger)
+  for (let attempt = 0; attempt < 10 && !isOpen(); attempt++) {
+    await userEvent.unhover(trigger)
+    await userEvent.hover(trigger)
+    for (let frames = 0; frames < 5 && !isOpen(); frames++) await frame()
+  }
   return { trigger, popup: await tooltip() }
 }
 
