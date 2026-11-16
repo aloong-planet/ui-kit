@@ -100,7 +100,7 @@ export const Default: Story = {
 }
 
 // components::REQ-006/AC-03: each size spaces the parts apart, and from the card's top, bottom and side edges, by its
-// spacing (14px `default`, 10px `sm`); a header or footer the caller gives a border towards the content keeps that
+// spacing (14px `default`, 10px `sm`); a header the caller gives `border-b`, or a footer given `border-t`, keeps that
 // spacing between the border and its own text
 export const Sizes: Story = {
   render: () => (
@@ -259,7 +259,8 @@ const picture =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='96'%3E%3Crect width='320' height='96' fill='%23a3a3a3'/%3E%3C/svg%3E"
 
 // components::REQ-006/AC-05: an image placed directly in a card spans its full width; as its first child it runs to
-// the card's top edge, as its last child to its bottom edge, and the card clips its corners to its own
+// the card's top edge, as its last child to its bottom edge, and the card clips its corners to its own. A pressed
+// selectable card keeps its ring over such an image, which tests/components-card.test.tsx reads from a screenshot.
 export const Image: Story = {
   render: () => (
     <div className="flex flex-wrap items-start gap-3">
@@ -277,10 +278,17 @@ export const Image: Story = {
         </CardHeader>
         <img data-part="image" alt="" src={picture} className="h-24 object-cover" />
       </Card>
+      <Card data-card="pressed" variant="selectable" defaultPressed className="w-72">
+        <img data-part="image" alt="" src={picture} className="h-24 object-cover" />
+        <CardHeader>
+          <CardTitle>Pressed, image first</CardTitle>
+          <CardDescription>The ring stays over the image</CardDescription>
+        </CardHeader>
+      </Card>
     </div>
   ),
   play: async ({ canvasElement }) => {
-    for (const name of ['top', 'bottom']) {
+    for (const name of ['top', 'bottom', 'pressed']) {
       const element = card(canvasElement, name)
       const inner = inside(element)
       const image = part(element, 'image').getBoundingClientRect()
@@ -288,7 +296,7 @@ export const Image: Story = {
       await expect({
         name,
         fullWidth: image.left === inner.left && image.width === inner.width,
-        edge: name === 'top' ? image.top === inner.top : image.bottom === inner.bottom,
+        edge: name === 'bottom' ? image.bottom === inner.bottom : image.top === inner.top,
         clipped: [style.overflow, style.borderTopLeftRadius],
       }).toEqual({ name, fullWidth: true, edge: true, clipped: ['hidden', '8.75px'] })
     }

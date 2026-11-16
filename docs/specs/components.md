@@ -148,9 +148,10 @@ Segments side by side in one bordered container with `rounded-md` corners, one o
 A card is made of parts, each optional, stacked in this order: a header, holding a title, a description under the
 title, and an action at the header's top-right corner beside them; the content; and a footer, its items in a row. The
 parts stand apart from each other and from the card's top and bottom edges by the spacing of its size, and the
-header, the content and the footer keep that spacing from the side edges. A header or a footer the caller gives a
-border towards the content keeps the spacing between that border and its own text. The card's text is in `text-sm`,
-with `rounded-lg` corners; the title is in `text-sm` semibold, the description in `text-xs` and `--muted-foreground`.
+header, the content and the footer keep that spacing from the side edges. A header the caller gives `border-b`, or a
+footer given `border-t`, keeps the spacing between that border and its own text; a border given with any other class
+gets none. The card's text is in `text-sm`, with `rounded-lg` corners; the title is in `text-sm` semibold, the
+description in `text-xs` and `--muted-foreground`.
 
 | Size | Spacing |
 |---|---|
@@ -332,8 +333,9 @@ Applies to the select popup and the tooltip.
 Applies to: every component in this spec. A component writes no text of its own: every visible or announced
 text it needs — the accessible name of an icon-only button, the drawer's close button, the label of a
 segmented control, the placeholder of a search box, the accessible name of a search box, a select or a tab row (an
-`aria-label`, or an `aria-labelledby` pointing at a label on the page) — is a required prop, so a missing one fails
-the type check. The app passes it from its own dictionary.
+`aria-label`, or an `aria-labelledby` pointing at a label on the page), the content of a `selectable` card, which
+names the button it is — is a required prop, so a missing one fails the type check. The app passes it from its own
+dictionary.
 
 ### components::CON-002 The owner confirms every component's look in Storybook (direct acceptance)
 
@@ -372,13 +374,16 @@ on light/dark.
 
 - **A label longer than its control**: it stays on one line and is cut with an ellipsis, while running text
   wraps (components::REQ-001/AC-05).
-- **An icon-only button, a drawer, a segmented control, a search box, a select or tabs without their text**: the
-  type check fails (components::CON-001); nothing renders a fallback text.
+- **An icon-only button, a drawer, a segmented control, a search box, a select, tabs or a `selectable` card without
+  their text**: the type check fails (components::CON-001); nothing renders a fallback text.
 - **A select, a segmented control or tabs without a selected value**: the type check fails; none has a state without
   a selection (components::REQ-004/AC-09, components::REQ-005/AC-06, components::REQ-013/AC-05).
 - **Something interactive inside a `selectable` card**, such as a button in its action: not supported. The card is a
   button itself, and a control inside a button cannot be used reliably by pointer, keyboard or screen reader; a card
   that needs an action of its own is a `default` card.
+- **A selected tab the app disables**, alone or with every other tab: it stays selected and its panel shows, also
+  once the tabs are enabled again, and the tabs report no change; the selection changes only when the user picks a tab
+  or the app passes a value, whether the app holds the selection or leaves it to the tabs (components::REQ-013).
 - **`page` tabs on a surface other than the page's ground**, such as inside a card: the selected tab keeps its
   `--background` ground, which joins a panel on the page's `--background` but not one on a `--card` ground; the tabs
   are drawn for the page (components::REQ-013).
@@ -421,6 +426,12 @@ specs; see `AGENTS.md`).
 - **The selection follows the arrow keys in the tabs**, as in the segmented control: their panels show at once,
   which is when the WAI-ARIA tabs pattern recommends it. The owner's choice. Rejected: Base UI's default, where the
   arrow keys move the focus only and Enter or Space selects.
+- **A selected tab the app disables stays selected.** A selection is the user's act or the app's: in the WAI-ARIA
+  tabs pattern a tab is selected when the user activates it, and a disabled tab is one that cannot be activated, not
+  one whose panel goes away; tabs the app holds and tabs that hold their own selection follow the same rule. Rejected:
+  Base UI's fallback for tabs that hold their own selection, which moves it to the first enabled tab, or to none when
+  no tab is enabled, and handing the selection to the first enabled tab whoever holds it, which would report a change
+  to an app that holds the selection when no one made one.
 - **The card keeps shadcn/ui's parts and sizes**: a header with a title, a description and an action, the content
   and a footer, at two spacings. An app gets a ready layout for what a card holds. The owner's choice. Rejected: one
   container, the app laying out its content.

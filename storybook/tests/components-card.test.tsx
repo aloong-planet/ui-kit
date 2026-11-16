@@ -3,14 +3,14 @@
 // rendered as Storybook renders it, inside the toolbar's ThemeProvider.
 import { composeStories } from '@storybook/react-vite'
 import { afterEach, expect, test, vi } from 'vitest'
-import { userEvent } from 'vitest/browser'
+import { page, userEvent } from 'vitest/browser'
 import preview from '../.storybook/preview'
 import * as stories from '../stories/components-card.stories'
-import { card, defaultLook, hoveredLook, look, pressedLook } from '../stories/support/card'
+import { card, defaultLook, hoveredLook, look, part, pressedLook } from '../stories/support/card'
 import { computed } from '../stories/support/computed'
 import { mount, unmount } from './support/mount'
 
-const { Selectable, Disabled } = composeStories(stories, preview)
+const { Selectable, Disabled, Image } = composeStories(stories, preview)
 
 afterEach(unmount)
 
@@ -89,4 +89,45 @@ test('a disabled selectable card ignores the pointer and cannot be pressed by po
   await userEvent.keyboard(' {Enter}')
   expect(pressedStates(canvas)).toEqual(['false', 'true'])
   expect(onPressedChange).not.toHaveBeenCalled()
+})
+
+// The colours of the first `count` CSS pixels a screenshot of `element` shows inwards from its top edge, down the
+// middle, or from its left edge, `down` pixels below its top. The screenshot can start a device pixel outside the
+// element, on the page's `--background` ground, which is skipped.
+async function inwards(element: HTMLElement, from: 'top' | 'left', count: number, down = 0) {
+  const shot = document.createElement('img')
+  shot.src = `data:image/png;base64,${await page.screenshot({ element, save: false })}`
+  await shot.decode()
+  const canvas = document.createElement('canvas')
+  canvas.width = shot.naturalWidth
+  canvas.height = shot.naturalHeight
+  const context = canvas.getContext('2d')
+  if (!context) throw new Error('no canvas')
+  context.drawImage(shot, 0, 0)
+  const scale = shot.naturalWidth / element.getBoundingClientRect().width
+  const colour = (step: number) => {
+    const [x, y] = from === 'top' ? [Math.floor(shot.naturalWidth / 2), step] : [step, Math.floor(down * scale)]
+    const [red, green, blue] = context.getImageData(x, y, 1, 1).data
+    return `rgb(${red}, ${green}, ${blue})`
+  }
+  const ground = computed('color', 'var(--background)')
+  let first = 0
+  while (colour(first) === ground) first++
+  return Array.from({ length: count }, (_, pixel) => colour(first + Math.floor((pixel + 0.5) * scale)))
+}
+
+// components::REQ-006 `selectable` row with AC-05: a pressed selectable card whose first child is an image keeps its 1px
+// `--primary` ring inside its 1px `--primary` border, over the image, along its top edge and along its sides beside the
+// image, which shows just inside the ring. Read from a screenshot: which of two layers the browser paints on top is in
+// no computed value.
+test('a pressed selectable card shows its ring over an image that runs to its edges', async () => {
+  const canvas = mount(<Image />)
+  const element = card(canvas, 'pressed')
+  await (part(element, 'image') as HTMLImageElement).decode()
+  const primary = computed('color', 'var(--primary)')
+  const image = computed('color', '#a3a3a3')
+  expect({ top: await inwards(element, 'top', 3), left: await inwards(element, 'left', 3, 40) }).toEqual({
+    top: [primary, primary, image],
+    left: [primary, primary, image],
+  })
 })

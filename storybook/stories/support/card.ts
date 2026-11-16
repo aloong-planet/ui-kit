@@ -25,14 +25,15 @@ export function inside(element: HTMLElement) {
 }
 
 // The look of a card and of its title and description: its ground, its border, its text colour and the rings drawn
-// inside its box
+// inside its box, on the layer over its children
 export function look(element: HTMLElement) {
   const style = getComputedStyle(element)
+  const layer = getComputedStyle(element, '::after')
   return {
     ground: style.backgroundColor,
     border: [style.borderTopWidth, style.borderTopStyle, style.borderTopColor],
     text: style.color,
-    ring: style.boxShadow === 'none' ? [] : castShadows(style.boxShadow),
+    ring: [...castShadows(style.boxShadow), ...castShadows(layer.boxShadow)].filter((shadow) => shadow !== 'none'),
     title: getComputedStyle(part(element, 'title')).color,
     description: getComputedStyle(part(element, 'description')).color,
   }
@@ -56,9 +57,10 @@ export const hoveredLook = () => ({
 })
 
 // A pressed `selectable` card: also a 1px `--primary` ring inside its box, and its title in `--primary`; its
-// description keeps `--muted-foreground`
+// description keeps `--muted-foreground`. The ring's layer covers the card's border box and draws 2px, of which the
+// card's clip leaves the 1px inside the border.
 export const pressedLook = () => ({
   ...hoveredLook(),
-  ring: [`${computed('color', 'var(--primary)')} 0px 0px 0px 1px inset`],
+  ring: [`${computed('color', 'var(--primary)')} 0px 0px 0px 2px inset`],
   title: computed('color', 'var(--primary)'),
 })

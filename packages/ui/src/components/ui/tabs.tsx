@@ -1,7 +1,7 @@
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs"
 import { cva } from "class-variance-authority"
 import { cn } from "cn"
-import type { ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 
 // components::REQ-013, restyled from shadcn/ui's Mira tabs to the kit's look and scale (components::CON-003), and taking
 // its tabs as data, as the segmented control takes its options: a row of tabs over their panels, each tab carrying its
@@ -9,9 +9,10 @@ import type { ReactNode } from "react"
 // The arrow keys move between the tabs and select each enabled tab they reach, as the WAI-ARIA tabs pattern recommends
 // for panels that show at once; Base UI's default would leave the selection to Enter or Space. A disabled tab is muted
 // and lets the pointer through (components::REQ-001/AC-02); the arrow keys still reach it, without selecting it
-// (components::REQ-013/AC-04). Keyboard focus shows a 2px `--ring` outline 2px outside a tab or the panel, pointer
-// focus none (components::REQ-001/AC-01). Labels stay on one line and are cut with an ellipsis
-// (components::REQ-001/AC-05); no colour changes with a transition (components::REQ-001/AC-04).
+// (components::REQ-013/AC-04). A selected tab the app disables stays selected, its panel showing: the selection
+// changes only when the user picks a tab or the app passes a value. Keyboard focus shows a 2px `--ring` outline 2px
+// outside a tab or the panel, pointer focus none (components::REQ-001/AC-01). Labels stay on one line and are cut
+// with an ellipsis (components::REQ-001/AC-05); no colour changes with a transition (components::REQ-001/AC-04).
 const rootVariants = cva("flex min-w-0 flex-col", {
   variants: {
     variant: {
@@ -96,17 +97,25 @@ function Tabs<V extends string>({
   className,
   tabs,
   variant = "page",
+  value,
+  defaultValue,
   onValueChange,
   "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledBy,
   ...props
 }: TabsProps<V>) {
+  // Uncontrolled tabs hold their selection here and pass it on as a controlled value. Left uncontrolled, Base UI would
+  // move the selection off a tab the app disables, to the first enabled tab, or to none when no tab is enabled, and
+  // would not select one again once the tabs are enabled; a controlled root keeps the value it is given.
+  const [selected, setSelected] = useState(defaultValue)
   return (
     <TabsPrimitive.Root
       className={cn(rootVariants({ variant }), className)}
-      // Base UI also reports a selection it moves by itself, to `null` when no enabled tab is left to move it to
-      onValueChange={(value: V | null) => {
-        if (value !== null) onValueChange?.(value)
+      value={value ?? selected}
+      // A controlled root reports only the tab the user picks
+      onValueChange={(next: V) => {
+        setSelected(next)
+        onValueChange?.(next)
       }}
       {...props}
     >

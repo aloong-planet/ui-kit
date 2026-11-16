@@ -1,7 +1,11 @@
 // The Tabs' stories (stories/components-tabs.stories.tsx) under a real pointer and keyboard: Playwright's, which the
 // browser treats as the user's, so it applies `:hover` and `:focus-visible` as it would for a person. Each story is
-// rendered as Storybook renders it, inside the toolbar's ThemeProvider.
+// rendered as Storybook renders it, inside the toolbar's ThemeProvider. The last tests render tabs of their own, as an
+// app would, for what no story shows: tabs named by a label on the page, and tabs whose tabs the app disables.
+import { Tabs } from '@aloong-planet/ui'
 import { composeStories } from '@storybook/react-vite'
+import { useState } from 'react'
+import { within } from 'storybook/test'
 import { afterEach, expect, test, vi } from 'vitest'
 import { userEvent } from 'vitest/browser'
 import preview from '../.storybook/preview'
@@ -90,6 +94,14 @@ test('the arrow keys and clicks select a tab and show its panel', async () => {
   expect(onValueChange.mock.calls.map(([value]) => value)).toEqual(['activity', 'settings', 'activity', 'overview', 'settings'])
 })
 
+// components::REQ-013/AC-03 on tabs that hold their own selection, given no `onValueChange`: a click selects a tab and
+// its panel shows below the row
+test('a click selects a tab of uncontrolled tabs and shows its panel', async () => {
+  const canvas = mount(<Pill />)
+  await userEvent.click(tab(canvas, 'Open'))
+  expect(shown(canvas)).toEqual({ selected: ['Open3'], panels: ['The conversations still open.'] })
+})
+
 // components::REQ-001/AC-01: keyboard focus shows a 2px `--ring` outline 2px outside the tab, and on the panel when Tab
 // moves on to it; focus from the pointer shows none
 test('keyboard focus outlines a tab and the panel in --ring 2px outside them, and pointer focus does not', async () => {
@@ -128,4 +140,63 @@ test('a disabled tab is reached by the arrow keys without being selected, and ig
   await userEvent.click(settings, { force: true })
   expect(shown(canvas).selected).toEqual(['Activity12'])
   expect(vi.mocked(onValueChange).mock.calls.map(([value]) => value)).toEqual(['activity'])
+})
+
+const project = [
+  { value: 'overview', label: 'Overview', panel: 'Overview panel' },
+  { value: 'activity', label: 'Activity', panel: 'Activity panel' },
+]
+
+// components::REQ-013/AC-02 and components::CON-001: tabs named by a label on the page, through `aria-labelledby`, are
+// announced as a tab list under that label's text
+test('tabs named with aria-labelledby are announced under the label it points at', () => {
+  const canvas = mount(
+    <>
+      <h2 id="project-sections">Sections</h2>
+      <Tabs aria-labelledby="project-sections" tabs={project} defaultValue="overview" />
+    </>,
+  )
+  expect(within(canvas).queryAllByRole('tablist', { name: 'Sections' }).length).toBe(1)
+})
+
+// Uncontrolled tabs, opening on Activity, whose app disables and enables again either every tab or only the selected
+// one with a button of its own
+function Disabling({ which, onValueChange }: { which: 'every' | 'selected'; onValueChange: (value: string) => void }) {
+  const [disabled, setDisabled] = useState(false)
+  return (
+    <>
+      <button type="button" onClick={() => setDisabled(!disabled)}>
+        Switch
+      </button>
+      <Tabs
+        aria-label="Project"
+        tabs={project.map((each) => ({ ...each, disabled: disabled && (which === 'every' || each.value === 'activity') }))}
+        defaultValue="activity"
+        onValueChange={onValueChange}
+      />
+    </>
+  )
+}
+
+// components::REQ-013: tabs always have a selected tab. A disabled selected tab stays selected with its panel showing,
+// whether the other tabs are disabled with it or not, and once the tabs are enabled again; the tabs report no change,
+// since neither the user nor the app made one
+test.each([
+  { disabling: 'every tab', which: 'every' as const },
+  { disabling: 'only the selected tab', which: 'selected' as const },
+])('uncontrolled tabs keep their selected tab and its panel while $disabling is disabled, and after', async ({ which }) => {
+  const onValueChange = vi.fn()
+  const canvas = mount(<Disabling which={which} onValueChange={onValueChange} />)
+  const button = within(canvas).getByRole('button', { name: 'Switch' })
+  const before = shown(canvas)
+  await userEvent.click(button)
+  const whileDisabled = shown(canvas)
+  await userEvent.click(button)
+  const activity = { selected: ['Activity'], panels: ['Activity panel'] }
+  expect({ before, whileDisabled, after: shown(canvas), reported: onValueChange.mock.calls }).toEqual({
+    before: activity,
+    whileDisabled: activity,
+    after: activity,
+    reported: [],
+  })
 })

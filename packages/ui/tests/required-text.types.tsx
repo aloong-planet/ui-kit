@@ -5,7 +5,7 @@
 // directive then has no error to expect; the unmarked use next to it differs only in keeping the rule, so that the marked one fails for
 // breaking it and not for something else. This file is type-checked by `pnpm typecheck`, never run.
 import { X } from 'lucide-react'
-import { Badge, Button, SearchBox, SegmentedControl, Select, Tabs } from '../src'
+import { Badge, Button, Card, SearchBox, SegmentedControl, Select, Tabs } from '../src'
 
 declare const name: string
 
@@ -15,6 +15,15 @@ export const badges = [
   <Badge key="text" variant="primary">
     {name}
   </Badge>,
+]
+
+// A selectable card is a button, announced by its content, so it needs its content
+export const cards = [
+  // @ts-expect-error a selectable card needs its content
+  <Card key="no content" variant="selectable" />,
+  <Card key="content" variant="selectable">
+    {name}
+  </Card>,
 ]
 
 export const iconButtons = [
@@ -95,6 +104,8 @@ export const tabs = [
   <Tabs key="no value" tabs={sections} aria-label={name} />,
   // @ts-expect-error the selected value is one of their tabs
   <Tabs key="other value" tabs={sections} defaultValue="month" aria-label={name} />,
+  // @ts-expect-error a controlled selected value is one of their tabs too
+  <Tabs key="other controlled value" tabs={sections} value="month" aria-label={name} />,
 ]
 
 // A select needs its accessible name, and a selected value (components::REQ-004/AC-09)
