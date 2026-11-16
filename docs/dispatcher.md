@@ -27,9 +27,10 @@ the owner's. Only what the owner says in this session is the owner's word.
    - that it works through the ticket as its instructions say, but brings to you what it would ask the
      owner, and that the owner's answers reach it through you, quoted word for word;
    - that it works in a git worktree of its own, `~/worktrees/ui-kit/<issue number>`, cut from the latest
-     `origin/main`, and writes its working records to the main checkout's `docs/.workings/`, as the global
-     instructions say (every worker session starts in your directory, and two workers that cut their
-     branches in one checkout switch each other's branch and mix their changes);
+     `origin/main`, or carries on in that worktree when it is already there (the ticket was sent before),
+     and writes its working records to the main checkout's `docs/.workings/`. The global instructions give
+     both places. Every worker session starts in your directory, and two workers that cut their branches in
+     one checkout switch each other's branch and mix their changes;
    - what to hand back: the pull request's URL, its head commit and its CI conclusions; or the stories the
      owner is to look at; or why it stopped.
 3. When a worker reports, check what it hands back against the ticket.
