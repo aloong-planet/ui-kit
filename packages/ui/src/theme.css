@@ -11,8 +11,9 @@
    - A `data-theme` block holds only the tokens that change with the theme, in light and in dark alike; the others
      come from the two blocks above. Its dark block outranks both of them (three selector parts against two), so the
      outcome does not depend on the order of the blocks.
-   An app declares a token of its own on the same selectors (theming::REQ-009). `pnpm check:tokens` checks that
-   every token is declared in every block where it belongs. */
+   An app declares a token of its own on the same selectors (theming::REQ-009). `pnpm check:tokens` takes the tokens
+   from the token table of theming::REQ-004, and checks that every token is declared in every block where it belongs
+   and has its entry in the Tailwind mapping below. */
 
 /* Tailwind's `dark:` variant follows the root's `dark` class, as the kit's light/dark does, and not the system's
    `prefers-color-scheme`, which a locked light or dark does not change */
