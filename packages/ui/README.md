@@ -147,3 +147,7 @@ Write a theme's dark value on `:root.dark[data-theme="…"]`: it outranks both `
 `theme.css` draws a slim scrollbar for every scrolling area, in place of the platform's. Do not set the standard
 `scrollbar-width` or `scrollbar-color` on an element: Chromium-based browsers then drop the kit's scrollbar for that
 element and draw the platform's.
+
+## License
+
+MIT. The full text is in the `LICENSE` file that comes with the package.
