@@ -28,12 +28,6 @@ there.
 
 ## Functional Requirements
 
-> Pending: of these components only the button, the search box, the select, the segmented control, the tooltip, the
-> toast, the card, the badge, the skeleton and the tabs are built. Each other one's first sizes (padding, heights, font
-> sizes, weights, radii) are taken from the matching element of the Agent Shed app (`aloong-planet/agentshed`, commit
-> `14b6d5b`, `src/renderer/src/theme.css`) and then confirmed by the owner in Storybook (components::CON-002): drawer
-> `.file-drawer`; confirm dialog `.reader.dlg`.
-
 ### components::REQ-001 Shared states
 
 Applies to every interactive component in this spec.
@@ -230,6 +224,11 @@ holding its title in `--primary` and an icon-only close button at its top-right 
 `--overlay`. Below the header, its body holds the content the caller passes. The app opens it and closes it: it
 shows while the app says it is open, and reports each way of closing it to the app.
 
+The panel has a 1px `--border-strong` border on its left edge. Its header has 16px of padding above, 12px below and
+18px at its left, keeps 48px at its right clear for the close button, and is ruled off from the body by a 1px
+`--border` line; the title is `text-lg` bold. The close button is an `icon` button 12px from the panel's top and right
+edges. The body has 10px of padding.
+
 - components::REQ-009/AC-01: Esc, a click on the scrim, and the close button each close it.
 - components::REQ-009/AC-02: While open, keyboard focus moves into it and stays inside it, the page behind
   it does not scroll, and it is announced as a dialog under its title; on closing, focus returns to the
@@ -247,6 +246,11 @@ shows while the app says it is open, and reports each way of closing it to the a
 A box `min(520px, 88vw)` wide, centred near the top of the window over a scrim in `--overlay`, with a title, a body
 the caller passes, and its buttons at the bottom right — cancel first, then the confirming action. The app opens it and
 closes it, as it does the drawer, and is told separately when the confirming action is chosen.
+
+The box's top is 7% of the window's height below the window's top, and it is at most 82% of the window's height tall.
+It has `rounded-xl` corners and 22px of padding above and below and 26px beside. The title is `text-lg` bold; the body
+is `text-sm` in `--muted-foreground` with a line height of 1.7, 12px below the title and 14px above the buttons, which
+stand 8px apart.
 
 - components::REQ-010/AC-01: The cancel button is a `default` button; the confirming action is a `danger`
   button when the caller marks the action destructive, and a `primary` button otherwise.
@@ -600,6 +604,14 @@ specs; see `AGENTS.md`).
   kit's floating surfaces share one form, and the select popup does not move; shadcn/ui's motion classes come from
   `tw-animate-css`, which the kit does not depend on. Rejected: shadcn/ui's slide and fade of the panel, and the fade
   and zoom of the dialog.
+- **The floating surfaces stand in a fixed order** (components::REQ-001/AC-06): tooltips in front, then toasts, then
+  select popups, drawers and confirm dialogs, among which the one opened last is in front. A toast reports what the
+  user has just done, often from inside a drawer or a dialog, and the Toaster mounts before them; a tooltip is
+  short-lived and anchored to what the pointer or focus is on, so it stays readable over a toast. MUI's and Chakra UI's
+  z-index scales order them the same way (MUI: drawer 1200, modal 1300, snackbar 1400, tooltip 1500; Chakra UI:
+  overlay 1300, modal 1400, popover 1500, toast 1700, tooltip 1800). Rejected: one level for every surface, under which
+  a toast raised from an open drawer or dialog is drawn under it; and raising only the toasts, which puts a toast over
+  a tooltip.
 - **One floating shadow, `--shadow-pop`, for every floating surface.** Rejected: a shadow per kind of
   surface, which gives the same depth several looks.
 
