@@ -44,7 +44,8 @@ Applies to every interactive component in this spec.
 
 - components::REQ-001/AC-01: Keyboard focus shows a 2px `--ring` outline. It sits 2px outside the element,
   except inside a container that clips its children (the segmented control), where it sits 2px inside.
-  Pointer focus shows no outline.
+  Pointer focus shows no outline. The search box shows its focus on its border instead, whether the keyboard or the
+  pointer focused it (components::REQ-003/AC-02).
 - components::REQ-001/AC-02: A disabled control shows its muted look, the control at 45% opacity, does not react
   to hover, and cannot be activated by pointer or keyboard.
 - components::REQ-001/AC-03: Select popups, drawers and dialogs use the `--popover` ground and a 1px
