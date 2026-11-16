@@ -1,7 +1,7 @@
 // The kit's floating surfaces together, as an app holds them: the select popup, the tooltip, a toast, the drawer and the
 // confirm dialog, under a real pointer and keyboard (Playwright's). Each test renders an app of its own, styled by
 // Storybook's stylesheet, which is written as a consumer app's; the first puts it under a ThemeProvider of its own, in
-// a theme and a light/dark other than the toolbar's default.
+// purple light and in amber dark, two pairs of theme and light/dark other than the toolbar's default pair.
 import { Button, ConfirmDialog, Drawer, Select, ThemeProvider, toast, Toaster, Tooltip } from '@aloong-planet/ui'
 import { useState } from 'react'
 import '../src/styles.css'
