@@ -1,10 +1,11 @@
 // The uses of a component its props reject. components::CON-001: every text a component needs is a required prop, so a
-// component used without it fails the type check; components::REQ-002: a link takes no size. Each use marked
+// component used without it fails the type check; components::REQ-002: a link takes no size; components::REQ-004/AC-09
+// and REQ-005/AC-06: a select and a segmented control take a selected value, one of their options. Each use marked
 // `@ts-expect-error` breaks one of these, and typecheck fails if one of them compiles, since its directive then has no
 // error to expect; the unmarked use next to it differs only in keeping the rule, so that the marked one fails for
 // breaking it and not for something else. This file is type-checked by `pnpm typecheck`, never run.
 import { X } from 'lucide-react'
-import { Button, SearchBox, SegmentedControl } from '../src'
+import { Button, SearchBox, SegmentedControl, Select } from '../src'
 
 declare const name: string
 
@@ -69,4 +70,16 @@ export const segmentedControls = [
   <SegmentedControl key="no value" options={ranges} aria-label={name} />,
   // @ts-expect-error the selected value is one of its options
   <SegmentedControl key="other value" options={ranges} defaultValue="month" aria-label={name} />,
+]
+
+// A select needs its accessible name, and a selected value (components::REQ-004/AC-09)
+export const selects = [
+  // @ts-expect-error a select needs its accessible name
+  <Select key="no name" options={ranges} defaultValue="day" />,
+  <Select key="label" options={ranges} defaultValue="day" aria-label={name} />,
+  <Select key="labelled by" groups={[ranges]} value="week" aria-labelledby={name} />,
+  // @ts-expect-error a select needs a selected value
+  <Select key="no value" options={ranges} aria-label={name} />,
+  // @ts-expect-error the selected value is one of its options
+  <Select key="other value" options={ranges} defaultValue="month" aria-label={name} />,
 ]

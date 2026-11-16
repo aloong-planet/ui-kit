@@ -11,10 +11,10 @@
 // to with this stylesheet, so it is caught whatever form it is written in; the strings it writes, its imports, its
 // style objects and the colour attributes of its elements are read too.
 // - components::CON-004: in any declaration, no colour literal, no named or system colour, no colour of Tailwind's own
-//   theme, no general token changed by a modifier, and no variable but a general token or one of Tailwind's own (a
-//   colour property set to anything else is reported too); and no branch on the theme or on light/dark (a selector or
-//   condition on `.dark`, `data-theme` or `prefers-color-scheme`, the class `dark` or `dataset.theme` in script, the
-//   theming modules).
+//   theme, no general token changed by a modifier, and no variable but a general token, one of Tailwind's own or, in a
+//   width or a height, one of the lengths Base UI sets on a popup's positioner (a colour property set to anything else
+//   is reported too); and no branch on the theme or on light/dark (a selector or condition on `.dark`, `data-theme` or
+//   `prefers-color-scheme`, the class `dark` or `dataset.theme` in script, the theming modules).
 // - components::REQ-001/AC-04: no transition of a colour property or of `all`.
 // - theming::REQ-008/AC-01: font families, font sizes and radii only from the scale theme.css defines.
 import { readdirSync, readFileSync } from 'node:fs'
@@ -205,6 +205,10 @@ const colourKeyword = /^(transparent|currentcolor|inherit|initial|unset|revert|n
 const colourTransition =
   /\b(all|color|background(-color)?|border(-[a-z]+)*-color|outline-color|text-decoration-color|fill|stroke|caret-color|accent-color|box-shadow|text-shadow|column-rule-color|scrollbar-color)\b|--tw-gradient/
 const themingModule = /(^|\/)(theming|apply-theme|theme-provider)$/
+// The lengths Base UI sets on a popup's positioner, which size the popup by its anchor and by the space the window
+// leaves it (components::REQ-004/AC-02, AC-07); the size properties may read them
+const positionerLengths = new Set(['--anchor-width', '--available-width', '--available-height'])
+const sizeProperty = /^(min-|max-)?(width|height)$/
 
 // What is wrong with one declaration a component sets, if anything
 function declarationProblems({ prop, value, context }: Declaration): string[] {
@@ -222,6 +226,8 @@ function declarationProblems({ prop, value, context }: Declaration): string[] {
         found.push(`sets ${prop} to ${name}, a colour of Tailwind's theme`)
     } else if (tokens.includes(name) || name === scaleBase || name.startsWith('--tw-')) {
       // a general token, the base of the radius steps, or a variable of a Tailwind utility
+    } else if (positionerLengths.has(name) && sizeProperty.test(prop)) {
+      // a length Base UI sets on a popup's positioner, sizing the popup
     } else if (themeValue === undefined)
       found.push(`sets ${prop} to ${name}, which is neither a general token nor a variable of Tailwind's`)
     else if (colourLiteral.test(themeValue) || coloursNamedIn(themeValue).length > 0)
