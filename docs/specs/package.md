@@ -27,7 +27,8 @@ The package exposes these entry points, and no others:
 | `@aloong-planet/ui/theme.css` | The theme stylesheet: the general tokens for every theme and light/dark, their Tailwind theme mapping, the type and radius scale, the scrollbars, and the skeleton's pulse |
 
 > Pending: of the components, `@aloong-planet/ui` provides only the Button, the SearchBox, the Select, the
-> SegmentedControl, the Card with its parts, the Badge, the Skeleton and the Tabs yet.
+> SegmentedControl, the Tooltip, the toasts (the Toaster and `toast`), the Card with its parts, the Badge, the
+> Skeleton and the Tabs yet.
 
 - package::REQ-001/AC-01: Each entry point in the table resolves when imported from a consumer project.
 - package::REQ-001/AC-02: A bundle that imports only `@aloong-planet/ui/apply-theme` contains no React

@@ -1,6 +1,6 @@
 // The parts of a Card that the Card's stories and tests read, and the looks they compare a card with
 import { computed } from './computed'
-import { castShadows } from './select'
+import { castShadows } from './floating'
 
 // The card a story marks with `data-card="<name>"`, and a part inside it marked with `data-part="<name>"`
 export function card(canvas: HTMLElement, name: string): HTMLElement {

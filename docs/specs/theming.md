@@ -71,7 +71,7 @@ an existing token.
 | `--card` | Cards, the search box and the pill tabs |
 | `--card-foreground` | Text on cards |
 | `--popover` | Floating surfaces: select popups, drawers, dialogs |
-| `--popover-foreground` | Text on floating surfaces |
+| `--popover-foreground` | Text on select popups, drawers and dialogs |
 | `--primary` | The brand colour: selected text, the primary button's fill |
 | `--primary-foreground` | Text and icons on a `--primary` fill |
 | `--primary-strong` | The deeper brand text: the selected option's label, the selected pill tab |
@@ -83,7 +83,7 @@ an existing token.
 | `--destructive` | The danger button's fill |
 | `--destructive-foreground` | Text on it |
 | `--border` | Dividers, card borders, the rule and the selected tab's border of page tabs, the ground of the muted badge, skeleton blocks |
-| `--border-strong` | Borders of controls and floating surfaces, of `neutral` and `dashed` badges and of dashed cards; the deep skeleton block |
+| `--border-strong` | Borders of controls, of select popups, drawers and dialogs, of `neutral` and `dashed` badges and of dashed cards; the deep skeleton block |
 | `--input` | Borders of text fields |
 | `--ring` | The keyboard focus ring and a focused field's border |
 | `--success` / `--success-foreground` | Success toasts and badges |
@@ -91,8 +91,8 @@ an existing token.
 | `--error` / `--error-foreground` | Error toasts |
 | `--note` / `--note-foreground` | Note badges |
 | `--risk` / `--risk-foreground` | The dashed border and the text of a risk badge |
-| `--tooltip` / `--tooltip-foreground` | Tooltips, dark in every theme and in light and dark |
-| `--tooltip-warning` | A warning line inside a tooltip |
+| `--tooltip` / `--tooltip-foreground` | Tooltips, an inverse surface: the colour of `--foreground` as their ground and of `--background` as their text, in every theme and in light and dark |
+| `--tooltip-warning` | A warning line inside a tooltip, readable on its ground in light and in dark |
 | `--overlay` | The scrim behind drawers and dialogs, the same in light and dark |
 | `--shadow-pop` | The shadow of every floating surface |
 | `--scrollbar-thumb` / `--scrollbar-thumb-hover` | The scrollbar thumb at rest and under the pointer, the same in every theme |
@@ -257,6 +257,10 @@ specs; see `AGENTS.md`).
   caller's size class with theirs without being configured; an app that uses the kit gets the same scale for its own
   elements. Rejected: steps under names of the kit's own beside Tailwind's, which `cn` must be told about, since it
   drops an unknown size class that sits beside a text colour class.
+- **The tooltip is an inverse surface** (theming::REQ-004): its ground takes the colour of the page's text and its
+  text the colour of the page, so it stands out from the page in light and in dark alike; shadcn/ui's tooltip is
+  drawn the same way, with its foreground as ground and its background as text. Rejected: a tooltip dark in light
+  and in dark, which in dark lies within a few levels of the page's ground and is set apart only by its shadow.
 - **The kit draws the scrollbars** (theming::REQ-010). The owner's choice: every page that uses the kit gets
   the same slim scrollbar instead of the platform's, whose width, track and visibility vary by platform and
   by system setting. Rejected: leaving scrollbars to each app.

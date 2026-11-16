@@ -16,5 +16,7 @@ export { SegmentedControl, type SegmentedControlProps } from './components/ui/se
 export { Select, type SelectProps } from './components/ui/select'
 export { Skeleton, type SkeletonProps } from './components/ui/skeleton'
 export { Tabs, type TabsProps } from './components/ui/tabs'
+export { toast, Toaster, type ToasterProps } from './components/ui/toast'
+export { Tooltip, type TooltipProps } from './components/ui/tooltip'
 export type { Mode, Theme } from './theming'
 export { ThemeProvider, type ThemeProviderProps } from './theme-provider'

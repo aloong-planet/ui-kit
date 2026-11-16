@@ -49,8 +49,10 @@
   --note-foreground: #5c5100;
   --risk: #d79a5b;
   --risk-foreground: #b3703a;
-  --tooltip: #1b1b1f;
-  --tooltip-foreground: #ffffff;
+  /* The tooltip is an inverse surface (theming::REQ-004): the text's colour as its ground and the page's as its
+     text, in the theme in force, which sets `--foreground` and `--background` on this same root */
+  --tooltip: var(--foreground);
+  --tooltip-foreground: var(--background);
   --tooltip-warning: #f0bd8c;
   --overlay: rgba(0, 0, 0, 0.35);
   --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.14);
@@ -133,9 +135,9 @@
   --note-foreground: #f0dd8a;
   --risk: #8a5f34;
   --risk-foreground: #f0bd8c;
-  --tooltip: #1b1b1f;
-  --tooltip-foreground: #ffffff;
-  --tooltip-warning: #f0bd8c;
+  --tooltip: var(--foreground);
+  --tooltip-foreground: var(--background);
+  --tooltip-warning: #8f4a10;
   --overlay: rgba(0, 0, 0, 0.35);
   --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.55);
   --scrollbar-thumb: rgba(255, 255, 255, 0.22);

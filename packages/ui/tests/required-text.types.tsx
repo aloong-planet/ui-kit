@@ -5,7 +5,7 @@
 // directive then has no error to expect; the unmarked use next to it differs only in keeping the rule, so that the marked one fails for
 // breaking it and not for something else. This file is type-checked by `pnpm typecheck`, never run.
 import { X } from 'lucide-react'
-import { Badge, Button, Card, SearchBox, SegmentedControl, Select, Tabs } from '../src'
+import { Badge, Button, Card, SearchBox, SegmentedControl, Select, Tabs, toast, Toaster, Tooltip } from '../src'
 
 declare const name: string
 
@@ -119,3 +119,30 @@ export const selects = [
   // @ts-expect-error the selected value is one of its options
   <Select key="other value" options={ranges} defaultValue="month" aria-label={name} />,
 ]
+
+// A tooltip needs its text
+export const tooltips = [
+  // @ts-expect-error a tooltip needs its text
+  <Tooltip key="no text" warning={name}>
+    <Button>{name}</Button>
+  </Tooltip>,
+  <Tooltip key="text" text={name} warning={name}>
+    <Button>{name}</Button>
+  </Tooltip>,
+]
+
+// A Toaster needs the label of its region, and a toast its text
+export const toasters = [
+  // @ts-expect-error a Toaster needs the label of its region
+  <Toaster key="no label" />,
+  <Toaster key="label" aria-label={name} />,
+]
+
+export function raiseToasts() {
+  // @ts-expect-error a toast needs its text
+  toast.success()
+  toast.success(name)
+  // @ts-expect-error an error toast needs it too
+  toast.error()
+  toast.error(name)
+}

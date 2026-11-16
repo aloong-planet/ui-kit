@@ -43,15 +43,4 @@ export default defineConfig(
     extends: [tseslint.configs.disableTypeChecked],
     languageOptions: { globals: globals.node },
   },
-  // These two files are the github-ops skill's CI routing assets, which must stay identical to the skill's copies
-  // except for comments, so their code cannot be changed here. Retire each entry once the skill's asset passes the
-  // rule and is copied in again.
-  {
-    files: ['.github/ci/ci-gate.mjs'],
-    rules: { 'preserve-caught-error': 'off' },
-  },
-  {
-    files: ['.github/ci/ci-routing.test.mjs'],
-    rules: { '@typescript-eslint/no-unused-vars': 'off' },
-  },
 )

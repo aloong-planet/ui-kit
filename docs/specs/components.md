@@ -28,12 +28,11 @@ there.
 
 ## Functional Requirements
 
-> Pending: of these components only the button, the search box, the select, the segmented control, the card, the
-> badge, the skeleton and the tabs are built. Each other one's first sizes (padding, heights, font sizes, weights,
-> radii) are taken from the matching element of the Agent Shed app (`aloong-planet/agentshed`, commit `14b6d5b`,
-> `src/renderer/src/theme.css` unless named otherwise) and then confirmed by the owner in Storybook
-> (components::CON-002): tooltip `TIP_LOOK` in `FloatingBox.tsx`; drawer `.file-drawer`; confirm dialog `.reader.dlg`;
-> toast `.toasts`, `.toast`.
+> Pending: of these components only the button, the search box, the select, the segmented control, the tooltip, the
+> toast, the card, the badge, the skeleton and the tabs are built. Each other one's first sizes (padding, heights, font
+> sizes, weights, radii) are taken from the matching element of the Agent Shed app (`aloong-planet/agentshed`, commit
+> `14b6d5b`, `src/renderer/src/theme.css`) and then confirmed by the owner in Storybook (components::CON-002): drawer
+> `.file-drawer`; confirm dialog `.reader.dlg`.
 
 ### components::REQ-001 Shared states
 
@@ -204,17 +203,22 @@ the caller names another of these variants:
 
 ### components::REQ-008 Tooltip
 
-One form: `--tooltip` ground, `--tooltip-foreground` text, no border, and the text the caller passes, which
-may include a line in `--tooltip-warning`.
+One form: `--tooltip` ground, `--tooltip-foreground` text, no border, and the text the caller passes, followed by a
+warning line in `--tooltip-warning` when the caller passes one apart from the text. Its text is `text-sm`, with
+`rounded-lg` corners and 6px of padding above and below and 10px beside, and wraps within 440px; the warning line
+stands 4px below the text.
 
 - components::REQ-008/AC-01: It opens when its trigger is hovered or receives keyboard focus, and closes when
-  neither holds.
+  neither holds or when its trigger is clicked.
 - components::REQ-008/AC-02: It sits 6px from its trigger on the side the caller chooses, below by default,
   and moves to the opposite side when there is not room.
 - components::REQ-008/AC-03: Its text is the trigger's description for screen readers; the tooltip itself
-  takes no focus and lets the pointer pass through it.
+  takes no focus, and the pointer can move onto it without it closing.
 - components::REQ-008/AC-04: It shows the `--tooltip` ground, `--tooltip-foreground` text and no border; a
-  line the caller marks as a warning shows in `--tooltip-warning`.
+  warning line the caller passes shows after the text, in `--tooltip-warning`.
+- components::REQ-008/AC-05: It opens as soon as the pointer is over its trigger, with no delay.
+- components::REQ-008/AC-06: Once a click on its trigger has closed it, it stays closed while the pointer stays on
+  the trigger, and opens again when the pointer leaves the trigger and comes back.
 
 ### components::REQ-009 Drawer
 
@@ -250,7 +254,11 @@ passes, and its buttons at the bottom right — cancel first, then the confirmin
 ### components::REQ-011 Toast
 
 Toasts appear at the bottom centre of the window, 18px above its bottom edge, stacked in a column 8px apart
-with the newest at the bottom. Any code in the app can raise one.
+with the newest at the bottom. Any code in the app can raise one, of a variant and with its text. An app shows them
+through one Toaster (components::CON-005), which carries the label screen readers announce for the region the toasts
+appear in. A toast takes keyboard focus, so it shows the keyboard focus ring of components::REQ-001/AC-01. Its text
+is `text-sm`, with `rounded-lg` corners and 10px of padding above and below and 16px beside, and wraps within 440px.
+Each toast is drawn in front of the older ones above it, so its shadow falls on them and theirs not on it.
 
 | Variant | Look |
 |---|---|
@@ -265,6 +273,13 @@ with the newest at the bottom. Any code in the app can raise one.
   stacked in a column 8px apart with the newest at the bottom.
 - components::REQ-011/AC-05: Each variant renders as its row describes.
 - components::REQ-011/AC-06: Code outside any React component can raise a toast.
+- components::REQ-011/AC-07: A toast can be swiped away, down or to the right, with the pointer.
+- components::REQ-011/AC-08: Every toast raised stays in the column until it disappears: however many are raised,
+  none is hidden to make room for another.
+- components::REQ-011/AC-09: A toast raised while no Toaster is mounted is held, and appears when a Toaster mounts;
+  it disappears 3200ms after it appears (components::REQ-011/AC-01).
+- components::REQ-011/AC-10: From the toasts' region, which F6 moves the keyboard to, Tab moves to the newest toast and
+  on to each older one in turn.
 
 ### components::REQ-012 Skeleton
 
@@ -313,7 +328,8 @@ Applies to the select popup and the tooltip.
 - components::REQ-014/AC-01: When anything outside an open select popup or tooltip scrolls, it closes; a
   scroll inside the popup does not close it. A scroll that comes within 150ms of a window resize belongs to the
   resize, since the browser fires one when a resize shortens a scrolled area, and leaves an open select popup open
-  (components::REQ-014/AC-02).
+  (components::REQ-014/AC-02). The scroll the browser makes to bring a tooltip's trigger into view as it takes
+  keyboard focus, at once or smoothly, belongs to the focus and leaves the tooltip open.
 - components::REQ-014/AC-02: When the window is resized, an open tooltip closes and an open select popup
   moves to stay beside its trigger.
 
@@ -333,9 +349,10 @@ Applies to the select popup and the tooltip.
 Applies to: every component in this spec. A component writes no text of its own: every visible or announced
 text it needs — the accessible name of an icon-only button, the drawer's close button, the label of a
 segmented control, the placeholder of a search box, the accessible name of a search box, a select or a tab row (an
-`aria-label`, or an `aria-labelledby` pointing at a label on the page), the content of a `selectable` card, which
-names the button it is — is a required prop, so a missing one fails the type check. The app passes it from its own
-dictionary.
+`aria-label`, or an `aria-labelledby` pointing at a label on the page), the text of a tooltip, the label of the
+Toaster's region, the text of a toast, the content of a `selectable` card, which names the button it is — is
+required, as a prop or as the argument of the call that raises a toast, so a missing one fails the type check. The
+app passes it from its own dictionary.
 
 ### components::CON-002 The owner confirms every component's look in Storybook (direct acceptance)
 
@@ -370,12 +387,17 @@ Applies to: every component in this spec. Every colour a component shows comes f
 ([theming](theming.md) `theming::REQ-004`); no component writes a colour value or branches on the theme or
 on light/dark.
 
+### components::CON-005 One Toaster per document (direct acceptance)
+
+Applies to: every consumer. A document has at most one Toaster, since every Toaster shows every toast raised.
+
 ## Failure modes and boundaries
 
 - **A label longer than its control**: it stays on one line and is cut with an ellipsis, while running text
   wraps (components::REQ-001/AC-05).
-- **An icon-only button, a drawer, a segmented control, a search box, a select, tabs or a `selectable` card without
-  their text**: the type check fails (components::CON-001); nothing renders a fallback text.
+- **An icon-only button, a drawer, a segmented control, a search box, a select, tabs, a `selectable` card, a tooltip,
+  a Toaster or a toast without their text**: the type check fails (components::CON-001); nothing renders a fallback
+  text.
 - **A select, a segmented control or tabs without a selected value**: the type check fails; none has a state without
   a selection (components::REQ-004/AC-09, components::REQ-005/AC-06, components::REQ-013/AC-05).
 - **Something interactive inside a `selectable` card**, such as a button in its action: not supported. The card is a
@@ -393,6 +415,22 @@ on light/dark.
 - **A `link` button given a size**: the type check fails (components::REQ-002/AC-04).
 - **A select whose options do not fit the window**: the popup scrolls inside its own height
   (components::REQ-004/AC-02).
+- **Keyboard focus leaving a tooltip's trigger while the pointer rests on the trigger or on the tooltip**: the tooltip
+  stays open until the pointer has left both (components::REQ-008/AC-01, components::REQ-008/AC-03).
+- **A tooltip's trigger inside a container whose rules select its children**, such as Tailwind's `space-x-*`,
+  `divide-*` and `last:`: the tooltip adds no element to that container, so those rules see the caller's elements
+  alone.
+- **A consumer that wants an arrow on a tooltip**: the kit's tooltip draws none and takes no option for one, and Base
+  UI's `Tooltip.Arrow` cannot be added through it; such a consumer builds that tooltip on Base UI itself.
+- **A toast raised before any Toaster is mounted** — at startup, or by code that runs before React has rendered the
+  Toaster: it is held and appears when a Toaster mounts (components::REQ-011/AC-09). If no Toaster ever mounts, the
+  toasts held are never shown, and nothing reports it.
+- **More toasts than the window holds**: the column is at most as tall as the window, keeping 18px above its top toast
+  as below its bottom one, and scrolls once the toasts overflow it, starting at the newest (components::REQ-011/AC-08).
+  The wheel over the toasts scrolls it, while beside them the pointer still reaches the page beneath; Tab after F6
+  scrolls each toast into view as it takes the focus, 18px inside the column. A toast that arrives while the column is
+  scrolled up from the newest leaves the toasts in view where they stand; when a toast leaves, the older toasts above
+  it move down into its place, as in a column that fits the window.
 
 ## Implementation Decisions
 
@@ -451,15 +489,46 @@ specs; see `AGENTS.md`).
 - **A `link` button takes no size.** It is text inside a sentence, and a box of its own would push it off the line
   of the text around it. Rejected: sizes on a link, and a size accepted and ignored, which gives the caller no sign.
 - **Base UI's behaviour for keyboard, focus and screen readers.** Base UI provides Esc handling, focus
-  containment, dialog semantics and announced toasts. Rejected: a plainer behaviour without them, which
-  would mean writing code to switch Base UI's off.
+  containment, dialog semantics and announced toasts; Esc also closes an open tooltip. Rejected: a plainer behaviour
+  without them, which would mean writing code to switch Base UI's off.
 - **The confirm dialog ignores clicks on the scrim.** A confirm dialog is closed by a choice, so a stray
   click beside it cannot dismiss the question. Rejected: cancelling on a scrim click.
 - **Starting from the Mira style.** It is shadcn/ui's style for dense interfaces and the closest to the kit's
   scale (its default button is 28px tall with 12px text, against the kit's `default` controls, 28px tall with
   12.5px text). Rejected: Nova (32px, 14px text) and Vega (36px, 14px text), both further from it.
+- **The tooltip opens with no delay, and a click on its trigger closes it.** The owner's choice. It shows as soon as
+  the pointer reaches its trigger, as shadcn/ui's tooltip does; once the trigger is clicked, the click's own result
+  takes over from the hint, which is Base UI's default (`closeOnClick`), kept by shadcn/ui's tooltip. Rejected: Base
+  UI's 600ms delay, and a tooltip that stays open on a click.
+- **The pointer can move onto an open tooltip without it closing** (components::REQ-008/AC-03). WCAG 2.1 SC 1.4.13
+  (AA) asks that content shown on hover can be reached by the pointer without disappearing, and it is Base UI's
+  default (`disableHoverablePopup` false, Base UI 1.9.0); while open, a tooltip therefore takes the pointer over the
+  area it covers. Rejected: a tooltip the pointer passes through, which disappears when the pointer moves onto it.
+- **The tooltip has no arrow, and neither the tooltip nor a toast moves as it appears or leaves.** The kit's floating
+  surfaces share one form, and the select popup has neither; shadcn/ui's motion classes come from `tw-animate-css`,
+  which the kit does not depend on. Base UI ships the arrow as a separate, optional part (`Tooltip.Arrow`). Rejected:
+  shadcn/ui's arrow and its fade and zoom, and an option for an arrow, for which no general need has been shown.
+- **One warning line, passed apart from the tooltip's text.** The caller never styles a line itself, and a tooltip
+  stays a short description rather than a layout of its own. Rejected: several lines, any of them markable as a
+  warning.
 - **The toast is shadcn/ui's `toast`, on Base UI.** Rejected: shadcn/ui's `sonner`, which depends on
   `next-themes` and would compete with the kit's ThemeProvider for the root element.
+- **Toasts are raised by a call and shown by one Toaster.** An app renders a Toaster once (components::CON-005),
+  anywhere in its tree, and any code, inside or outside React, raises a toast through the kit's `toast` call, one per
+  variant; Base UI's toasts need a provider and a region in the app's React tree. Rejected: shadcn/ui's Toaster that
+  wraps the app's tree, which makes the app restructure its root; and the kit mounting a React root of its own on the
+  first toast, beside the app's, which would still need a setup call for the region's label.
+- **A toast raised before a Toaster mounts is held until one does** (components::REQ-011/AC-09). Raising a toast
+  before React has rendered the Toaster is an ordinary path in an app, at startup or from module code. Rejected:
+  Base UI's dropping it, which loses the message with nothing to report it.
+- **A toast can be swiped away.** The owner's choice: with no close button, a swipe is the only way to clear a toast
+  early, and it is Base UI's. Rejected: toasts that leave only on their timer.
+- **No cap on the toasts shown.** The owner's choice: every toast's message stays readable for its 3200ms. Rejected:
+  Base UI's cap of three, which hides the oldest toast for good when a fourth arrives.
+- **More toasts than the window holds scroll in the column** (Failure modes and boundaries). Every message stays
+  reachable by the pointer and the keyboard, and none is hidden for another (components::REQ-011/AC-08). Rejected: a
+  queue that holds toasts back until there is room, which would bring back a cap on the toasts shown; and toasts
+  standing above the window's top edge, which neither the pointer nor the keyboard reaches.
 - **The drawer is shadcn/ui's `sheet`**, a panel from the side of the window. Rejected: shadcn/ui's `drawer`,
   which slides up from the bottom.
 - **One floating shadow, `--shadow-pop`, for every floating surface.** Rejected: a shadow per kind of
