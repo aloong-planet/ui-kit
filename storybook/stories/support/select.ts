@@ -1,7 +1,7 @@
 // The parts of an open Select's popup that the Select's stories and tests read. The popup is rendered in a portal, at
 // the end of the page, so it is looked up in the document rather than in the story's canvas.
 
-const frame = () => new Promise((resolve) => requestAnimationFrame(resolve))
+import { frame } from './frames'
 
 // The surface around a list of options that is open. Base UI keeps a popup in the page once it has opened, marked
 // `data-closed` while closed and `data-open` while open.
