@@ -2,32 +2,16 @@
 // Playwright's, which the browser treats as the user's, so it applies `:hover` and `:focus-visible` as it would for a
 // person. Each story is rendered as Storybook renders it, inside the toolbar's ThemeProvider.
 import { composeStories } from '@storybook/react-vite'
-import { act, type ReactElement } from 'react'
-import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, expect, test, vi } from 'vitest'
 import { userEvent } from 'vitest/browser'
 import preview from '../.storybook/preview'
 import * as stories from '../stories/components-segmented-control.stories'
 import { computed } from '../stories/support/computed'
+import { mount, unmount } from './support/mount'
 
 const { Default, Disabled } = composeStories(stories, preview)
 
-;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
-let mounted: { root: Root; container: HTMLElement } | undefined
-
-function mount(story: ReactElement): HTMLElement {
-  const container = document.body.appendChild(document.createElement('div'))
-  const root = createRoot(container)
-  act(() => root.render(story))
-  mounted = { root, container }
-  return container
-}
-
-afterEach(() => {
-  act(() => mounted?.root.unmount())
-  mounted?.container.remove()
-  mounted = undefined
-})
+afterEach(unmount)
 
 function segment(canvas: HTMLElement, label: string): HTMLElement {
   const element = [...canvas.querySelectorAll<HTMLElement>('[role="radio"]')].find((node) => node.textContent === label)
@@ -53,8 +37,8 @@ function look(element: Element) {
 
 // components::REQ-005/AC-01 under the pointer: an unselected segment shows `--foreground` text on the `--background`
 // ground, while the selected one keeps its look, so a hovered segment next to the selected one is told apart from it
-// by its ground. Neighbouring segments are parted by a 1px `--border-strong` line, so a selected and a hovered segment
-// side by side do not read as one block when their grounds are close.
+// by its ground. components::REQ-005/AC-03: neighbouring segments are parted by a 1px `--border-strong` line, so a
+// selected and a hovered segment side by side read as two when their grounds are close.
 test('an unselected segment under the pointer shows --foreground on --background, the selected one keeps its look', async () => {
   const canvas = mount(<Default />)
   const day = segment(canvas, 'Day')

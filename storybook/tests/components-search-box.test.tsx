@@ -3,32 +3,16 @@
 // controls the browser draws inside a field. Each story is rendered as Storybook renders it, inside the toolbar's
 // ThemeProvider.
 import { composeStories } from '@storybook/react-vite'
-import { act, type ReactElement } from 'react'
-import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, expect, test } from 'vitest'
 import { userEvent } from 'vitest/browser'
 import preview from '../.storybook/preview'
 import * as stories from '../stories/components-search-box.stories'
 import { computed } from '../stories/support/computed'
+import { mount, unmount } from './support/mount'
 
 const { Default, Disabled } = composeStories(stories, preview)
 
-;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
-let mounted: { root: Root; container: HTMLElement } | undefined
-
-function mount(story: ReactElement): HTMLElement {
-  const container = document.body.appendChild(document.createElement('div'))
-  const root = createRoot(container)
-  act(() => root.render(story))
-  mounted = { root, container }
-  return container
-}
-
-afterEach(() => {
-  act(() => mounted?.root.unmount())
-  mounted?.container.remove()
-  mounted = undefined
-})
+afterEach(unmount)
 
 function field(canvas: HTMLElement): HTMLInputElement {
   const element = canvas.querySelector<HTMLInputElement>('[role="searchbox"]')

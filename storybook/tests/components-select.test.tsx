@@ -2,33 +2,20 @@
 // the browser treats as the user's, so it applies `:hover` and `:focus-visible` as it would for a person. Each story is
 // rendered as Storybook renders it, inside the toolbar's ThemeProvider.
 import { composeStories } from '@storybook/react-vite'
-import { act, type ReactElement } from 'react'
-import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, expect, test, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import preview from '../.storybook/preview'
 import * as stories from '../stories/components-select.stories'
 import { computed } from '../stories/support/computed'
 import { isOpen, optionLabel, popup } from '../stories/support/select'
+import { mount, unmount } from './support/mount'
 
 const { Default, InScrollingArea, Disabled } = composeStories(stories, preview)
 
-;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
-let mounted: { root: Root; container: HTMLElement } | undefined
 const viewport = { width: window.innerWidth, height: window.innerHeight }
 
-function mount(story: ReactElement): HTMLElement {
-  const container = document.body.appendChild(document.createElement('div'))
-  const root = createRoot(container)
-  act(() => root.render(story))
-  mounted = { root, container }
-  return container
-}
-
 afterEach(async () => {
-  act(() => mounted?.root.unmount())
-  mounted?.container.remove()
-  mounted = undefined
+  unmount()
   window.scrollTo(0, 0)
   await page.viewport(viewport.width, viewport.height)
 })
@@ -102,8 +89,8 @@ test('an option under the pointer shows the wash', async () => {
   }
 })
 
-// components::REQ-004/AC-05: Enter opens the popup, the arrow keys move the highlight, Enter selects and closes, and Esc
-// closes and returns focus to the trigger
+// components::REQ-004/AC-05 and AC-03: Enter opens the popup, the arrow keys move the highlight, which shows the wash on
+// one option at a time, Enter selects and closes, and Esc closes and returns focus to the trigger
 test('the keyboard opens the popup, moves the highlight, selects, and closes it with focus back on the trigger', async () => {
   const { onValueChange } = spies()
   const canvas = mount(<Default />)
@@ -112,12 +99,16 @@ test('the keyboard opens the popup, moves the highlight, selects, and closes it 
   expect(document.activeElement).toBe(element)
   await userEvent.keyboard('{Enter}')
   const surface = await popup()
-  const highlighted = () => surface.querySelector('[data-highlighted]')?.textContent
-  expect(highlighted()).toBe('Last updated')
+  const wash = computed('color', 'var(--accent)')
+  const washed = () =>
+    [...surface.querySelectorAll<HTMLElement>('[role="option"]')]
+      .filter((option) => getComputedStyle(option).backgroundColor === wash)
+      .map((option) => option.textContent)
+  expect(washed()).toEqual(['Last updated'])
   await userEvent.keyboard('{ArrowDown}{ArrowDown}')
-  expect(highlighted()).toBe('Date created')
+  expect(washed()).toEqual(['Date created'])
   await userEvent.keyboard('{ArrowUp}')
-  expect(highlighted()).toBe('Name')
+  expect(washed()).toEqual(['Name'])
   await userEvent.keyboard('{Enter}')
   await vi.waitFor(() => expect(isOpen()).toBe(false))
   expect({ label: element.textContent, reported: onValueChange.mock.calls.map(([value]) => value) }).toEqual({
