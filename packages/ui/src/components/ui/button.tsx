@@ -18,8 +18,12 @@ const buttonVariants = cva(
         primary: "border-primary bg-primary text-primary-foreground",
         danger: "border-destructive bg-destructive text-destructive-foreground",
         ghost: "border-transparent bg-transparent text-muted-foreground hover:bg-accent hover:text-primary",
-        // Inline text: no box of its own, so it takes the font of the text around it
-        link: "rounded-sm border-0 bg-transparent text-inherit underline decoration-border-strong underline-offset-2 hover:text-foreground hover:decoration-current",
+        // Inline text: no box of its own, so it takes the font of the text around it. Like any button it cannot wrap
+        // with its sentence, so a label longer than the line is cut with an ellipsis (components::REQ-001/AC-05). It
+        // clips rather than hides its overflow: an inline block that hides its overflow sits on its bottom edge
+        // instead of on the baseline of its text, which takes it off the line of the text around it when it renders
+        // as an element other than a `<button>`.
+        link: "inline-block overflow-clip rounded-sm border-0 bg-transparent text-ellipsis text-inherit underline decoration-border-strong underline-offset-2 hover:text-foreground hover:decoration-current",
       },
       size: {
         default: "",
@@ -28,10 +32,10 @@ const buttonVariants = cva(
         "icon-sm": "",
       },
     },
-    // A size sets the box, so it applies to every variant but `link`. A text button is a line of inline content that
-    // its box cuts with an ellipsis, whatever shape the label is passed in (components::REQ-001/AC-05); the line height
-    // fills the box inside its border, which centres the label, and an icon before the label sits on its middle. An
-    // icon-only button is a fixed square with its icon centred.
+    // A size sets the box, so it applies to every variant but `link`. A text button, like a link, is a line of inline
+    // content that its box cuts with an ellipsis, whatever shape the label is passed in (components::REQ-001/AC-05);
+    // the line height fills the box inside its border, which centres the label, and an icon before the label sits on
+    // its middle. An icon-only button is a fixed square with its icon centred.
     compoundVariants: [
       {
         variant: ["default", "primary", "danger", "ghost"],

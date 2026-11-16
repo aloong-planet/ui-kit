@@ -21,7 +21,7 @@ listed before the test was written, so the test held the one shape the implement
 
 ## Defence
 
-- A text button is a line of inline content that its own box cuts, so the label is cut whatever shape it is passed in;
-  no child is wrapped.
-- The `LongLabel` story passes a string, an icon and a string, an element, and text with a value in it, and asserts
-  for each that one element holds the whole label and cuts it with an ellipsis.
+- A text button or a link is a line of inline content that its own box cuts, so the label is cut whatever shape it is
+  passed in; no child is wrapped.
+- The `LongLabel` story passes a string, an icon and a string, an element, text with a value in it, and a link in a
+  sentence, and asserts for each that one element holds the whole label and cuts it with an ellipsis.

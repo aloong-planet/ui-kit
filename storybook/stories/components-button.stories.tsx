@@ -47,7 +47,8 @@ export const Variants: Story = {
     </div>
   ),
   // components::REQ-002/AC-01 at rest, and package::REQ-002/AC-01: each variant shows the tokens its row names, so
-  // the consumer has compiled the Button's classes from the package
+  // the consumer has compiled the Button's classes from the package; and a link is inline text, on the line of the
+  // text around it
   play: async ({ canvasElement }) => {
     const looks = {
       default: ['var(--background)', 'var(--border-strong)', 'var(--foreground)'],
@@ -69,6 +70,17 @@ export const Variants: Story = {
     await expect(link.textDecorationLine).toBe('underline')
     await expect(link.textDecorationColor).toBe(computed('color', 'var(--border-strong)'))
     await expect(link.backgroundColor).toBe(computed('color', 'transparent'))
+    // The link's text and the text before it share the top and bottom of their glyphs
+    const glyphs = (node: Node) => {
+      const range = document.createRange()
+      range.selectNodeContents(node)
+      const { top, bottom } = range.getBoundingClientRect()
+      return { top, bottom }
+    }
+    const linkElement = button(canvasElement, 'link')
+    const before = linkElement.parentElement?.firstChild
+    if (!before) throw new Error('no text before the link')
+    await expect(glyphs(linkElement)).toEqual(glyphs(before))
   },
 }
 
@@ -83,6 +95,7 @@ export const Sizes: Story = {
             New project
           </Button>
           <Button data-button={`${variant} sm`} variant={variant} size="sm">
+            <Plus />
             Install
           </Button>
           <Button data-button={`${variant} icon`} variant={variant} size="icon" aria-label="Close drawer">
@@ -96,13 +109,13 @@ export const Sizes: Story = {
     </div>
   ),
   // components::REQ-002/AC-02: each size's box, font size and radius come from the scale, the same in every variant,
-  // and the two icon sizes are square
+  // the two icon sizes are square, and the icon before a text button's label has its size and its gap to the label
   play: async ({ canvasElement }) => {
     const sizes = {
-      default: { width: undefined, height: 28, fontSize: '12.5px', radius: '7px' },
-      sm: { width: undefined, height: 22, fontSize: '11px', radius: '7px' },
-      icon: { width: 28, height: 28, fontSize: undefined, radius: '7px' },
-      'icon-sm': { width: 22, height: 22, fontSize: undefined, radius: '5.25px' },
+      default: { width: undefined, height: 28, fontSize: '12.5px', radius: '7px', icon: { size: 14, gap: 5 } },
+      sm: { width: undefined, height: 22, fontSize: '11px', radius: '7px', icon: { size: 12, gap: 4 } },
+      icon: { width: 28, height: 28, fontSize: undefined, radius: '7px', icon: undefined },
+      'icon-sm': { width: 22, height: 22, fontSize: undefined, radius: '5.25px', icon: undefined },
     }
     for (const variant of boxVariants) {
       for (const [size, expected] of Object.entries(sizes)) {
@@ -116,6 +129,20 @@ export const Sizes: Story = {
           height: expected.height,
           fontSize: expected.fontSize ?? style.fontSize,
           radius: expected.radius,
+        })
+        if (!expected.icon) continue
+        // The gap runs from the icon's right edge to the left edge of the label's text
+        const icon = element.querySelector('svg')
+        const label = icon?.nextSibling
+        if (!icon || !label) throw new Error(`no icon and label in ${variant} ${size}`)
+        const range = document.createRange()
+        range.selectNodeContents(label)
+        const iconRect = icon.getBoundingClientRect()
+        const round = (px: number) => Math.round(px * 100) / 100
+        await expect({ variant, size, icon: { width: round(iconRect.width), height: round(iconRect.height), gap: round(range.getBoundingClientRect().left - iconRect.right) } }).toEqual({
+          variant,
+          size,
+          icon: { width: expected.icon.size, height: expected.icon.size, gap: expected.icon.gap },
         })
       }
     }
@@ -218,7 +245,7 @@ export const KeyboardFocus: Story = {
 
 // components::REQ-001/AC-05: a label longer than the space stays on one line and is cut with an ellipsis, whatever
 // shape it is passed in: a string, an icon and a string, an element (as a translation component renders), or text
-// with a value in it
+// with a value in it; and a link in a sentence, which stays on one line of the text's height
 export const LongLabel: Story = {
   render: () => (
     <div className="flex w-36 flex-col items-start gap-3 border border-dashed border-border-strong p-2">
@@ -231,16 +258,26 @@ export const LongLabel: Story = {
         <span>Rename every project on this side</span>
       </Button>
       <Button data-button="value in text">{3} conversations to remove from this project</Button>
+      {/* The sentence takes the column's width: a box as wide as its content widens to a line that cannot break */}
+      <p className="self-stretch text-muted-foreground">
+        3 projects on this side,{' '}
+        <Button data-button="link" variant="link">
+          every conversation removed from this project
+        </Button>
+        .
+      </p>
     </div>
   ),
   play: async ({ canvasElement }) => {
     const column = canvasElement.querySelector('div')?.getBoundingClientRect()
     if (!column) throw new Error('no column')
+    // A link is one line of the body text: 13px at a line height of 1.5
     const labels = {
       string: ['Remove every conversation from this project', 28],
       'icon and string': ['Install to every agent on this machine', 22],
       element: ['Rename every project on this side', 28],
       'value in text': ['3 conversations to remove from this project', 28],
+      link: ['every conversation removed from this project', 19.5],
     } as const
     for (const [name, [label, height]] of Object.entries(labels)) {
       const element = button(canvasElement, name)
@@ -248,7 +285,7 @@ export const LongLabel: Story = {
       // The element that cuts the label holds the whole of it, and cuts it with an ellipsis
       const cut = [element, ...element.querySelectorAll('*')].filter((node) => {
         const style = getComputedStyle(node)
-        return style.textOverflow === 'ellipsis' && style.overflowX === 'hidden' && node.scrollWidth > node.clientWidth
+        return style.textOverflow === 'ellipsis' && style.overflowX !== 'visible' && node.scrollWidth > node.clientWidth
       })
       await expect({ name, cutLabels: cut.map((node) => node.textContent), height: rect.height }).toEqual({
         name,

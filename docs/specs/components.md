@@ -74,8 +74,8 @@ pairs with, so buttons of one row line up.
 
 | Size | Use | Box |
 |---|---|---|
-| `default` | Buttons in forms, dialogs and toolbars | 28px tall, `text-sm`, `rounded-md` |
-| `sm` | Actions on a list row | 22px tall, `text-xs`, `rounded-md` |
+| `default` | Buttons in forms, dialogs and toolbars | 28px tall, `text-sm`, `rounded-md`; an icon before the label is 14px, 5px from it |
+| `sm` | Actions on a list row | 22px tall, `text-xs`, `rounded-md`; an icon before the label is 12px, 4px from it |
 | `icon` | An icon-only button | 28 × 28px, `rounded-md`, a 16px icon |
 | `icon-sm` | A small icon-only button on a row or inside a note | 22 × 22px, `rounded-sm`, a 14px icon |
 
