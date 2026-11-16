@@ -250,3 +250,20 @@ export const LongLabel: Story = {
     }
   },
 }
+
+// components::REQ-016/AC-02, for the owner to confirm the look: tabs given a value none of their tabs, here a section
+// or category the app stored that its tabs no longer hold, show no tab selected and no panel, in each variant. The tabs
+// are typed only as `string`, as tabs built from data fetched at run time are, which lets such a value through the type
+// check.
+export const ValueNoneOfTabs: Story = {
+  render: () => {
+    const pages: TabsProps['tabs'] = sections()
+    const pills: TabsProps['tabs'] = categories
+    return (
+      <div className="flex flex-col gap-6">
+        <Tabs aria-label="Project" tabs={pages} defaultValue="members" />
+        <Tabs aria-label="Conversations" variant="pill" tabs={pills} defaultValue="archived" />
+      </div>
+    )
+  },
+}

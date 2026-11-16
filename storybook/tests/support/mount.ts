@@ -1,5 +1,6 @@
 // Renders a story for an interaction test (tests/components-*.test.tsx) into the page, as React renders an app, and
-// removes it after the test: a test file that mounts with it calls `unmount` after each test.
+// removes it after the test: a test file that mounts with it calls `unmount` after each test. `rerender` renders it
+// again with other props.
 import { act, type ReactElement } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 
@@ -12,6 +13,13 @@ export function mount(story: ReactElement): HTMLElement {
   act(() => root.render(story))
   mounted = { root, container }
   return container
+}
+
+// Renders `story` again in place of the one mounted, as an app's next render passes new props
+export function rerender(story: ReactElement): void {
+  if (!mounted) throw new Error('nothing mounted')
+  const { root } = mounted
+  act(() => root.render(story))
 }
 
 export function unmount(): void {

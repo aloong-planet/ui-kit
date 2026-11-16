@@ -1,7 +1,8 @@
 import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { cn } from "cn"
 import { Check, ChevronDown } from "lucide-react"
-import { Fragment, useEffect, useRef, useState, type ReactNode } from "react"
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react"
+import { useValueNoneOfOptionsWarning } from "../../hooks/use-value-none-of-options-warning"
 import type { AccessibleNameProps, SelectedValueProps } from "../../lib/props"
 
 // components::REQ-004, restyled from shadcn/ui's Mira select to the kit's look and scale (components::CON-003).
@@ -85,6 +86,22 @@ function Select<V extends string>({
   "aria-labelledby": ariaLabelledBy,
 }: SelectProps<V>) {
   const lists = groups ?? (options ? [options] : [])
+  const all = lists.flat()
+  const values = all.map((option) => option.value)
+  // An uncontrolled select holds its value here and passes it on as a controlled value, so the value stays when Base
+  // UI would change it on its own (below)
+  const [selected, setSelected] = useState(defaultValue)
+  // components::REQ-016/AC-01: once its popup has been open, Base UI's select sets its value back to the one it was
+  // first given, or to none, when the options change without the selected one, and reports that as a change. It does
+  // so while the options' change is committed, before this component's own layout effect has taken the new options
+  // in, and a user's choice never comes then: a change reported while the options taken in differ from those rendered
+  // is Base UI's, and the value stays.
+  const optionsKey = JSON.stringify(values)
+  const optionsTakenIn = useRef(optionsKey)
+  useLayoutEffect(() => {
+    optionsTakenIn.current = optionsKey
+  })
+  useValueNoneOfOptionsWarning("Select", value ?? selected, values)
   const [open, setOpen] = useState(false)
   const popupRef = useRef<HTMLDivElement>(null)
 
@@ -109,11 +126,15 @@ function Select<V extends string>({
 
   return (
     <SelectPrimitive.Root<V>
-      items={lists.flat()}
-      value={value}
-      defaultValue={defaultValue}
-      onValueChange={(next) => {
-        if (next !== null) onValueChange?.(next)
+      items={all}
+      value={value ?? selected}
+      onValueChange={(next, details) => {
+        if (next === null || optionsTakenIn.current !== optionsKey) {
+          details.cancel()
+          return
+        }
+        setSelected(next)
+        onValueChange?.(next)
       }}
       open={open}
       onOpenChange={setOpen}
@@ -123,7 +144,11 @@ function Select<V extends string>({
       disabled={disabled}
     >
       <SelectPrimitive.Trigger aria-label={ariaLabel} aria-labelledby={ariaLabelledBy} className={cn(triggerClass, className)}>
-        <SelectPrimitive.Value className={valueClass} />
+        {/* The label of the option holding the value, and no text for a value none of the options holds, where Base
+            UI would show the value itself (components::REQ-016/AC-02) */}
+        <SelectPrimitive.Value className={valueClass}>
+          {(current: V | null) => all.find((option) => option.value === current)?.label ?? null}
+        </SelectPrimitive.Value>
         <ChevronDown aria-hidden className={chevronClass} />
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal>

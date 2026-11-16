@@ -1,7 +1,8 @@
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs"
 import { cva } from "class-variance-authority"
 import { cn } from "cn"
-import { useState, type ReactNode } from "react"
+import { useRef, useState, type ReactNode } from "react"
+import { useValueNoneOfOptionsWarning } from "../../hooks/use-value-none-of-options-warning"
 import type { AccessibleNameProps, SelectedValueProps } from "../../lib/props"
 
 // components::REQ-013, restyled from shadcn/ui's Mira tabs to the kit's look and scale (components::CON-003), and taking
@@ -106,18 +107,36 @@ function Tabs<V extends string>({
   // move the selection off a tab the app disables, to the first enabled tab, or to none when no tab is enabled, and
   // would not select one again once the tabs are enabled; a controlled root keeps the value it is given.
   const [selected, setSelected] = useState(defaultValue)
+  const current = value ?? selected
+  const values = tabs.map((tab) => tab.value)
+  const held = current !== undefined && values.includes(current)
+  useValueNoneOfOptionsWarning("Tabs", current, values)
+  const listRef = useRef<HTMLDivElement>(null)
   return (
     <TabsPrimitive.Root
       className={cn(rootVariants({ variant }), className)}
-      value={value ?? selected}
+      value={current}
       // A controlled root reports only the tab the user picks
-      onValueChange={(next: V) => {
+      onValueChange={(next: V, details) => {
+        // components::REQ-016/AC-05: with a value none of the tabs, the keyboard focus coming into the row from outside
+        // it, as Tab brings it to the first tab, selects nothing: Base UI selects an unselected tab that takes the
+        // focus. The arrow keys move the focus within the row and select as usual, and a click selects as it does on
+        // any unselected tab.
+        const { event } = details
+        const fromOutside =
+          event instanceof FocusEvent &&
+          !(event.relatedTarget instanceof Node && listRef.current?.contains(event.relatedTarget))
+        if (!held && fromOutside) {
+          details.cancel()
+          return
+        }
         setSelected(next)
         onValueChange?.(next)
       }}
       {...props}
     >
       <TabsPrimitive.List
+        ref={listRef}
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledBy}
         activateOnFocus

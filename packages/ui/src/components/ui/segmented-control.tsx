@@ -2,7 +2,8 @@ import { Radio as RadioPrimitive } from "@base-ui/react/radio"
 import { RadioGroup as RadioGroupPrimitive } from "@base-ui/react/radio-group"
 import { cva } from "class-variance-authority"
 import { cn } from "cn"
-import type { ReactNode } from "react"
+import { useState, type ReactNode } from "react"
+import { useValueNoneOfOptionsWarning } from "../../hooks/use-value-none-of-options-warning"
 import type { AccessibleNameProps, SelectedValueProps } from "../../lib/props"
 
 // components::REQ-005, restyled from shadcn/ui's Mira toggle-group and toggle to the kit's look and scale, on Base UI's
@@ -63,10 +64,17 @@ function SegmentedControl<V extends string>({
   onValueChange,
   ...props
 }: SegmentedControlProps<V>) {
+  // The value an uncontrolled control holds, the one it was given or the one the user picked since, for the warning
+  // (components::REQ-016/AC-04); Base UI holds it for the control itself
+  const [picked, setPicked] = useState(props.defaultValue)
+  useValueNoneOfOptionsWarning("SegmentedControl", props.value ?? picked, options.map((option) => option.value))
   return (
     <RadioGroupPrimitive<V>
       className={cn(groupClass, className)}
-      onValueChange={(value) => onValueChange?.(value)}
+      onValueChange={(value) => {
+        setPicked(value)
+        onValueChange?.(value)
+      }}
       {...props}
     >
       {options.map((option) => (

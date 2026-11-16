@@ -12,20 +12,11 @@ import preview from '../.storybook/preview'
 import * as stories from '../stories/components-segmented-control.stories'
 import { computed } from '../stories/support/computed'
 import { mount, unmount } from './support/mount'
+import { checked, segment } from './support/segmented-control'
 
 const { Default, Disabled } = composeStories(stories, preview)
 
 afterEach(unmount)
-
-function segment(canvas: HTMLElement, label: string): HTMLElement {
-  const element = [...canvas.querySelectorAll<HTMLElement>('[role="radio"]')].find((node) => node.textContent === label)
-  if (!element) throw new Error(`no segment ${label}`)
-  return element
-}
-
-function checked(canvas: HTMLElement): string[] {
-  return [...canvas.querySelectorAll<HTMLElement>('[role="radio"][aria-checked="true"]')].map((node) => node.textContent ?? '')
-}
 
 // The `onValueChange` the Default story reports to, cleared of what earlier tests recorded on it
 function reported() {
