@@ -265,11 +265,12 @@ specs; see `AGENTS.md`).
   the same slim scrollbar instead of the platform's, whose width, track and visibility vary by platform and
   by system setting. Rejected: leaving scrollbars to each app.
 - **`pnpm check:tokens` takes the general tokens from the table of theming::REQ-004.** A row added to the table is
-  then checked in every block of the theme stylesheet and in its Tailwind mapping, with nothing else to update, and a
-  pull request that changes only this spec runs the kit's checks. The check reads the Kit token column of that one
-  table, each cell one or more `` `--name` `` joined by ` / `, the rows starting with `|` and the table ending with a
-  blank line; a table written any other way stops it, naming the line. Rejected: a list of the tokens kept in the
-  check beside the table, which a row added to the table alone passed.
+  then required in the two root blocks of the theme stylesheet and in its Tailwind mapping, and held to the same set in
+  a theme's light and dark blocks, with nothing in the check to update; and a pull request that changes only this spec
+  runs the kit's checks. The check reads the Kit token column of that one table, each cell one or more `` `--name` ``
+  joined by ` / `, the rows starting with `|` and the table ending with a blank line; a table written any other way
+  stops it, naming the line. Rejected: a list of the tokens kept in the check beside the table, which a row added to
+  the table alone passed.
 
 ## Out of Scope
 
