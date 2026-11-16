@@ -1,7 +1,11 @@
 // The SegmentedControl's stories (stories/components-segmented-control.stories.tsx) under a real pointer and keyboard:
 // Playwright's, which the browser treats as the user's, so it applies `:hover` and `:focus-visible` as it would for a
-// person. Each story is rendered as Storybook renders it, inside the toolbar's ThemeProvider.
+// person. Each story is rendered as Storybook renders it, inside the toolbar's ThemeProvider. The last test renders a
+// segmented control of its own, as an app would, for what no story shows: a segmented control named by a label on the
+// page.
+import { SegmentedControl } from '@aloong-planet/ui'
 import { composeStories } from '@storybook/react-vite'
+import { within } from 'storybook/test'
 import { afterEach, expect, test, vi } from 'vitest'
 import { userEvent } from 'vitest/browser'
 import preview from '../.storybook/preview'
@@ -137,4 +141,23 @@ test('a disabled segmented control ignores the pointer and cannot be changed by 
   await userEvent.keyboard('{ArrowRight}{ArrowLeft} ')
   expect(checked(canvas)).toEqual(['Week'])
   expect(onValueChange).not.toHaveBeenCalled()
+})
+
+// components::REQ-005/AC-02 and components::CON-001: a segmented control named by a label on the page, through
+// `aria-labelledby`, is announced as a radio group under that label's text
+test('a segmented control named with aria-labelledby is announced under the label it points at', () => {
+  const canvas = mount(
+    <>
+      <h2 id="chart-range">Range</h2>
+      <SegmentedControl
+        aria-labelledby="chart-range"
+        options={[
+          { value: 'day', label: 'Day' },
+          { value: 'week', label: 'Week' },
+        ]}
+        defaultValue="day"
+      />
+    </>,
+  )
+  expect(within(canvas).queryAllByRole('radiogroup', { name: 'Range' }).length).toBe(1)
 })

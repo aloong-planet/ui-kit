@@ -119,7 +119,8 @@ tall, in `text-sm` semibold, with `rounded-md` corners and a 14px check.
   trigger stands; an option longer than that room is cut with an ellipsis (components::REQ-001/AC-05).
 - components::REQ-004/AC-08: A click outside the open popup also acts on the element it lands on, as it would with
   the popup closed.
-- components::REQ-004/AC-09: A select used without a selected value fails the type check.
+- components::REQ-004/AC-09: A select used without a selected value, or with a value that is none of its options,
+  fails the type check.
 
 ### components::REQ-005 Segmented control
 
@@ -140,7 +141,8 @@ Segments side by side in one bordered container with `rounded-md` corners, one o
   neighbouring segments, so a selected and a hovered segment side by side read as two.
 - components::REQ-005/AC-04: Each size renders the height and text size its row gives.
 - components::REQ-005/AC-05: Activating the selected segment again leaves it selected.
-- components::REQ-005/AC-06: A segmented control used without a selected value fails the type check.
+- components::REQ-005/AC-06: A segmented control used without a selected value, or with a value that is none of its
+  options, fails the type check.
 
 ### components::REQ-006 Card
 
@@ -400,6 +402,9 @@ Applies to: every consumer. A document has at most one Toaster, since every Toas
   text.
 - **A select, a segmented control or tabs without a selected value**: the type check fails; none has a state without
   a selection (components::REQ-004/AC-09, components::REQ-005/AC-06, components::REQ-013/AC-05).
+- **A select, a segmented control or tabs whose option values are typed only as `string`**, such as options built from
+  data fetched at run time: the type check lets any string through as the selected value, and rejects only a value the
+  options' types rule out (components::REQ-004/AC-09, components::REQ-005/AC-06, components::REQ-013/AC-05).
 - **Something interactive inside a `selectable` card**, such as a button in its action: not supported. The card is a
   button itself, and a control inside a button cannot be used reliably by pointer, keyboard or screen reader; a card
   that needs an action of its own is a `default` card.
