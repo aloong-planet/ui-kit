@@ -533,8 +533,9 @@ specs; see `AGENTS.md`).
   reports that as a change.
 - **Nothing shows as selected for such a value** (components::REQ-016/AC-02): no option, segment or tab is marked
   selected, no tab's panel shows, and the select's trigger shows no text. A native `<select>` whose value matches no
-  option shows blank (`selectedIndex` -1), MUI's Select shows an empty display and Radix shows its placeholder; a raw
-  value is an identifier the app never passed as display text, and a component writes no text of its own
+  option shows blank (`selectedIndex` -1), MUI's Select shows an empty display, and Radix's shows nothing, its
+  placeholder showing only for no value; a raw value is an identifier the app never passed as display text, and a
+  component writes no text of its own
   (components::CON-001). Rejected: showing the value as the trigger's text, as Base UI does by default.
 - **With nothing selected, the segmented control and the tab row stay reachable from the keyboard**
   (components::REQ-016/AC-03): Tab reaches their first segment or tab, and the arrow keys move as usual. The WAI-ARIA
