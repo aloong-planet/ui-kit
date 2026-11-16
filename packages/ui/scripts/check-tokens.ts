@@ -10,9 +10,11 @@
 // The component source, every file under src/components: each class in it is judged by the CSS Tailwind compiles it
 // to with this stylesheet, so it is caught whatever form it is written in; the strings it writes, its imports, its
 // style objects and the colour attributes of its elements are read too.
-// - components::CON-004: no colour literal, no colour of Tailwind's own theme, no named colour or general token
-//   changed by a modifier, and no branch on the theme or on light/dark (a selector or condition on `.dark`,
-//   `data-theme` or `prefers-color-scheme`, the class `dark` or `dataset.theme` in script, the theming modules).
+// - components::CON-004: in any declaration, no colour literal, no named or system colour, no colour of Tailwind's own
+//   theme, no general token changed by a modifier, and no variable but a general token or one of Tailwind's own (a
+//   colour property set to anything else is reported too); and no branch on the theme or on light/dark (a selector or
+//   condition on `.dark`, `data-theme` or `prefers-color-scheme`, the class `dark` or `dataset.theme` in script, the
+//   theming modules).
 // - components::REQ-001/AC-04: no transition of a colour property or of `all`.
 // - theming::REQ-008/AC-01: font families, font sizes and radii only from the scale theme.css defines.
 import { readdirSync, readFileSync } from 'node:fs'
@@ -162,14 +164,41 @@ function valuesOf(classes: string[], prop: RegExp): Set<string> {
 }
 const fontSizes = valuesOf([...themeNames.text].map((step) => `text-${step}`), /^font-size$/)
 const fontFamilies = valuesOf([...themeNames.font].map((step) => `font-${step}`), /^font-family$/)
-const radii = valuesOf(
-  [...[...themeNames.radius].map((step) => `rounded-${step}`), 'rounded-none', 'rounded-full'],
-  /radius$/,
-)
-const scaleList = (prefix: string, names: Set<string>, extra: string[] = []) =>
-  [...[...names].map((name) => `${prefix}-${name}`), ...extra].join(', ')
+const radii = valuesOf([...themeNames.radius].map((step) => `rounded-${step}`), /radius$/)
+const scaleList = (prefix: string, names: Set<string>) => [...names].map((name) => `${prefix}-${name}`).join(', ')
+// The variables of Tailwind's theme, the kit's `@theme` blocks among them, each with its value
+const themeValues = new Map([...designSystem.theme.entries()].map(([name, { value }]) => [name, value]))
 
 const colourLiteral = /#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{3,4})\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color|color-mix|light-dark)\(/i
+// The colours CSS names (CSS Color 4: the named colours, the system colours and the deprecated system colours).
+// `transparent` and `currentcolor` name no colour of the page's own and are allowed.
+const namedColours = new Set(
+  `aliceblue antiquewhite aqua aquamarine azure beige bisque black blanchedalmond blue blueviolet brown burlywood
+  cadetblue chartreuse chocolate coral cornflowerblue cornsilk crimson cyan darkblue darkcyan darkgoldenrod darkgray
+  darkgreen darkgrey darkkhaki darkmagenta darkolivegreen darkorange darkorchid darkred darksalmon darkseagreen
+  darkslateblue darkslategray darkslategrey darkturquoise darkviolet deeppink deepskyblue dimgray dimgrey dodgerblue
+  firebrick floralwhite forestgreen fuchsia gainsboro ghostwhite gold goldenrod gray green greenyellow grey honeydew
+  hotpink indianred indigo ivory khaki lavender lavenderblush lawngreen lemonchiffon lightblue lightcoral lightcyan
+  lightgoldenrodyellow lightgray lightgreen lightgrey lightpink lightsalmon lightseagreen lightskyblue lightslategray
+  lightslategrey lightsteelblue lightyellow lime limegreen linen magenta maroon mediumaquamarine mediumblue
+  mediumorchid mediumpurple mediumseagreen mediumslateblue mediumspringgreen mediumturquoise mediumvioletred
+  midnightblue mintcream mistyrose moccasin navajowhite navy oldlace olive olivedrab orange orangered orchid
+  palegoldenrod palegreen paleturquoise palevioletred papayawhip peachpuff peru pink plum powderblue purple
+  rebeccapurple red rosybrown royalblue saddlebrown salmon sandybrown seagreen seashell sienna silver skyblue slateblue
+  slategray slategrey snow springgreen steelblue tan teal thistle tomato turquoise violet wheat white whitesmoke yellow
+  yellowgreen
+  accentcolor accentcolortext activetext buttonborder buttonface buttontext canvas canvastext field fieldtext graytext
+  highlight highlighttext linktext mark marktext selecteditem selecteditemtext visitedtext
+  activeborder activecaption appworkspace background buttonhighlight buttonshadow captiontext inactiveborder
+  inactivecaption inactivecaptiontext infobackground infotext menu menutext scrollbar threeddarkshadow threedface
+  threedhighlight threedlightshadow threedshadow window windowframe windowtext`.split(/\s+/),
+)
+// The named colours a value writes, outside its strings and URLs; a name inside a longer identifier, such as the
+// variable `--tw-red`, is not one
+const coloursNamedIn = (value: string) =>
+  [...value.replace(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|url\([^)]*\)/gi, '').matchAll(/(?<![\w-])[a-z]+(?![\w(-])/gi)]
+    .map(([word]) => word)
+    .filter((word) => namedColours.has(word.toLowerCase()))
 const themeBranch = /\.dark\b|data-theme|prefers-color-scheme/
 const colourProperty = /(^|-)colou?r$|^(fill|stroke|background)$/
 const colourKeyword = /^(transparent|currentcolor|inherit|initial|unset|revert|none)$/i
@@ -182,16 +211,36 @@ function declarationProblems({ prop, value, context }: Declaration): string[] {
   const found: string[] = []
   if (context.some((condition) => themeBranch.test(condition))) found.push('branches on the theme or on light/dark')
   if (colourLiteral.test(value)) found.push(`sets ${prop} to a colour literal, ${value}`)
-  for (const [, name] of value.matchAll(/var\(--color-([a-z0-9-]+)/g))
-    if (!themeNames.color.has(name)) found.push(`sets ${prop} to --color-${name}, a colour of Tailwind's theme`)
-  if (colourProperty.test(prop) && !/^var\(/.test(value) && !colourKeyword.test(value) && !colourLiteral.test(value))
+  const named = coloursNamedIn(value)
+  if (named.length > 0) found.push(`sets ${prop} to a named colour, ${named.join(', ')}`)
+  // A variable is a general token, or one of Tailwind's own: its utilities' `--tw-*` and the variables of its theme.
+  // Any other is read without knowing what it holds, so it fails whatever the property.
+  for (const [, name] of value.matchAll(/var\((--[\w-]+)/g)) {
+    const themeValue = themeValues.get(name)
+    if (name.startsWith('--color-')) {
+      if (!themeNames.color.has(name.slice('--color-'.length)))
+        found.push(`sets ${prop} to ${name}, a colour of Tailwind's theme`)
+    } else if (tokens.includes(name) || name === scaleBase || name.startsWith('--tw-')) {
+      // a general token, the base of the radius steps, or a variable of a Tailwind utility
+    } else if (themeValue === undefined)
+      found.push(`sets ${prop} to ${name}, which is neither a general token nor a variable of Tailwind's`)
+    else if (colourLiteral.test(themeValue) || coloursNamedIn(themeValue).length > 0)
+      found.push(`sets ${prop} to ${name}, a variable of Tailwind's theme that holds a colour`)
+  }
+  if (
+    colourProperty.test(prop) &&
+    !/^var\(/.test(value) &&
+    !colourKeyword.test(value) &&
+    !colourLiteral.test(value) &&
+    named.length === 0
+  )
     found.push(`sets ${prop} to ${value}, which is not a general token`)
   if (prop === 'font-size' && !fontSizes.has(value))
     found.push(`sets a font size off the scale (${scaleList('text', themeNames.text)})`)
   if ((prop === 'font-family' && !fontFamilies.has(value)) || prop === 'font')
     found.push(`sets a font family off the scale (${scaleList('font', themeNames.font)})`)
   if (/radius$/.test(prop) && !radii.has(value))
-    found.push(`sets a radius off the scale (${scaleList('rounded', themeNames.radius, ['rounded-none', 'rounded-full'])})`)
+    found.push(`sets a radius off the scale (${scaleList('rounded', themeNames.radius)})`)
   if ((prop === 'transition-property' || prop === 'transition') && colourTransition.test(value))
     found.push(`transitions colours (${value})`)
   return found
