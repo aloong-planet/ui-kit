@@ -2,6 +2,7 @@ import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { cn } from "cn"
 import { Check, ChevronDown } from "lucide-react"
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react"
+import type { AccessibleNameProps, SelectedValueProps } from "../../lib/props"
 
 // components::REQ-004, restyled from shadcn/ui's Mira select to the kit's look and scale (components::CON-003).
 //
@@ -66,14 +67,11 @@ type OptionsProps<V extends string> =
   | { options?: never; groups: readonly (readonly Option<V>[])[] }
 
 // components::REQ-004/AC-09: a select always has a selected option, so it takes `value` or `defaultValue`, one of its
-// options, and fails the type check without either
-type ValueProps<V extends string> = { value: NoInfer<V>; defaultValue?: never } | { value?: never; defaultValue: NoInfer<V> }
-
+// options, and fails the type check without either.
+//
 // components::CON-001: a select writes no text of its own. Its accessible name, an `aria-label` or an
 // `aria-labelledby` pointing at a label on the page, is required, so a missing one fails the type check.
-type NameProps = { "aria-label": string; "aria-labelledby"?: string } | { "aria-label"?: string; "aria-labelledby": string }
-
-export type SelectProps<V extends string = string> = BaseProps<V> & OptionsProps<V> & ValueProps<V> & NameProps
+export type SelectProps<V extends string = string> = BaseProps<V> & OptionsProps<V> & SelectedValueProps<V> & AccessibleNameProps
 
 function Select<V extends string>({
   className,

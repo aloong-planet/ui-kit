@@ -3,6 +3,7 @@ import { RadioGroup as RadioGroupPrimitive } from "@base-ui/react/radio-group"
 import { cva } from "class-variance-authority"
 import { cn } from "cn"
 import type { ReactNode } from "react"
+import type { AccessibleNameProps, SelectedValueProps } from "../../lib/props"
 
 // components::REQ-005, restyled from shadcn/ui's Mira toggle-group and toggle to the kit's look and scale, on Base UI's
 // radio group rather than its toggle group (components::CON-003): one choice among mutually exclusive options, never
@@ -49,14 +50,11 @@ type BaseProps<V extends string> = Omit<
 }
 
 // components::REQ-005/AC-06: a segmented control always has a selected segment, so it takes `value` or `defaultValue`
-// and fails the type check without either
-type ValueProps<V extends string> = { value: NoInfer<V>; defaultValue?: never } | { value?: never; defaultValue: NoInfer<V> }
-
+// and fails the type check without either.
+//
 // components::CON-001: a segmented control writes no text of its own. Its accessible name, an `aria-label` or an
 // `aria-labelledby` pointing at a label on the page, is required, so a missing one fails the type check.
-type NameProps = { "aria-label": string; "aria-labelledby"?: string } | { "aria-label"?: string; "aria-labelledby": string }
-
-export type SegmentedControlProps<V extends string = string> = BaseProps<V> & ValueProps<V> & NameProps
+export type SegmentedControlProps<V extends string = string> = BaseProps<V> & SelectedValueProps<V> & AccessibleNameProps
 
 function SegmentedControl<V extends string>({
   className,
