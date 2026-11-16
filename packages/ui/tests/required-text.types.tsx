@@ -4,7 +4,7 @@
 // error to expect; the unmarked use next to it differs only in keeping the rule, so that the marked one fails for
 // breaking it and not for something else. This file is type-checked by `pnpm typecheck`, never run.
 import { X } from 'lucide-react'
-import { Button, SearchBox } from '../src'
+import { Button, SearchBox, SegmentedControl } from '../src'
 
 declare const name: string
 
@@ -52,4 +52,21 @@ export const searchBoxes = [
   <SearchBox key="labelled by" placeholder={name} aria-labelledby={name} />,
   // @ts-expect-error a search box needs its placeholder
   <SearchBox key="no placeholder" aria-label={name} />,
+]
+
+const ranges = [
+  { value: 'day', label: name },
+  { value: 'week', label: name },
+] as const
+
+// A segmented control needs its accessible name, and a selected value (components::REQ-005/AC-06)
+export const segmentedControls = [
+  // @ts-expect-error a segmented control needs its accessible name
+  <SegmentedControl key="no name" options={ranges} defaultValue="day" />,
+  <SegmentedControl key="label" options={ranges} defaultValue="day" aria-label={name} />,
+  <SegmentedControl key="labelled by" options={ranges} value="week" aria-labelledby={name} />,
+  // @ts-expect-error a segmented control needs a selected value
+  <SegmentedControl key="no value" options={ranges} aria-label={name} />,
+  // @ts-expect-error the selected value is one of its options
+  <SegmentedControl key="other value" options={ranges} defaultValue="month" aria-label={name} />,
 ]
