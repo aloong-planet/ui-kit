@@ -197,11 +197,13 @@ export const LongList: Story = {
   },
 }
 
-// components::REQ-004/AC-07: a popup at least as wide as its trigger and as wide as its longest option within the
-// window, on the trigger's left edge, cutting with an ellipsis an option longer than the window leaves it
+// components::REQ-004/AC-07: a popup at least as wide as its trigger and as wide as its longest option within the room
+// from the trigger's left edge to the window's right edge, on the trigger's left edge, cutting with an ellipsis an
+// option longer than that room. The triggers stand 40% of the window's width in from its left edge, so a popup that
+// moved left to fit its longest option would leave the trigger's left edge.
 export const Widths: Story = {
   render: () => (
-    <div className="flex flex-col items-start gap-3">
+    <div className="flex flex-col items-start gap-3 ps-[40vw]">
       <Select className="w-24" aria-label="Sort by" options={sorts} defaultValue="name" />
       <Select
         className="w-24"

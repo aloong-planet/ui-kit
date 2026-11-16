@@ -17,18 +17,20 @@ const valueClass = "min-w-0 flex-1 truncate text-left font-semibold"
 const chevronClass = "size-3.5 shrink-0 text-muted-foreground group-data-popup-open:rotate-180"
 
 // The popup opens 6px below the trigger, or above it when there is not room below (Base UI flips it), with its left
-// edge on the trigger's. It is at least as wide as the trigger and as wide as its longest option, within the space
-// the window leaves it, and scrolls inside its own height when its options do not fit (components::REQ-004/AC-02,
-// AC-07). It is a floating surface: `--popover` ground, 1px `--border-strong` border, `--shadow-pop`
-// (components::REQ-001/AC-03). Base UI renders it in a portal at the end of the page, out of any ancestor of the
-// trigger that clips, and moves it with its trigger when the window is resized (components::REQ-014/AC-02).
+// edge on the trigger's. It is at least as wide as the trigger and as wide as its longest option, within the room
+// from the trigger's left edge to the window's right edge, and scrolls inside its own height when its options do not
+// fit (components::REQ-004/AC-02, AC-07). It is a floating surface: `--popover` ground, 1px `--border-strong` border,
+// `--shadow-pop` (components::REQ-001/AC-03). Base UI renders it in a portal at the end of the page, out of any
+// ancestor of the trigger that clips, and moves it with its trigger when the window is resized
+// (components::REQ-014/AC-02).
 const popupSide = "bottom"
 const popupAlign = "start"
 const popupOffset = 6
-// Base UI keeps a popup 5px from each edge of the window; not from the left edge, which would move the popup of a
-// trigger less than 5px from that edge off the trigger's left edge. A popup on the trigger's left edge cannot cross
-// the window's left edge while the trigger is in the window.
-const popupPadding = { top: 5, right: 5, bottom: 5, left: 0 }
+// Base UI flips a select popup to the other side when there is not room on its own, and by default also shifts it
+// along the trigger to fit the window, which moves a popup wider than the room to the trigger's right off the
+// trigger's left edge. The shift is turned off, so the room to the right is what `--available-width` measures and a
+// longer option is cut instead.
+const popupCollisionAvoidance = { side: "flip", align: "none", fallbackAxisSide: "none" } as const
 const positionerClass = "z-50"
 const popupClass =
   "max-h-(--available-height) w-max max-w-(--available-width) min-w-(--anchor-width) overflow-y-auto rounded-lg border border-border-strong bg-popover p-1 text-popover-foreground shadow-pop outline-none"
@@ -132,7 +134,7 @@ function Select<V extends string>({
           sideOffset={popupOffset}
           align={popupAlign}
           alignItemWithTrigger={false}
-          collisionPadding={popupPadding}
+          collisionAvoidance={popupCollisionAvoidance}
           className={positionerClass}
         >
           <SelectPrimitive.Popup ref={popupRef} className={popupClass}>
