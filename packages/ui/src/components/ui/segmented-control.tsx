@@ -2,13 +2,14 @@ import { Radio as RadioPrimitive } from "@base-ui/react/radio"
 import { RadioGroup as RadioGroupPrimitive } from "@base-ui/react/radio-group"
 import { cva } from "class-variance-authority"
 import { cn } from "cn"
-import type { ReactNode } from "react"
+import { useState, type ReactNode } from "react"
+import { useValueNoneOfOptionsWarning } from "../../hooks/use-value-none-of-options-warning"
 import type { AccessibleNameProps, SelectedValueProps } from "../../lib/props"
 
 // components::REQ-005, restyled from shadcn/ui's Mira toggle-group and toggle to the kit's look and scale, on Base UI's
-// radio group rather than its toggle group (components::CON-003): one choice among mutually exclusive options, never
-// empty, announced as a radio group, the arrow keys moving between segments and selecting the one they reach, and
-// activating the selected segment again leaving it selected.
+// radio group rather than its toggle group (components::CON-003): one choice among mutually exclusive options that the
+// user cannot empty, announced as a radio group, the arrow keys moving between segments and selecting the one they
+// reach, and activating the selected segment again leaving it selected.
 //
 // The container's 1px `--border-strong` border, rounded at 7px, clips the segments at its corners, so a segment's
 // keyboard focus outline is drawn 2px inside the segment, where the container cannot clip it (components::REQ-001/AC-01);
@@ -49,7 +50,7 @@ type BaseProps<V extends string> = Omit<
   onValueChange?: (value: V) => void
 }
 
-// components::REQ-005/AC-06: a segmented control always has a selected segment, so it takes `value` or `defaultValue`
+// components::REQ-005/AC-06: a segmented control always has a selected value, so it takes `value` or `defaultValue`
 // and fails the type check without either.
 //
 // components::CON-001: a segmented control writes no text of its own. Its accessible name, an `aria-label` or an
@@ -63,10 +64,17 @@ function SegmentedControl<V extends string>({
   onValueChange,
   ...props
 }: SegmentedControlProps<V>) {
+  // The value an uncontrolled control holds, the one it was given or the one the user picked since, for the warning
+  // (components::REQ-016/AC-04); Base UI holds it for the control itself
+  const [picked, setPicked] = useState(props.defaultValue)
+  useValueNoneOfOptionsWarning("SegmentedControl", props.value ?? picked, options.map((option) => option.value))
   return (
     <RadioGroupPrimitive<V>
       className={cn(groupClass, className)}
-      onValueChange={(value) => onValueChange?.(value)}
+      onValueChange={(value) => {
+        setPicked(value)
+        onValueChange?.(value)
+      }}
       {...props}
     >
       {options.map((option) => (

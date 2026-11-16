@@ -13,6 +13,7 @@ import { computed } from '../stories/support/computed'
 import { frames } from '../stories/support/frames'
 import { isOpen, optionLabel, popup } from '../stories/support/select'
 import { mount, unmount } from './support/mount'
+import { trigger } from './support/select'
 
 const { Default, InScrollingArea, Disabled } = composeStories(stories, preview)
 
@@ -23,13 +24,6 @@ afterEach(async () => {
   window.scrollTo(0, 0)
   await page.viewport(viewport.width, viewport.height)
 })
-
-
-function trigger(canvas: HTMLElement): HTMLElement {
-  const element = canvas.querySelector<HTMLElement>('[role="combobox"]')
-  if (!element) throw new Error('no select trigger')
-  return element
-}
 
 // The Default story's spies, cleared of what earlier tests recorded on them
 function spies() {

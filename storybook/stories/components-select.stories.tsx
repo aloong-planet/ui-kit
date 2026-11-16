@@ -319,3 +319,21 @@ export const LongLabel: Story = {
     })
   },
 }
+
+// components::REQ-016/AC-02, for the owner to confirm the look: a select given a value none of its options, here a sort
+// the app stored that its options no longer hold, shows no text in its trigger, and its open popup marks no option
+// selected. One trigger has a fixed width and one the width of its content, beside a select with a selected option.
+// The options are typed only as `string`, as options built from data fetched at run time are, which lets such a value
+// through the type check.
+export const ValueNoneOfOptions: Story = {
+  render: () => {
+    const options: readonly { value: string; label: string }[] = sorts
+    return (
+      <div className="flex items-center gap-3">
+        <Select className="w-40" aria-label="Sort by" options={options} defaultValue="size" />
+        <Select aria-label="Sort by, in the width of its content" options={options} defaultValue="size" />
+        <Select className="w-40" aria-label="Sort by, with a selected option" options={options} defaultValue="updated" />
+      </div>
+    )
+  },
+}

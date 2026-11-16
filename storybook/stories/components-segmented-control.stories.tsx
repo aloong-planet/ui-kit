@@ -157,3 +157,19 @@ export const LongLabel: Story = {
     await expect({ height: rect.height, inside: rect.right <= column.right }).toEqual({ height: 28, inside: true })
   },
 }
+
+// components::REQ-016/AC-02, for the owner to confirm the look: a segmented control given a value none of its options,
+// here a range the app stored that its options no longer hold, shows no segment selected, in each size. The options
+// are typed only as `string`, as options built from data fetched at run time are, which lets such a value through the
+// type check.
+export const ValueNoneOfOptions: Story = {
+  render: () => {
+    const options: readonly { value: string; label: string }[] = ranges
+    return (
+      <div className="flex flex-col items-start gap-3">
+        <SegmentedControl aria-label="Range" options={options} defaultValue="year" />
+        <SegmentedControl aria-label="Range" options={options} defaultValue="year" size="sm" />
+      </div>
+    )
+  },
+}

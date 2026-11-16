@@ -12,24 +12,11 @@ import preview from '../.storybook/preview'
 import * as stories from '../stories/components-tabs.stories'
 import { computed } from '../stories/support/computed'
 import { mount, unmount } from './support/mount'
+import { shown, tab } from './support/tabs'
 
 const { Page, Pill, Disabled } = composeStories(stories, preview)
 
 afterEach(unmount)
-
-function tab(canvas: HTMLElement, label: string): HTMLElement {
-  const element = [...canvas.querySelectorAll<HTMLElement>('[role="tab"]')].find((node) => node.textContent?.startsWith(label))
-  if (!element) throw new Error(`no tab ${label}`)
-  return element
-}
-
-// The selected tab and the panel that shows
-function shown(canvas: HTMLElement) {
-  return {
-    selected: [...canvas.querySelectorAll<HTMLElement>('[role="tab"][aria-selected="true"]')].map((node) => node.textContent),
-    panels: [...canvas.querySelectorAll<HTMLElement>('[role="tabpanel"]')].map((node) => node.textContent),
-  }
-}
 
 // The `onValueChange` the Page story reports to, cleared of what earlier tests recorded on it
 function reported() {
@@ -178,7 +165,7 @@ function Disabling({ which, onValueChange }: { which: 'every' | 'selected'; onVa
   )
 }
 
-// components::REQ-013: tabs always have a selected tab. A disabled selected tab stays selected with its panel showing,
+// components::REQ-013: tabs always have a selected value. A disabled selected tab stays selected with its panel showing,
 // whether the other tabs are disabled with it or not, and once the tabs are enabled again; the tabs report no change,
 // since neither the user nor the app made one
 test.each([
