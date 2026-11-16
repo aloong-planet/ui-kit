@@ -5,7 +5,7 @@
 // error to expect; the unmarked use next to it differs only in keeping the rule, so that the marked one fails for
 // breaking it and not for something else. This file is type-checked by `pnpm typecheck`, never run.
 import { X } from 'lucide-react'
-import { Button, SearchBox, SegmentedControl, Select, Tooltip } from '../src'
+import { Button, SearchBox, SegmentedControl, Select, toast, Toaster, Tooltip } from '../src'
 
 declare const name: string
 
@@ -94,3 +94,19 @@ export const tooltips = [
     <Button>{name}</Button>
   </Tooltip>,
 ]
+
+// A Toaster needs the label of its region, and a toast its text
+export const toasters = [
+  // @ts-expect-error a Toaster needs the label of its region
+  <Toaster key="no label" />,
+  <Toaster key="label" aria-label={name} />,
+]
+
+export function raiseToasts() {
+  // @ts-expect-error a toast needs its text
+  toast.success()
+  toast.success(name)
+  // @ts-expect-error an error toast needs it too
+  toast.error()
+  toast.error(name)
+}
