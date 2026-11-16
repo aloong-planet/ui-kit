@@ -1,8 +1,11 @@
 // The SearchBox's stories (stories/components-search-box.stories.tsx) under a real pointer and keyboard: Playwright's,
 // which the browser treats as the user's, so it applies `:focus` as it would for a person and lets a click reach the
 // controls the browser draws inside a field. Each story is rendered as Storybook renders it, inside the toolbar's
-// ThemeProvider.
+// ThemeProvider. The last test renders a search box of its own, as an app would, for what no story shows: a search box
+// named by a label on the page.
+import { SearchBox } from '@aloong-planet/ui'
 import { composeStories } from '@storybook/react-vite'
+import { within } from 'storybook/test'
 import { afterEach, expect, test } from 'vitest'
 import { userEvent } from 'vitest/browser'
 import preview from '../.storybook/preview'
@@ -69,4 +72,16 @@ test('a disabled search box cannot be focused or typed into', async () => {
     focused: false,
     value: 'agent',
   })
+})
+
+// components::CON-001: a search box named by a label on the page, through `aria-labelledby`, is announced as a search
+// field under that label's text
+test('a search box named with aria-labelledby is announced under the label it points at', () => {
+  const canvas = mount(
+    <>
+      <h2 id="project-search">Projects</h2>
+      <SearchBox aria-labelledby="project-search" placeholder="Name or path" />
+    </>,
+  )
+  expect(within(canvas).queryAllByRole('searchbox', { name: 'Projects' }).length).toBe(1)
 })

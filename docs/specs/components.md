@@ -119,7 +119,8 @@ tall, in `text-sm` semibold, with `rounded-md` corners and a 14px check.
   trigger stands; an option longer than that room is cut with an ellipsis (components::REQ-001/AC-05).
 - components::REQ-004/AC-08: A click outside the open popup also acts on the element it lands on, as it would with
   the popup closed.
-- components::REQ-004/AC-09: A select used without a selected value fails the type check.
+- components::REQ-004/AC-09: A select used without a selected value, or with a value that is none of its options,
+  fails the type check.
 
 ### components::REQ-005 Segmented control
 
@@ -140,7 +141,8 @@ Segments side by side in one bordered container with `rounded-md` corners, one o
   neighbouring segments, so a selected and a hovered segment side by side read as two.
 - components::REQ-005/AC-04: Each size renders the height and text size its row gives.
 - components::REQ-005/AC-05: Activating the selected segment again leaves it selected.
-- components::REQ-005/AC-06: A segmented control used without a selected value fails the type check.
+- components::REQ-005/AC-06: A segmented control used without a selected value, or with a value that is none of its
+  options, fails the type check.
 
 ### components::REQ-006 Card
 

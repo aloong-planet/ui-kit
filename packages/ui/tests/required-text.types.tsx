@@ -87,6 +87,8 @@ export const segmentedControls = [
   <SegmentedControl key="no value" options={ranges} aria-label={name} />,
   // @ts-expect-error the selected value is one of its options
   <SegmentedControl key="other value" options={ranges} defaultValue="month" aria-label={name} />,
+  // @ts-expect-error a controlled selected value is one of its options too
+  <SegmentedControl key="other controlled value" options={ranges} value="month" aria-labelledby={name} />,
 ]
 
 const sections = [
@@ -118,6 +120,8 @@ export const selects = [
   <Select key="no value" options={ranges} aria-label={name} />,
   // @ts-expect-error the selected value is one of its options
   <Select key="other value" options={ranges} defaultValue="month" aria-label={name} />,
+  // @ts-expect-error a controlled selected value is one of its options too
+  <Select key="other controlled value" groups={[ranges]} value="month" aria-labelledby={name} />,
 ]
 
 // A tooltip needs its text

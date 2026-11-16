@@ -1,7 +1,10 @@
 // The Select's stories (stories/components-select.stories.tsx) under a real pointer and keyboard: Playwright's, which
 // the browser treats as the user's, so it applies `:hover` and `:focus-visible` as it would for a person. Each story is
-// rendered as Storybook renders it, inside the toolbar's ThemeProvider.
+// rendered as Storybook renders it, inside the toolbar's ThemeProvider. The last test renders a select of its own, as an
+// app would, for what no story shows: a select named by a label on the page.
+import { Select } from '@aloong-planet/ui'
 import { composeStories } from '@storybook/react-vite'
+import { within } from 'storybook/test'
 import { afterEach, expect, test, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import preview from '../.storybook/preview'
@@ -237,4 +240,23 @@ test('a disabled select ignores the pointer and cannot be opened by pointer or k
   await frames(3)
   expect({ open: isOpen(), label: element.textContent }).toEqual({ open: false, label: 'Last updated' })
   expect(Disabled.args.onValueChange).not.toHaveBeenCalled()
+})
+
+// components::CON-001: a select named by a label on the page, through `aria-labelledby`, has its trigger announced under
+// that label's text
+test('a select named with aria-labelledby is announced under the label it points at', () => {
+  const canvas = mount(
+    <>
+      <h2 id="project-order">Order</h2>
+      <Select
+        aria-labelledby="project-order"
+        options={[
+          { value: 'name', label: 'Name' },
+          { value: 'updated', label: 'Last updated' },
+        ]}
+        defaultValue="name"
+      />
+    </>,
+  )
+  expect(within(canvas).queryAllByRole('combobox', { name: 'Order' }).length).toBe(1)
 })
