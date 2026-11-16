@@ -5,7 +5,7 @@
 // error to expect; the unmarked use next to it differs only in keeping the rule, so that the marked one fails for
 // breaking it and not for something else. This file is type-checked by `pnpm typecheck`, never run.
 import { X } from 'lucide-react'
-import { Button, SearchBox, SegmentedControl, Select } from '../src'
+import { Button, SearchBox, SegmentedControl, Select, Tooltip } from '../src'
 
 declare const name: string
 
@@ -82,4 +82,15 @@ export const selects = [
   <Select key="no value" options={ranges} aria-label={name} />,
   // @ts-expect-error the selected value is one of its options
   <Select key="other value" options={ranges} defaultValue="month" aria-label={name} />,
+]
+
+// A tooltip needs its text
+export const tooltips = [
+  // @ts-expect-error a tooltip needs its text
+  <Tooltip key="no text" warning={name}>
+    <Button>{name}</Button>
+  </Tooltip>,
+  <Tooltip key="text" text={name} warning={name}>
+    <Button>{name}</Button>
+  </Tooltip>,
 ]
