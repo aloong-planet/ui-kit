@@ -184,7 +184,7 @@ One form: `--tooltip` ground, `--tooltip-foreground` text, no border, and the te
 warning line in `--tooltip-warning` when the caller passes one apart from the text.
 
 - components::REQ-008/AC-01: It opens when its trigger is hovered or receives keyboard focus, and closes when
-  neither holds.
+  neither holds or when its trigger is clicked.
 - components::REQ-008/AC-02: It sits 6px from its trigger on the side the caller chooses, below by default,
   and moves to the opposite side when there is not room.
 - components::REQ-008/AC-03: Its text is the trigger's description for screen readers; the tooltip itself
@@ -192,7 +192,8 @@ warning line in `--tooltip-warning` when the caller passes one apart from the te
 - components::REQ-008/AC-04: It shows the `--tooltip` ground, `--tooltip-foreground` text and no border; a
   warning line the caller passes shows after the text, in `--tooltip-warning`.
 - components::REQ-008/AC-05: It opens as soon as the pointer is over its trigger, with no delay.
-- components::REQ-008/AC-06: A click on its trigger leaves it open while the pointer stays on the trigger.
+- components::REQ-008/AC-06: Once a click on its trigger has closed it, it stays closed while the pointer stays on
+  the trigger, and opens again when the pointer leaves the trigger and comes back.
 
 ### components::REQ-009 Drawer
 
@@ -394,11 +395,13 @@ specs; see `AGENTS.md`).
 - **Starting from the Mira style.** It is shadcn/ui's style for dense interfaces and the closest to the kit's
   scale (its default button is 28px tall with 12px text, against the kit's `default` controls, 28px tall with
   12.5px text). Rejected: Nova (32px, 14px text) and Vega (36px, 14px text), both further from it.
-- **The tooltip opens with no delay, and a click on its trigger leaves it open.** The owner's choice: it shows as soon
-  as the pointer reaches its trigger, and a tooltip whose text changes on the click, such as a copy button's, stays to
-  show it. Rejected: Base UI's 600ms delay, and its closing the tooltip on a click.
-- **One warning line, passed apart from the tooltip's text.** The caller never styles a line itself. Rejected: several
-  lines, any of them markable as a warning, which nothing needs.
+- **The tooltip opens with no delay, and a click on its trigger closes it.** The owner's choice. It shows as soon as
+  the pointer reaches its trigger, as shadcn/ui's tooltip does; once the trigger is clicked, the click's own result
+  takes over from the hint, which is how Base UI and Radix, and so shadcn/ui, close a tooltip by default. Rejected:
+  Base UI's 600ms delay, and a tooltip that stays open on a click.
+- **One warning line, passed apart from the tooltip's text.** The caller never styles a line itself, and a tooltip
+  stays a short description rather than a layout of its own. Rejected: several lines, any of them markable as a
+  warning.
 - **The toast is shadcn/ui's `toast`, on Base UI.** Rejected: shadcn/ui's `sonner`, which depends on
   `next-themes` and would compete with the kit's ThemeProvider for the root element.
 - **Toasts are raised by a call and shown by one Toaster.** An app renders a Toaster once (components::CON-005),
