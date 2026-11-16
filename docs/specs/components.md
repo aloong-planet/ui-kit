@@ -382,7 +382,8 @@ options or tabs holds.
   value when it is rendered with such a value, and again each time its value or options change to leave it such a
   value; a production build logs nothing.
 - components::REQ-016/AC-05: Moving the focus to the first segment or tab with Tab selects nothing and reports no
-  change; the arrow keys and a click select as usual.
+  change, nor does the focus coming in from outside the control by a press of the pointer released off the segment
+  or tab, or by the app's script; the arrow keys and a click select as usual.
 - components::REQ-016/AC-06: A segmented control in a form, given such a value, submits nothing under its name.
 
 ## Constraints
@@ -546,8 +547,14 @@ specs; see `AGENTS.md`).
   only moving within the list selects; with no active tab, a keyboard user who only passes through with Tab must not
   change the app's state, which is the decision above that the value stays, applied to focus. MUI's tabs likewise
   make the first tab tabbable without selecting it when no tab matches, and the segmented control already behaves so,
-  since Base UI selects a radio on focus only after an arrow key. Rejected: keeping Base UI's selection of the tab Tab
-  reaches, as Base UI selects any unselected enabled tab that takes the keyboard focus.
+  since Base UI selects a radio on focus only after an arrow key. The focus coming into the row from outside it
+  selects nothing whatever brings it, a press of the pointer released off the tab or the app's script as well as Tab:
+  a native radio group with none checked checks no radio when the focus comes in, and only a click, a press released
+  on the radio, or an arrow key checks one, as the segmented control does. Rejected: keeping Base UI's selection of
+  the tab the focus reaches, as Base UI selects any unselected enabled tab that takes the focus from the keyboard, a
+  script or a press of the pointer's primary button; and holding back only the focus Tab brings, which would have the
+  kit listen to the keyboard outside the row and would choose a tab on a press the user moved off before releasing,
+  which is no click.
 - **A development warning for such a value** (components::REQ-016/AC-04): in development each of the three logs one
   console warning naming the component and the value; a production build logs nothing. MUI warns in development both
   for an out-of-range Select value and for a Tabs value that matches no tab, and Base UI 1.9.0 warns for neither. A

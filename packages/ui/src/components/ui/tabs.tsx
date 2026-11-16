@@ -118,10 +118,10 @@ function Tabs<V extends string>({
       value={current}
       // A controlled root reports only the tab the user picks
       onValueChange={(next: V, details) => {
-        // components::REQ-016/AC-05: with a value none of the tabs, the keyboard focus coming into the row from outside
-        // it, as Tab brings it to the first tab, selects nothing: Base UI selects an unselected tab that takes the
-        // focus. The arrow keys move the focus within the row and select as usual, and a click selects as it does on
-        // any unselected tab.
+        // components::REQ-016/AC-05: with a value none of the tabs, the focus coming into the row from outside it
+        // selects nothing, whether Tab brings it to the first tab or a press of the pointer released off the tab or
+        // the app's script brings it: Base UI selects an unselected tab that takes the focus. The arrow keys move the
+        // focus within the row and select as usual, and a click selects as it does on any unselected tab.
         const { event } = details
         const fromOutside =
           event instanceof FocusEvent &&

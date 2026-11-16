@@ -2,7 +2,7 @@
 // app gives one through options typed only as `string`, or through options that changed under a value it stored. Each
 // is rendered as an app renders it, under Playwright's pointer and keyboard, which the browser treats as the user's.
 import { SegmentedControl, Select, Tabs } from '@aloong-planet/ui'
-import { StrictMode, useState, type ReactElement } from 'react'
+import { act, StrictMode, useState, type ReactElement } from 'react'
 import { afterEach, expect, test, vi } from 'vitest'
 import { userEvent } from 'vitest/browser'
 import { frames } from '../stories/support/frames'
@@ -134,9 +134,10 @@ function app(name: (typeof names)[number], way: (typeof ways)[number], value: st
 }
 
 // components::REQ-016/AC-01, AC-02: a value none of the options stays as the app passed it, with no change reported, and
-// nothing shows as selected: no option, segment or tab, no tab's panel, and no text in the select's trigger
-test.for(everyWay)('%s given as %s a value none of its options keeps it and shows nothing selected', async ([name, way]) => {
-  const subject = subjects[name]
+// the select shows nothing selected: no option, and no text in its trigger. The segmented control and the tabs are
+// checked for the same in the case below where the focus comes into them.
+test.for(ways)('Select given as %s a value none of its options keeps it and shows nothing selected', async (way) => {
+  const subject = subjects.Select
   const onValueChange = vi.fn()
   const canvas = mount(subject.render({ options: fruits, ...given(way, 'nope'), onValueChange }))
   expect(await subject.selection(canvas)).toEqual(subject.none)
@@ -166,52 +167,78 @@ test.for(everyWay)('%s given as %s keeps its value when the options change witho
 })
 
 // components::REQ-016/AC-04: in development, one console warning naming the component and the value when it is rendered
-// with a value none of its options, and once more each time its value or options change to leave it such a value; none
-// for a render with the same value and options, which an app passes as new arrays, and none for one of its options.
-// Rendered in Strict Mode, which runs each effect twice on mounting, as apps do in development.
-test.for(names)('%s warns in development once for each value none of its options it is given', (name) => {
+// with a value none of its options, and once more each time its value or options change to leave it such a value,
+// options that change under a value they still do not hold among them; none for a render with the same value and
+// options, which an app passes as new arrays, and none for one of its options. Rendered in Strict Mode, which runs each
+// effect twice on mounting, as apps do in development.
+test.for(names)('%s warns in development each time it is left with a value none of its options', (name) => {
   const subject = subjects[name]
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
   try {
     const render = (options: readonly Fruit[], value: string) => <StrictMode>{subject.render({ options, value })}</StrictMode>
     mount(render(fruits, 'x'))
     rerender(render(fruits.map((fruit) => ({ ...fruit })), 'x'))
+    rerender(render(fruits.filter((fruit) => fruit.value !== 'c'), 'x'))
     rerender(render(fruits, 'y'))
     rerender(render(fruits, 'b'))
     rerender(render(fruits.filter((fruit) => fruit.value !== 'b'), 'b'))
-    expect(warn.mock.calls).toEqual([[subject.warnings.x], [subject.warnings.y], [subject.warnings.b]])
+    expect(warn.mock.calls).toEqual([[subject.warnings.x], [subject.warnings.x], [subject.warnings.y], [subject.warnings.b]])
   } finally {
     warn.mockRestore()
   }
 })
 
-// components::REQ-016/AC-04: an uncontrolled component warns for the value it holds, which the user picked, and not for
-// the value it was first given
-test.for(names)('%s given a defaultValue warns for the value the user picked once the options leave it', async (name) => {
+// components::REQ-016/AC-04: an uncontrolled component warns for the value it holds: on mounting for a `defaultValue`
+// none of its options, then for the value the user picked once the options leave it, and not again for the value it
+// was first given
+test.for(names)('%s given a defaultValue none of its options warns for it, then for the value the user picked once the options leave it', async (name) => {
   const subject = subjects[name]
-  const render = (options: readonly Fruit[]) => subject.render({ options, defaultValue: 'a' })
-  const canvas = mount(render(fruits))
-  await subject.pick(canvas, 'Banana')
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
   try {
+    const render = (options: readonly Fruit[]) => subject.render({ options, defaultValue: 'x' })
+    const canvas = mount(render(fruits))
+    expect(warn.mock.calls).toEqual([[subject.warnings.x]])
+    await subject.pick(canvas, 'Banana')
     rerender(render(fruits.filter((fruit) => fruit.value !== 'a')))
-    expect(warn.mock.calls).toEqual([])
+    expect(warn.mock.calls).toEqual([[subject.warnings.x]])
     rerender(render(fruits.filter((fruit) => fruit.value !== 'b')))
-    expect(warn.mock.calls).toEqual([[subject.warnings.b]])
+    expect(warn.mock.calls).toEqual([[subject.warnings.x], [subject.warnings.b]])
   } finally {
     warn.mockRestore()
   }
 })
 
-// components::REQ-016/AC-03, AC-05: with a value none of its options, Tab from before the control moves the focus to its
-// first segment or tab, selecting nothing and reporting nothing; ArrowRight then moves the focus to the second and
-// selects and reports it, as it does with a selected value
-test.for(everyRowWay)('%s given as %s a value none of its options lets Tab reach its first without selecting it', async ([name, way]) => {
+// The ways the focus comes into a segmented control or a tab row from before it, onto its first segment or tab: Tab
+// from the button before it, a press of the pointer's primary button on the first released on the button before it,
+// and the app's script
+const entries = {
+  Tab: async () => {
+    await userEvent.keyboard('{Tab}')
+  },
+  'a press released off it': async (first: HTMLElement, before: HTMLElement) => {
+    await userEvent.dragAndDrop(first, before)
+  },
+  'a script': (first: HTMLElement) => {
+    act(() => first.focus())
+    return Promise.resolve()
+  },
+}
+const everyRowWayEntry = everyRowWay.flatMap(([name, way]) =>
+  (Object.keys(entries) as (keyof typeof entries)[]).map((entry) => [name, way, entry] as const),
+)
+
+// components::REQ-016/AC-01, AC-02, AC-03, AC-05: with a value none of its options, the segmented control and the tabs
+// keep the value with no change reported and show nothing selected, no tab's panel either; the focus coming in from
+// before the control onto its first segment or tab, by Tab, a press released off it or a script, selects nothing and
+// reports nothing; ArrowRight then moves the focus to the second and selects and reports it, as it does with a
+// selected value
+test.for(everyRowWayEntry)('%s given as %s a value none of its options selects nothing when %s brings the focus in', async ([name, way, entry]) => {
   const subject = subjects[name]
   const onValueChange = vi.fn()
   const canvas = mount(app(name, way, 'nope', onValueChange))
-  await userEvent.click(button(canvas, 'Before'))
-  await userEvent.keyboard('{Tab}')
+  const before = button(canvas, 'Before')
+  await userEvent.click(before)
+  await entries[entry](subject.item(canvas, 'Apple'), before)
   expect({
     focused: document.activeElement === subject.item(canvas, 'Apple'),
     selection: await subject.selection(canvas),
