@@ -34,7 +34,8 @@ written into one was never tried.
 - The gate compiles each class of the component source with Tailwind's design system and the kit's stylesheet, as a
   consumer does, and judges the declarations and selectors that come out, so a form is caught whatever its name.
 - A declaration is judged by its value, whatever the property: a colour function or hex value, a named or system
-  colour, or a variable that is neither a general token nor one of Tailwind's own fails.
+  colour, or a variable that is neither a general token nor one of Tailwind's own fails (in a width or a height,
+  the lengths Base UI sets on a popup's positioner are allowed, for the select popup's size).
 - Checked against every class Tailwind 4.3.5 lists that ends in a palette colour (51), the same 51 forms with a
   general token and an opacity modifier, and every compound variant built on `dark` (5): all are reported.
 - Run over every class Tailwind 4.3.5 lists (25,123), the value checks reject no class the first fix passed, so they

@@ -66,9 +66,9 @@ an existing token.
 
 | Kit token | What it colours |
 |---|---|
-| `--background` | The page; the ground of regular buttons, select triggers and the selected page tab |
+| `--background` | The page; the ground of regular buttons, select triggers, the selected page tab and a segment under the pointer |
 | `--foreground` | Body text |
-| `--card` | Cards |
+| `--card` | Cards, the search box and the pill tabs |
 | `--card-foreground` | Text on cards |
 | `--popover` | Floating surfaces: select popups, drawers, dialogs |
 | `--popover-foreground` | Text on floating surfaces |

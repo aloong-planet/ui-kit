@@ -28,15 +28,13 @@ there.
 
 ## Functional Requirements
 
-> Pending: of these components only the button is built. Each other one's first sizes (padding, heights, font
-> sizes, weights, radii) are taken from the matching element of the Agent Shed app (`aloong-planet/agentshed`,
-> commit `14b6d5b`, `src/renderer/src/theme.css` unless named otherwise) and then confirmed by the owner in
-> Storybook (components::CON-002): search box `.sbar input`, with
-> the icon placement of `.sh`; select `.lang-trigger`, `.lang-pop`, `.lang-opt`, `.lang-sep`; segmented
-> control `.seg.seg-field` (size `sm` `.seg`); card `.card` (`selectable` `.theme-card`, `dashed`
-> `.settings-foot`); badge `.pill` (`count` `.cnt-b`); tooltip `TIP_LOOK` in `FloatingBox.tsx`; drawer
-> `.file-drawer`; confirm dialog `.reader.dlg`; toast `.toasts`, `.toast`; skeleton `.sk-ph`; tabs `.tab`
-> (`pill` `.ptab`).
+> Pending: of these components only the button, the search box, the select and the segmented control are built.
+> Each other one's first sizes (padding, heights, font sizes, weights, radii) are taken from the matching element of
+> the Agent Shed app (`aloong-planet/agentshed`, commit `14b6d5b`, `src/renderer/src/theme.css` unless named
+> otherwise) and then confirmed by the owner in Storybook (components::CON-002): card `.card` (`selectable`
+> `.theme-card`, `dashed` `.settings-foot`); badge `.pill` (`count` `.cnt-b`); tooltip `TIP_LOOK` in
+> `FloatingBox.tsx`; drawer `.file-drawer`; confirm dialog `.reader.dlg`; toast `.toasts`, `.toast`; skeleton
+> `.sk-ph`; tabs `.tab` (`pill` `.ptab`).
 
 ### components::REQ-001 Shared states
 
@@ -44,7 +42,8 @@ Applies to every interactive component in this spec.
 
 - components::REQ-001/AC-01: Keyboard focus shows a 2px `--ring` outline. It sits 2px outside the element,
   except inside a container that clips its children (the segmented control), where it sits 2px inside.
-  Pointer focus shows no outline.
+  Pointer focus shows no outline. The search box shows its focus on its border instead, whether the keyboard or the
+  pointer focused it (components::REQ-003/AC-02).
 - components::REQ-001/AC-02: A disabled control shows its muted look, the control at 45% opacity, does not react
   to hover, and cannot be activated by pointer or keyboard.
 - components::REQ-001/AC-03: Select popups, drawers and dialogs use the `--popover` ground and a 1px
@@ -88,17 +87,22 @@ pairs with, so buttons of one row line up.
 
 ### components::REQ-003 Search box
 
-One form: a text field with a leading search icon, a `--card` ground, a 1px `--input` border, and the
-placeholder the caller passes. When focused, its border turns `--ring` and it shows no outline. It has no
-clear button.
+One form: a text field with a leading search icon, in `text-sm` with `rounded-md` corners. The icon is 13px, 9px
+from the field's leading edge and centred on its height; typed text starts 28px from that edge.
 
 - components::REQ-003/AC-01: The search icon sits inside the field at the leading edge, and typed text starts
   after it.
 - components::REQ-003/AC-02: Focusing the field turns its border `--ring`, with no outline.
 - components::REQ-003/AC-03: The field has a `--card` ground, a 1px `--input` border and the placeholder the
   caller passes, and no clear button.
+- components::REQ-003/AC-04: The field is 28px tall, as tall as a `default` button.
 
 ### components::REQ-004 Select
+
+One form: a trigger and a popup of options. A select always has a selected option; it has no state without one.
+The trigger shows its label in `text-sm` semibold, with `rounded-md` corners and a 14px chevron in
+`--muted-foreground`. The popup has `rounded-lg` corners and 4px of padding around its options, which are 32px
+tall, in `text-sm` semibold, with `rounded-md` corners and a 14px check.
 
 - components::REQ-004/AC-01: The trigger shows the selected option's label in a `--background` ground with a
   1px `--border-strong` border; under the pointer and while open, a `--primary` border and the wash; its
@@ -111,16 +115,22 @@ clear button.
 - components::REQ-004/AC-04: Options can be split into groups by a 1px `--border` divider.
 - components::REQ-004/AC-05: Arrow keys move the highlight, Enter selects, and Esc closes the popup and
   returns focus to the trigger; a click outside closes it.
+- components::REQ-004/AC-06: The trigger is 28px tall, as tall as a `default` button.
+- components::REQ-004/AC-07: The popup is at least as wide as the trigger, and as wide as its longest option within
+  the room from the trigger's left edge to the window's right edge, with its left edge on the trigger's wherever the
+  trigger stands; an option longer than that room is cut with an ellipsis (components::REQ-001/AC-05).
+- components::REQ-004/AC-08: A click outside the open popup also acts on the element it lands on, as it would with
+  the popup closed.
+- components::REQ-004/AC-09: A select used without a selected value fails the type check.
 
 ### components::REQ-005 Segmented control
 
-Segments side by side in a container with a 1px `--border-strong` border that clips them; one segment is
-selected at a time.
+Segments side by side in one bordered container with `rounded-md` corners, one of them selected.
 
-| Size | Use |
-|---|---|
-| `default` | Settings and forms |
-| `sm` | Inline in toolbars and headers |
+| Size | Use | Box |
+|---|---|---|
+| `default` | Settings and forms | 28px tall, as tall as a `default` button, `text-sm` |
+| `sm` | Inline in toolbars and headers | 22px tall, as tall as an `sm` button, `text-xs` |
 
 - components::REQ-005/AC-01: The selected segment shows the wash, `--accent-foreground` text and a heavier
   weight; the others show `--muted-foreground` text, and `--foreground` text on the `--background` ground
@@ -128,7 +138,11 @@ selected at a time.
 - components::REQ-005/AC-02: It is announced as a group of mutually exclusive options under the label the
   caller passes (components::CON-001), and arrow keys move between its segments.
 - components::REQ-005/AC-03: Selecting a segment deselects the one selected before; the container's 1px
-  `--border-strong` border clips the segments at its rounded corners.
+  `--border-strong` border clips the segments at its rounded corners, and a 1px `--border-strong` line parts
+  neighbouring segments, so a selected and a hovered segment side by side read as two.
+- components::REQ-005/AC-04: Each size renders the height and text size its row gives.
+- components::REQ-005/AC-05: Activating the selected segment again leaves it selected.
+- components::REQ-005/AC-06: A segmented control used without a selected value fails the type check.
 
 ### components::REQ-006 Card
 
@@ -253,7 +267,9 @@ A placeholder block in `--border` (`deep`: `--border-strong`) that pulses betwee
 Applies to the select popup and the tooltip.
 
 - components::REQ-014/AC-01: When anything outside an open select popup or tooltip scrolls, it closes; a
-  scroll inside the popup does not close it.
+  scroll inside the popup does not close it. A scroll that comes within 150ms of a window resize belongs to the
+  resize, since the browser fires one when a resize shortens a scrolled area, and leaves an open select popup open
+  (components::REQ-014/AC-02).
 - components::REQ-014/AC-02: When the window is resized, an open tooltip closes and an open select popup
   moves to stay beside its trigger.
 
@@ -272,8 +288,9 @@ Applies to the select popup and the tooltip.
 
 Applies to: every component in this spec. A component writes no text of its own: every visible or announced
 text it needs — the accessible name of an icon-only button, the drawer's close button, the label of a
-segmented control — is a required prop, so a missing one fails the type check. The app passes it from its
-own dictionary.
+segmented control, the placeholder of a search box, the accessible name of a search box or a select (an
+`aria-label`, or an `aria-labelledby` pointing at a label on the page) — is a required prop, so a missing one fails
+the type check. The app passes it from its own dictionary.
 
 ### components::CON-002 The owner confirms every component's look in Storybook (direct acceptance)
 
@@ -292,7 +309,7 @@ Mira style on the Base UI base, and is restyled from there to this spec and the 
 | Button | `button` |
 | Search box | `input-group` |
 | Select | `select` |
-| Segmented control | `toggle-group` |
+| Segmented control | `toggle-group`, with the behaviour of Base UI's radio group (`RadioGroup`, `Radio`) |
 | Card | `card` |
 | Badge | `badge` |
 | Tooltip | `tooltip` |
@@ -312,8 +329,13 @@ on light/dark.
 
 - **A label longer than its control**: it stays on one line and is cut with an ellipsis, while running text
   wraps (components::REQ-001/AC-05).
-- **An icon-only button, a drawer or a segmented control without its text**: the type check fails
-  (components::CON-001); nothing renders a fallback text.
+- **An icon-only button, a drawer, a segmented control, a search box or a select without its text**: the type
+  check fails (components::CON-001); nothing renders a fallback text.
+- **A select or a segmented control without a selected value**: the type check fails; neither has a state without a
+  selection (components::REQ-004/AC-09, components::REQ-005/AC-06).
+- **The selected segment activated again**: it stays selected (components::REQ-005/AC-05).
+- **A click outside an open select popup**: the popup closes and the click acts on what it lands on
+  (components::REQ-004/AC-05, components::REQ-004/AC-08).
 - **A `link` button given a size**: the type check fails (components::REQ-002/AC-04).
 - **A select whose options do not fit the window**: the popup scrolls inside its own height
   (components::REQ-004/AC-02).
@@ -328,9 +350,23 @@ specs; see `AGENTS.md`).
   drift apart. Rejected: several forms of a component for the same purpose.
 - **A filled `primary` button.** Apps need a prominent main action; its text takes the card colour, which
   reads on the brand colour in every theme. Rejected: outlined buttons only.
-- **An icon-only button as tall as the text button of its size.** Icon-only and text buttons sit side by side in
-  toolbars and on rows, and line up only when they are equally tall. Rejected: a 32px `icon` button, which stands
-  above the 28px text buttons beside it.
+- **Every control as tall as the button of its size.** Icon-only and text buttons, search boxes, select triggers and
+  segmented controls sit side by side in toolbars, forms and on rows, and line up only when they are equally tall:
+  28px beside a `default` button, 22px beside an `sm` one. Rejected: a 32px `icon` button, which stands above the 28px
+  text buttons beside it, and fields, triggers and segmented controls of 29 to 35px.
+- **The segmented control is a radio group.** It is one choice among mutually exclusive options that is never
+  empty, which is what a radio group announces and keeps. Rejected: Base UI's toggle group, on which shadcn/ui's
+  `toggle-group` is built, which announces its segments as pressed toggle buttons and empties the selection when the
+  pressed one is activated again.
+- **The select is not modal.** An outside scroll closes it (components::REQ-014/AC-01), so the page stays scrollable
+  while it is open, and a click outside acts as it would with the popup closed. Rejected: Base UI's modal select,
+  which locks the page's scroll and blocks outside clicks while it is open.
+- **A select and a segmented control always have a selected option.** Both show the current value of a setting.
+  Rejected: a placeholder for a select with nothing selected.
+- **The select popup is at least as wide as its trigger, on the trigger's left edge.** Options keep their full
+  labels where there is room, and the popup reads as opening from the trigger. Rejected: a popup exactly as wide as
+  the trigger, which cuts every longer option, and one on the trigger's right edge, which suits only a trigger at the
+  right of its row.
 - **A `link` button takes no size.** It is text inside a sentence, and a box of its own would push it off the line
   of the text around it. Rejected: sizes on a link, and a size accepted and ignored, which gives the caller no sign.
 - **Base UI's behaviour for keyboard, focus and screen readers.** Base UI provides Esc handling, focus
@@ -339,7 +375,7 @@ specs; see `AGENTS.md`).
 - **The confirm dialog ignores clicks on the scrim.** A confirm dialog is closed by a choice, so a stray
   click beside it cannot dismiss the question. Rejected: cancelling on a scrim click.
 - **Starting from the Mira style.** It is shadcn/ui's style for dense interfaces and the closest to the kit's
-  scale (its default button is 28px tall with 12px text, against the kit's controls of about 28–30px with
+  scale (its default button is 28px tall with 12px text, against the kit's `default` controls, 28px tall with
   12.5px text). Rejected: Nova (32px, 14px text) and Vega (36px, 14px text), both further from it.
 - **The toast is shadcn/ui's `toast`, on Base UI.** Rejected: shadcn/ui's `sonner`, which depends on
   `next-themes` and would compete with the kit's ThemeProvider for the root element.
@@ -352,8 +388,8 @@ specs; see `AGENTS.md`).
 
 - **Components beyond the twelve**: menus, filter chips, app navigation rails, charts and sidebars.
 - **More than one tooltip form**, such as a light tooltip or a CSS-only tooltip on chart bars.
-- **A loading state on buttons, and a clear button in the search box**: not part of the first release's
-  look.
+- **A loading state on buttons, a clear button in the search box, and a placeholder in a select with nothing
+  selected**: not part of the first release's look.
 - **Right-to-left languages**: no app that uses the kit has one; the components are not checked mirrored.
   Supporting them later means reopening this decision and checking every component mirrored.
 - **Showing a cut label in full on hover**: a caller that needs it wraps the control in a tooltip.
