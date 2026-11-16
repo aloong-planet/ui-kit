@@ -38,6 +38,7 @@ written into one was never tried.
 - Checked against every class Tailwind 4.3.5 lists that ends in a palette colour (51), the same 51 forms with a
   general token and an opacity modifier, and every compound variant built on `dark` (5): all are reported.
 - Run over every class Tailwind 4.3.5 lists (25,123), the value checks reject no class the first fix passed, so they
-  raise no false alarm on Tailwind's own utilities; the only classes newly rejected are `rounded-*-none` and
-  `rounded-*-full`, which the scale does not list. The forms above, a colour through a variable, in a shadow and in a
+  raise no false alarm on Tailwind's own utilities; the only classes newly rejected are `rounded-none`,
+  `rounded-full` and their forms for a side or a corner (`rounded-t-none`, `rounded-tl-full` …), 30 in all, which the
+  scale does not list. The forms above, a colour through a variable, in a shadow and in a
   gradient, are each reported.
