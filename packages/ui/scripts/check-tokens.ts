@@ -1,11 +1,14 @@
-// `pnpm check:tokens`: checks the token blocks of theme.css against the root contract (theming::REQ-003), and the
-// component source against the tokens and the scale, and fails listing every problem it finds.
+// `pnpm check:tokens`: checks the token blocks of theme.css against the root contract (theming::REQ-003) and their
+// Tailwind mapping, and the component source against the tokens and the scale, and fails listing every problem it
+// finds. The general tokens are read from the token table of theming::REQ-004 in docs/specs/theming.md.
 // theme.css:
 // - theming::REQ-004/AC-01: every general token is defined for every theme and for light and dark. `:root` (purple
 //   light) and `:root.dark` (purple dark) each declare every token; a theme's light and dark blocks declare the same
 //   tokens, so a token that changes with the theme in one cannot fall back to purple in the other.
-// - Every token declaration is a listed general token in one of those blocks, or `--radius` in `:root`, so a misspelt
-//   or misplaced one, which would leave the real token on its purple value, is reported.
+// - Every token declaration is a general token of the table in one of those blocks, or `--radius` in `:root`, so a
+//   misspelt or misplaced one, which would leave the real token on its purple value, is reported.
+// - theming::REQ-004/AC-02: every general token has its entry in Tailwind's theme, set to the token itself
+//   (`--color-<name>`, or `--shadow-pop` for the shadow), so its utilities compile to it.
 // - theming::REQ-010/AC-06: `scrollbar-width` and `scrollbar-color` appear only inside the Firefox-only block.
 // The component source, every file under src/components: each class in it is judged by the CSS Tailwind compiles it
 // to with this stylesheet, so it is caught whatever form it is written in; the strings it writes, its imports, its
@@ -23,47 +26,23 @@ import { fileURLToPath } from 'node:url'
 import { parse, type AtRule, type Node, type Rule } from 'postcss'
 import { __unstable__loadDesignSystem } from 'tailwindcss'
 import ts from 'typescript'
+import { tableTokens, TokenTableError } from './token-table.ts'
 
-// The general tokens: the rows of the token table in docs/specs/theming.md (theming::REQ-004)
-const tokens = [
-  '--background',
-  '--foreground',
-  '--card',
-  '--card-foreground',
-  '--popover',
-  '--popover-foreground',
-  '--primary',
-  '--primary-foreground',
-  '--primary-strong',
-  '--muted',
-  '--muted-foreground',
-  '--accent',
-  '--accent-foreground',
-  '--accent-strong',
-  '--destructive',
-  '--destructive-foreground',
-  '--border',
-  '--border-strong',
-  '--input',
-  '--ring',
-  '--success',
-  '--success-foreground',
-  '--warning',
-  '--warning-foreground',
-  '--error',
-  '--error-foreground',
-  '--note',
-  '--note-foreground',
-  '--risk',
-  '--risk-foreground',
-  '--tooltip',
-  '--tooltip-foreground',
-  '--tooltip-warning',
-  '--overlay',
-  '--shadow-pop',
-  '--scrollbar-thumb',
-  '--scrollbar-thumb-hover',
-]
+// The general tokens: the Kit token column of the token table under theming::REQ-004 in docs/specs/theming.md, one
+// or more tokens to a row. The check reads the spec itself, so a row added to the table is checked like the others; a
+// table it cannot read stops it at once.
+const specFile = fileURLToPath(new URL('../../../docs/specs/theming.md', import.meta.url))
+const tokens = readTokens(readFileSync(specFile, 'utf8').split(/\r?\n/))
+
+function readTokens(lines: string[]): string[] {
+  try {
+    return tableTokens(lines)
+  } catch (error) {
+    if (!(error instanceof TokenTableError)) throw error
+    console.error(`docs/specs/theming.md:${error.line}: ${error.message}`)
+    process.exit(1)
+  }
+}
 
 // The base of the radius steps (theming::REQ-008), declared once in `:root`
 const scaleBase = '--radius'
@@ -88,11 +67,15 @@ const isAtRule = (node: Node | undefined): node is AtRule => node?.type === 'atr
 const declared = new Map(blocks.map((block) => [block, new Set<string>()]))
 // What the `@theme` blocks define: the colour each general token maps to, and the steps of the scale
 const themeNames = { color: new Set<string>(), text: new Set<string>(), radius: new Set<string>(), font: new Set<string>() }
+// The colour and shadow entries of the `@theme` blocks, each with every place it is set
+const mapping = new Map<string, { value: string; node: Node }[]>()
 sheet.walkDecls(/^--/, (decl) => {
   const parent = decl.parent
   if (isAtRule(parent) && parent.name === 'theme') {
     const match = /^--(color|text|radius|font)-([a-z0-9-]+?)(--.*)?$/.exec(decl.prop)
     if (match && !match[3]) themeNames[match[1] as keyof typeof themeNames].add(match[2])
+    if (/^--(color|shadow)-/.test(decl.prop))
+      mapping.set(decl.prop, [...(mapping.get(decl.prop) ?? []), { value: decl.value, node: decl }])
     return
   }
   const block = isRule(parent) && parent.parent?.type === 'root' ? parent.selector : undefined
@@ -119,6 +102,16 @@ for (const [light, dark] of themeBlocks) {
   if (onlyLight.length > 0) problems.push(`${dark} does not declare ${onlyLight.join(', ')}, which ${light} declares`)
   if (onlyDark.length > 0) problems.push(`${light} does not declare ${onlyDark.join(', ')}, which ${dark} declares`)
 }
+// theming::REQ-004/AC-02: each general token has its entry in Tailwind's theme, set to the token itself, so that its
+// utilities compile to it: `--color-<name>` for a colour, and the shadow token under its own name
+for (const token of tokens) {
+  const entry = token.startsWith('--shadow-') ? token : `--color-${token.slice('--'.length)}`
+  const entries = mapping.get(entry) ?? []
+  if (entries.length === 0) problems.push(`${token} has no entry in Tailwind's theme (${entry}: var(${token}) in @theme)`)
+  for (const { value, node } of entries)
+    if (value.replace(/\s+/g, '') !== `var(${token})`) problems.push(`${at(node)}: ${entry} is ${value}, not var(${token})`)
+}
+
 let rootDeclaresBase = false
 sheet.walkRules(':root', (rule) => rule.walkDecls(scaleBase, () => void (rootDeclaresBase = true)))
 if (!rootDeclaresBase) problems.push(`:root does not declare ${scaleBase}`)
@@ -343,8 +336,8 @@ if (problems.length > 0) {
   process.exit(1)
 }
 console.log(
-  `theme.css: ${tokens.length} general tokens in ${blocks.length} blocks; no standard scrollbar property outside ` +
-    'the Firefox-only block',
+  `theme.css: the ${tokens.length} general tokens of the spec's token table, in ${blocks.length} blocks and each ` +
+    "with its entry in Tailwind's theme; no standard scrollbar property outside the Firefox-only block",
 )
 console.log(
   `src/components: ${componentFiles.length} file(s) use only general tokens and the scale ` +

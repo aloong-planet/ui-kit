@@ -18,6 +18,7 @@ test('each pattern of routing.json routes a real path to the scopes written here
     ['AGENTS.md', []],
     ['CLAUDE.md', []],
     ['capabilities.toml', []],
+    ['docs/specs/theming.md', ['kit']],
     ['docs/specs/package.md', []],
     ['packages/ui/src/index.ts', ['kit']],
     ['storybook/.storybook/main.ts', ['kit']]
