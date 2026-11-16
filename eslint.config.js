@@ -29,7 +29,9 @@ export default defineConfig(
   },
   // components::CON-001: a component writes no text of its own; what it shows or announces comes from its props. The rule
   // rejects text written as a JSX child and any string written as an attribute value, so a value that is not text (a
-  // class list, a slot name) is written as an expression.
+  // class list, a slot name) is written as an expression. It reads only the JSX, so text a component builds in
+  // elsewhere passes it and is held by review: a prop's default (`label = "Close"`), a string kept in a constant and
+  // rendered as `{text}`, and attributes spread from an object (`{...{ "aria-label": "Close" }}`).
   {
     files: ['packages/ui/src/components/**/*.tsx'],
     plugins: { react },
