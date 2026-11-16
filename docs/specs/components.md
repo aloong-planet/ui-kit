@@ -94,10 +94,11 @@ from the field's leading edge and centred on its height; typed text starts 28px 
 
 ### components::REQ-004 Select
 
-One form: a trigger and a popup of options. A select always has a selected option; it has no state without one.
-The trigger shows its label in `text-sm` semibold, with `rounded-md` corners and a 14px chevron in
-`--muted-foreground`. The popup has `rounded-lg` corners and 4px of padding around its options, which are 32px
-tall, in `text-sm` semibold, with `rounded-md` corners and a 14px check.
+One form: a trigger and a popup of options. A select always has a selected value; it has no state without one. A
+value none of its options holds leaves no option selected (components::REQ-016). The trigger shows its label in
+`text-sm` semibold, with `rounded-md` corners and a 14px chevron in `--muted-foreground`. The popup has `rounded-lg`
+corners and 4px of padding around its options, which are 32px tall, in `text-sm` semibold, with `rounded-md` corners
+and a 14px check.
 
 - components::REQ-004/AC-01: The trigger shows the selected option's label in a `--background` ground with a
   1px `--border-strong` border; under the pointer and while open, a `--primary` border and the wash; its
@@ -121,7 +122,8 @@ tall, in `text-sm` semibold, with `rounded-md` corners and a 14px check.
 
 ### components::REQ-005 Segmented control
 
-Segments side by side in one bordered container with `rounded-md` corners, one of them selected.
+Segments side by side in one bordered container with `rounded-md` corners, one of them selected, or none when the
+value is none of its options (components::REQ-016).
 
 | Size | Use | Box |
 |---|---|---|
@@ -318,7 +320,8 @@ repeating.
 ### components::REQ-013 Tabs
 
 A row of tabs over their panels: each tab the caller passes carries its label and its panel, and the selected tab's
-panel shows below the row. Tabs always have a selected tab. Tabs are `page` unless the caller names `pill`.
+panel shows below the row. Tabs always have a selected value; a value none of their tabs holds leaves no tab selected
+and no panel showing (components::REQ-016). Tabs are `page` unless the caller names `pill`.
 
 | Variant | Use | Look |
 |---|---|---|
@@ -362,6 +365,25 @@ Applies to the select popup and the tooltip.
   mode (`system`, `light`, `dark`), and every story follows the switch.
 - components::REQ-015/AC-03: Storybook uses the kit exactly as a consumer does ([package](package.md)
   `package::REQ-002`).
+
+### components::REQ-016 A selected value none of the options
+
+Applies to the select, the segmented control and the tabs, given as `value` or `defaultValue` a value none of their
+options or tabs holds.
+
+- components::REQ-016/AC-01: The component keeps the value: it does not replace it with one of its options and reports
+  no change for it.
+- components::REQ-016/AC-02: Nothing shows as selected: no option of the select, no segment and no tab is marked
+  selected, no tab's panel shows, and the select's trigger shows no text, not the value.
+- components::REQ-016/AC-03: The segmented control and the tab row stay reachable from the keyboard: Tab moves the
+  focus to their first segment or tab, and the arrow keys move on from there as usual (components::REQ-005/AC-02,
+  components::REQ-013/AC-02).
+- components::REQ-016/AC-04: In development, the component logs one console warning naming the component and the
+  value when it is rendered with such a value, and again each time its value or options change to leave it such a
+  value; a production build logs nothing.
+- components::REQ-016/AC-05: Moving the focus to the first segment or tab with Tab selects nothing and reports no
+  change; the arrow keys and a click select as usual.
+- components::REQ-016/AC-06: A segmented control in a form, given such a value, submits nothing under its name.
 
 ## Constraints
 
@@ -434,10 +456,16 @@ Applies to: every consumer. A document has at most one Toaster, since every Toas
 - **An open drawer or confirm dialog removed from the page** (the app leaves the view that holds it while it is
   open): the page behind it scrolls again, and focus returns as it does on closing.
 - **A select, a segmented control or tabs without a selected value**: the type check fails; none has a state without
-  a selection (components::REQ-004/AC-09, components::REQ-005/AC-06, components::REQ-013/AC-05).
+  a selected value (components::REQ-004/AC-09, components::REQ-005/AC-06, components::REQ-013/AC-05).
 - **A select, a segmented control or tabs whose option values are typed only as `string`**, such as options built from
   data fetched at run time: the type check lets any string through as the selected value, and rejects only a value the
   options' types rule out (components::REQ-004/AC-09, components::REQ-005/AC-06, components::REQ-013/AC-05).
+- **A select, a segmented control or tabs given a value none of their options holds** at run time, through options
+  typed only as `string` or options that changed under a value the app stored: the value stays as the app passed it
+  and no change is reported; no option, segment or tab shows as selected, no tab's panel shows, and the select's
+  trigger shows no text; Tab still reaches the segmented control's first segment and the first tab, and selects
+  neither; a segmented control in a form submits nothing under its name; in development a console warning names the
+  component and the value (components::REQ-016).
 - **Something interactive inside a `selectable` card**, such as a button in its action: not supported. The card is a
   button itself, and a control inside a button cannot be used reliably by pointer, keyboard or screen reader; a card
   that needs an action of its own is a `default` card.
@@ -485,17 +513,53 @@ specs; see `AGENTS.md`).
   tall: 28px beside a `default` button (a `page` tab), 22px beside an `sm` one (a `pill` tab). Rejected: a 32px `icon`
   button, which stands above the 28px text buttons beside it, and fields, triggers, segmented controls and tabs of 29
   to 35px.
-- **The segmented control is a radio group.** It is one choice among mutually exclusive options that is never
+- **The segmented control is a radio group.** It is one choice among mutually exclusive options that the user cannot
   empty, which is what a radio group announces and keeps. Rejected: Base UI's toggle group, on which shadcn/ui's
   `toggle-group` is built, which announces its segments as pressed toggle buttons and empties the selection when the
   pressed one is activated again.
 - **The select is not modal.** An outside scroll closes it (components::REQ-014/AC-01), so the page stays scrollable
   while it is open, and a click outside acts as it would with the popup closed. Rejected: Base UI's modal select,
   which locks the page's scroll and blocks outside clicks while it is open.
-- **A select, a segmented control and tabs always have a selected option.** The select and the segmented control show
+- **A select, a segmented control and tabs always have a selected value.** The select and the segmented control show
   the current value of a setting, and tabs always show the panel of one tab. Rejected: a placeholder for a select with
   nothing selected, and tabs that fall back to their first tab when given no value, which hides a value the app
   forgot to pass.
+- **A value none of the options stays as the app passed it** (components::REQ-016/AC-01): the kit neither replaces it
+  with one of the options nor reports a change for it. Native `<select>`, MUI, Radix and Base UI all leave the app's
+  value alone; coercing would either make the screen disagree with the app's state or write a value the user never
+  chose. Rejected: falling back to the first option; and Base UI's select, which, once its popup has been open, sets
+  its value back to the one it was first given, or to none, when the options change without the selected one, and
+  reports that as a change.
+- **Nothing shows as selected for such a value** (components::REQ-016/AC-02): no option, segment or tab is marked
+  selected, no tab's panel shows, and the select's trigger shows no text. A native `<select>` whose value matches no
+  option shows blank (`selectedIndex` -1), MUI's Select shows an empty display and Radix shows its placeholder; a raw
+  value is an identifier the app never passed as display text, and a component writes no text of its own
+  (components::CON-001). Rejected: showing the value as the trigger's text, as Base UI does by default.
+- **With nothing selected, the segmented control and the tab row stay reachable from the keyboard**
+  (components::REQ-016/AC-03): Tab reaches their first segment or tab, and the arrow keys move as usual. The WAI-ARIA
+  APG radio group has Tab go to the first radio when none is checked, and the tabs pattern's roving tabindex must
+  leave one tab in the tab sequence; Base UI 1.9.0 does both. Rejected: leaving no segment or tab in the tab sequence
+  while nothing is selected, which leaves a keyboard user no way to choose.
+- **Tab into a tab row with nothing selected selects nothing** (components::REQ-016/AC-05): it moves the focus to the
+  first tab without selecting it or reporting a change, and the arrow keys and a click select as they do otherwise.
+  Under the APG tabs pattern with automatic activation, Tab enters the list on the active tab and changes nothing, and
+  only moving within the list selects; with no active tab, a keyboard user who only passes through with Tab must not
+  change the app's state, which is the decision above that the value stays, applied to focus. MUI's tabs likewise
+  make the first tab tabbable without selecting it when no tab matches, and the segmented control already behaves so,
+  since Base UI selects a radio on focus only after an arrow key. Rejected: keeping Base UI's selection of the tab Tab
+  reaches, as Base UI selects any unselected enabled tab that takes the keyboard focus.
+- **A development warning for such a value** (components::REQ-016/AC-04): in development each of the three logs one
+  console warning naming the component and the value; a production build logs nothing. MUI warns in development both
+  for an out-of-range Select value and for a Tabs value that matches no tab, and Base UI 1.9.0 warns for neither. A
+  console message is neither visible nor announced, so components::CON-001 does not apply to it. Development and
+  production are told apart as the kit's own dependencies tell them apart: Base UI's development-only code and React's
+  entry points test `process.env.NODE_ENV`, leaving it for the app's bundler to replace, and the kit's build leaves it
+  as written, so the check reaches what apps import unchanged and is settled by the app's bundler. Rejected: no
+  warning, which leaves the value's mismatch invisible; and a warning in production builds.
+- **A segmented control in a form submits nothing under its name for such a value** (components::REQ-016/AC-06): no
+  radio is checked, and a native radio group and Base UI's radio group both submit nothing when no radio is checked;
+  submitting a value that no radio shows would make the form disagree with the screen. Rejected: a hidden input
+  carrying the app's value.
 - **The tabs render their panels.** Each tab is linked to the panel it shows, so a screen reader announces which
   content a tab controls, and the selected `page` tab joins its panel. The owner's choice. Rejected: a row of tabs
   only, the app switching the content below it, which leaves the tabs unlinked to what they switch.

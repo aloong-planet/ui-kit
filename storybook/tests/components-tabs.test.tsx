@@ -165,7 +165,7 @@ function Disabling({ which, onValueChange }: { which: 'every' | 'selected'; onVa
   )
 }
 
-// components::REQ-013: tabs always have a selected tab. A disabled selected tab stays selected with its panel showing,
+// components::REQ-013: tabs always have a selected value. A disabled selected tab stays selected with its panel showing,
 // whether the other tabs are disabled with it or not, and once the tabs are enabled again; the tabs report no change,
 // since neither the user nor the app made one
 test.each([

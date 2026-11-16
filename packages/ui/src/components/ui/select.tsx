@@ -67,7 +67,7 @@ type OptionsProps<V extends string> =
   | { options: readonly Option<V>[]; groups?: never }
   | { options?: never; groups: readonly (readonly Option<V>[])[] }
 
-// components::REQ-004/AC-09: a select always has a selected option, so it takes `value` or `defaultValue`, one of its
+// components::REQ-004/AC-09: a select always has a selected value, so it takes `value` or `defaultValue`, one of its
 // options, and fails the type check without either.
 //
 // components::CON-001: a select writes no text of its own. Its accessible name, an `aria-label` or an

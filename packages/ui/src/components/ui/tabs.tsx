@@ -85,7 +85,7 @@ type BaseProps<V extends string> = Omit<
   onValueChange?: (value: V) => void
 }
 
-// components::REQ-013/AC-05: tabs always have a selected tab, so they take `value` or `defaultValue`, one of their
+// components::REQ-013/AC-05: tabs always have a selected value, so they take `value` or `defaultValue`, one of their
 // tabs, and fail the type check without either.
 //
 // components::CON-001: tabs write no text of their own. The tab row's accessible name, an `aria-label` or an
