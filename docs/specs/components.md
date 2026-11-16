@@ -241,8 +241,8 @@ shows while the app says it is open, and reports each way of closing it to the a
 
 ### components::REQ-010 Confirm dialog
 
-A box centred near the top of the window over a scrim in `--overlay`, with a title, a body the caller
-passes, and its buttons at the bottom right — cancel first, then the confirming action. The app opens it and
+A box `min(520px, 88vw)` wide, centred near the top of the window over a scrim in `--overlay`, with a title, a body
+the caller passes, and its buttons at the bottom right — cancel first, then the confirming action. The app opens it and
 closes it, as it does the drawer, and is told separately when the confirming action is chosen.
 
 - components::REQ-010/AC-01: The cancel button is a `default` button; the confirming action is a `danger`
@@ -253,8 +253,8 @@ closes it, as it does the drawer, and is told separately when the confirming act
   dialog, and the dialog is announced under its title; on closing, focus returns to the element that had focus when
   it opened.
 - components::REQ-010/AC-04: Activating the confirming action runs the caller's action once and closes the dialog.
-- components::REQ-010/AC-05: The box sits centred near the top of the window over a scrim in `--overlay`,
-  showing its title, the caller's body, and its buttons at the bottom right with cancel first.
+- components::REQ-010/AC-05: The box, `min(520px, 88vw)` wide, sits centred near the top of the window over a scrim
+  in `--overlay`, showing its title, the caller's body, and its buttons at the bottom right with cancel first.
 - components::REQ-010/AC-06: The body is announced as the dialog's description.
 - components::REQ-010/AC-07: The box never runs past the window: a body taller than the room left scrolls inside the
   box, while the title and the buttons stay in view.
@@ -571,6 +571,9 @@ specs; see `AGENTS.md`).
   shortcut — and one controlled pair, as in Base UI's dialogs and the kit's Select, covers every one of them; focus
   returns to whatever had it when it opened, as the WAI-ARIA dialog pattern asks. Rejected: a trigger part beside
   the controlled props, which gives two ways of opening the same thing.
+- **The confirm dialog is at most 520px wide**, `min(520px, 88vw)`: the width of Ant Design's Modal, chosen by the
+  owner (「Ant Design's 520px」, 2026-11-16) as a confirm dialog's width from an established design system. Rejected:
+  a 720px box, a width made for reading documents; and shadcn/ui's 384px.
 - **The caller marks the confirming action destructive, rather than choosing its button.** The caller says what the
   action is and the kit picks the `danger` or the `primary` button. Rejected: a prop naming the button's variant,
   which would admit looks this spec does not give a confirming action.
