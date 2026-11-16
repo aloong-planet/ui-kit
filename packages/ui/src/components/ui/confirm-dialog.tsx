@@ -1,6 +1,7 @@
 import { AlertDialog as AlertDialogPrimitive } from "@base-ui/react/alert-dialog"
 import { useRef, type ReactNode } from "react"
 
+import { useReturnFocus } from "../../hooks/use-return-focus"
 import { Button } from "./button"
 
 // components::REQ-010, restyled from shadcn/ui's Mira alert dialog to the kit's look and scale (components::CON-003).
@@ -19,12 +20,13 @@ import { Button } from "./button"
 // Base UI makes it a modal alert dialog, named by its title and described by its body (components::REQ-010/AC-03,
 // AC-06): keyboard focus moves onto cancel, the least destructive choice, and stays inside; Esc and cancel cancel, and
 // a click on the scrim does nothing (components::REQ-010/AC-02); focus returns to the element that had it when it
-// opened. The confirming action runs the caller's `onConfirm` and then closes the dialog like cancel does
-// (components::REQ-010/AC-04): a button's own click handler runs before the one Base UI's close part adds, so
-// `onConfirm` is called before `onOpenChange(false)`. Rendered inside an open drawer, it is a dialog nested in the
-// drawer's, and Esc closes it alone (components::REQ-010/AC-09); Base UI leaves out a nested dialog's scrim, which this
-// one renders all the same, so it dims the drawer as well as the page (components::REQ-010/AC-08). It does not move as
-// it opens or closes, and no colour changes with a transition (components::REQ-001/AC-04).
+// opened, or, when that element is gone, where `useReturnFocus` says. The confirming action runs the caller's
+// `onConfirm` and then closes the dialog like cancel does (components::REQ-010/AC-04): a button's own click handler
+// runs before the one Base UI's close part adds, so `onConfirm` is called before `onOpenChange(false)`. Rendered
+// inside an open drawer, it is a dialog nested in the drawer's, and Esc closes it alone (components::REQ-010/AC-09);
+// Base UI leaves out a nested dialog's scrim, which this one renders all the same, so it dims the drawer as well as the
+// page (components::REQ-010/AC-08). It does not move as it opens or closes, and no colour changes with a transition
+// (components::REQ-001/AC-04).
 const scrimClass = "fixed inset-0 z-50 bg-overlay"
 
 const boxClass =
@@ -62,12 +64,13 @@ function ConfirmDialog({
   onConfirm,
 }: ConfirmDialogProps) {
   const cancelRef = useRef<HTMLButtonElement>(null)
+  const { initialFocus, finalFocus } = useReturnFocus(() => cancelRef.current)
   const confirmVariant = destructive ? "danger" : "primary"
   return (
     <AlertDialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <AlertDialogPrimitive.Portal>
         <AlertDialogPrimitive.Backdrop forceRender className={scrimClass} />
-        <AlertDialogPrimitive.Popup initialFocus={cancelRef} className={boxClass}>
+        <AlertDialogPrimitive.Popup initialFocus={initialFocus} finalFocus={finalFocus} className={boxClass}>
           <AlertDialogPrimitive.Title className={titleClass}>{title}</AlertDialogPrimitive.Title>
           <AlertDialogPrimitive.Description render={<div />} className={bodyClass}>
             {children}

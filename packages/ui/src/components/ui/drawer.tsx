@@ -2,6 +2,7 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { X } from "lucide-react"
 import type { ReactNode } from "react"
 
+import { useReturnFocus } from "../../hooks/use-return-focus"
 import { Button } from "./button"
 
 // components::REQ-009, restyled from shadcn/ui's Mira sheet to the kit's look and scale (components::CON-003).
@@ -17,8 +18,8 @@ import { Button } from "./button"
 // Base UI makes it a modal dialog named by its title: keyboard focus moves into it, onto the close button, the first
 // element in it that takes focus, and stays inside; the page behind it does not scroll; Esc, a click on the scrim and
 // the close button close it; and focus returns to the element that had it when it opened (components::REQ-009/AC-01,
-// AC-02). It does not move as it opens or closes, and no colour changes with a transition
-// (components::REQ-001/AC-04).
+// AC-02), or, when that element is gone, where `useReturnFocus` says. It does not move as it opens or closes, and no
+// colour changes with a transition (components::REQ-001/AC-04).
 const scrimClass = "fixed inset-0 z-50 bg-overlay"
 
 const panelClass =
@@ -44,12 +45,16 @@ export type DrawerProps = {
   children: ReactNode
 }
 
+// Focus moves onto the first element in the drawer that takes focus, Base UI's default
+const firstFocusable = () => true as const
+
 function Drawer({ open, onOpenChange, title, closeLabel, children }: DrawerProps) {
+  const { initialFocus, finalFocus } = useReturnFocus(firstFocusable)
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Backdrop className={scrimClass} />
-        <DialogPrimitive.Popup className={panelClass}>
+        <DialogPrimitive.Popup initialFocus={initialFocus} finalFocus={finalFocus} className={panelClass}>
           <div className={headerClass}>
             <DialogPrimitive.Title className={titleClass}>{title}</DialogPrimitive.Title>
             <DialogPrimitive.Close

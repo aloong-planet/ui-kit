@@ -158,8 +158,8 @@ const paragraphs = Array.from({ length: 30 }, (_, index) => (
   </p>
 ))
 
-// components::REQ-010/AC-07: a body taller than the room left scrolls inside the box, which ends inside the window, with
-// the title and both buttons in view
+// components::REQ-010/AC-07: a body taller than the room left scrolls inside the box, which ends inside the window,
+// with the title and both buttons in view
 export const LongBody: StoryObj<{ onConfirm: () => void }> = {
   args: { onConfirm: fn() },
   render: ({ onConfirm }) => (

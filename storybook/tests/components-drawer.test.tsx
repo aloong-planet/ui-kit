@@ -1,6 +1,6 @@
 // The Drawer's stories (stories/components-drawer.stories.tsx) under a real pointer and keyboard: Playwright's, which
-// the browser treats as the user's, so keyboard focus moves, `:focus-visible` applies and the page scrolls as they would
-// for a person. Each story is rendered as Storybook renders it, inside the toolbar's ThemeProvider.
+// the browser treats as the user's, so keyboard focus moves, `:focus-visible` applies and the page scrolls as they
+// would for a person. Each story is rendered as Storybook renders it, inside the toolbar's ThemeProvider.
 import { composeStories } from '@storybook/react-vite'
 import { afterEach, expect, test, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
@@ -57,8 +57,8 @@ const closings: [string, (panel: HTMLElement) => Promise<void>][] = [
   ['the close button', (panel) => userEvent.click(closeButton(panel))],
 ]
 
-// components::REQ-009/AC-01, and AC-02 on closing: Esc, a click on the scrim and the close button each close the drawer,
-// and focus returns to the button that opened it
+// components::REQ-009/AC-01, and AC-02 on closing: Esc, a click on the scrim and the close button each close the
+// drawer, and focus returns to the button that opened it
 test.each(closings)('%s closes the drawer and returns focus to its opener', async (_, close) => {
   const canvas = mount(<Default />)
   const { opener, panel } = await openByKeyboard(canvas)
@@ -186,4 +186,61 @@ test('a drawer removed from the page while open lets the page scroll again and r
   await vi.waitFor(() => expect({ open: isOpen('dialog'), focus: document.activeElement }).toEqual({ open: false, focus: opener }))
   await userEvent.wheel(opener, { delta: { y: 400 } })
   await vi.waitFor(() => expect(window.scrollY).toBeGreaterThan(0))
+})
+
+// Files, each on a row with a Details button that opens a drawer about it; the drawer's Delete removes the file, its
+// row and the row's Details button, and closes the drawer
+function Files() {
+  const [files, setFiles] = useState(['a.md', 'b.md', 'c.md'])
+  const [shown, setShown] = useState<string | null>(null)
+  return (
+    <>
+      {files.map((file) => (
+        <div key={file}>
+          {file} <Button onClick={() => setShown(file)}>{`Details of ${file}`}</Button>
+        </div>
+      ))}
+      <Drawer
+        open={shown !== null}
+        onOpenChange={(open) => {
+          if (!open) setShown(null)
+        }}
+        title={shown}
+        closeLabel="Close"
+      >
+        <Button
+          onClick={() => {
+            setFiles((current) => current.filter((file) => file !== shown))
+            setShown(null)
+          }}
+        >
+          Delete
+        </Button>
+      </Drawer>
+    </>
+  )
+}
+
+// The boundary of the element that had focus being gone: the drawer's action removed the button that opened it, so
+// focus is left on the page for the app to move on, rather than sent to another row's button, which had focus when an
+// earlier drawer opened
+test('focus is left on the page when the drawer closes after its action removed the button that opened it', async () => {
+  const canvas = mount(<Files />)
+  await userEvent.tab()
+  await userEvent.keyboard('{Enter}')
+  await opened('dialog')
+  await userEvent.keyboard('{Escape}')
+  await vi.waitFor(() => expect(document.activeElement).toBe(button(canvas, 'Details of a.md')))
+  await userEvent.tab()
+  await userEvent.keyboard('{Enter}')
+  const panel = await opened('dialog')
+  await userEvent.tab()
+  expect(document.activeElement).toBe(button(panel, 'Delete'))
+  await userEvent.keyboard('{Enter}')
+  await vi.waitFor(() => expect(isOpen('dialog')).toBe(false))
+  await new Promise((resolve) => setTimeout(resolve, 100))
+  expect({ rows: [...canvas.querySelectorAll('button')].map((element) => element.textContent), focus: document.activeElement }).toEqual({
+    rows: ['Details of a.md', 'Details of c.md'],
+    focus: document.body,
+  })
 })

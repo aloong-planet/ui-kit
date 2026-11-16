@@ -417,7 +417,8 @@ Applies to: every consumer. A document has at most one Toaster, since every Toas
 - **A long unbroken word in a drawer or a confirm dialog** (a path, a URL): it breaks onto the next line instead of
   running past the panel or the box (components::REQ-001/AC-05).
 - **The element that had focus when a drawer or a confirm dialog opened is gone when it closes** (the confirmed action
-  removed it): focus moves to the most recently focused element still on the page.
+  removed it): a confirm dialog opened from inside an open drawer moves focus into the drawer; otherwise focus is left
+  on the page, for the app to move on to where its work flow continues.
 - **A confirm dialog opened from inside an open drawer**: it dims the drawer under its own scrim, and Esc closes the
   dialog alone (components::REQ-010/AC-08, AC-09).
 - **An open drawer or confirm dialog removed from the page** (the app leaves the view that holds it while it is
@@ -571,6 +572,13 @@ specs; see `AGENTS.md`).
   shortcut — and one controlled pair, as in Base UI's dialogs and the kit's Select, covers every one of them; focus
   returns to whatever had it when it opened, as the WAI-ARIA dialog pattern asks. Rejected: a trigger part beside
   the controlled props, which gives two ways of opening the same thing.
+- **When the element that opened a drawer or a confirm dialog is gone, the kit moves focus only where it knows the
+  work flow continues.** The WAI-ARIA APG modal dialog pattern sends focus, when the invoking element no longer exists,
+  to "another element that provides logical work flow", which only the app knows; the kit knows one case, a confirm
+  dialog opened from inside an open drawer, where the work goes on in the drawer, and otherwise leaves focus on the
+  page. Rejected: Base UI's fallback, the element that had focus before some earlier dialog or popup opened, which can
+  lie behind the open drawer or have nothing to do with the dialog; and a prop naming where focus returns, which can be
+  added later without breaking a caller once an app needs it.
 - **The confirm dialog is at most 520px wide**, `min(520px, 88vw)`: the width of Ant Design's Modal, chosen by the
   owner (「Ant Design's 520px」, 2026-11-16) as a confirm dialog's width from an established design system. Rejected:
   a 720px box, a width made for reading documents; and shadcn/ui's 384px.
