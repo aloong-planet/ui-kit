@@ -366,8 +366,9 @@ Applies to the select popup and the tooltip.
 ### components::CON-001 No text built into the components (direct acceptance)
 
 Applies to: every component in this spec. A component writes no text of its own: every visible or announced
-text it needs — the accessible name of an icon-only button, the drawer's close button, the label of a
-segmented control, the placeholder of a search box, the accessible name of a search box, a select or a tab row (an
+text it needs — the accessible name of an icon-only button, the title of a drawer and the accessible name of its
+close button, the title, the body and the two button labels of a confirm dialog, the label of a segmented control,
+the placeholder of a search box, the accessible name of a search box, a select or a tab row (an
 `aria-label`, or an `aria-labelledby` pointing at a label on the page), the text of a tooltip, the label of the
 Toaster's region, the text of a toast, the content of a `selectable` card, which names the button it is — is
 required, as a prop or as the argument of the call that raises a toast, so a missing one fails the type check. The
