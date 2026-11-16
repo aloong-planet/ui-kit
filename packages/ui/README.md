@@ -55,6 +55,31 @@ It loads no React, and resolves `system` against the system appearance at the mo
 whose content security policy allows only `script-src 'self'` passes the preference from its main process and applies
 it in its preload script.
 
+## Toasts
+
+Render the Toaster once, anywhere in your app's tree, with the label screen readers announce for the region the toasts
+appear in. Then raise a toast from any code, inside React or outside it:
+
+```tsx
+import { toast, Toaster } from '@aloong-planet/ui'
+
+root.render(
+  <>
+    <App />
+    <Toaster aria-label={dict.notifications} />
+  </>,
+)
+
+toast.success(dict.saved)
+toast.error(dict.saveFailed)
+```
+
+- A toast leaves after 3200ms. It waits while the pointer is over the toasts, while keyboard focus is on them, and
+  while the window is in the background.
+- A toast raised before the Toaster has mounted, at startup for instance, is held and appears when the Toaster mounts.
+  If no Toaster ever mounts, it is never shown.
+- Use one Toaster per document: every Toaster shows every toast raised.
+
 ## Tokens
 
 `theme.css` defines the general colour tokens under shadcn/ui's names (`--background`, `--primary`,

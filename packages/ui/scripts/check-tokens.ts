@@ -209,6 +209,10 @@ const themingModule = /(^|\/)(theming|apply-theme|theme-provider)$/
 // leaves it (components::REQ-004/AC-02, AC-07); the size properties may read them
 const positionerLengths = new Set(['--anchor-width', '--available-width', '--available-height'])
 const sizeProperty = /^(min-|max-)?(width|height)$/
+// The lengths Base UI sets on a toast while it is swiped, which move the toast with the pointer
+// (components::REQ-011/AC-07); the translate utilities may read them
+const swipeLengths = new Set(['--toast-swipe-movement-x', '--toast-swipe-movement-y'])
+const translateProperty = /^--tw-translate-[xy]$/
 
 // What is wrong with one declaration a component sets, if anything
 function declarationProblems({ prop, value, context }: Declaration): string[] {
@@ -228,6 +232,8 @@ function declarationProblems({ prop, value, context }: Declaration): string[] {
       // a general token, the base of the radius steps, or a variable of a Tailwind utility
     } else if (positionerLengths.has(name) && sizeProperty.test(prop)) {
       // a length Base UI sets on a popup's positioner, sizing the popup
+    } else if (swipeLengths.has(name) && translateProperty.test(prop)) {
+      // a length Base UI sets on a toast while it is swiped, moving the toast
     } else if (themeValue === undefined)
       found.push(`sets ${prop} to ${name}, which is neither a general token nor a variable of Tailwind's`)
     else if (colourLiteral.test(themeValue) || coloursNamedIn(themeValue).length > 0)

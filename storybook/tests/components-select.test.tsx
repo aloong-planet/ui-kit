@@ -7,6 +7,7 @@ import { page, userEvent } from 'vitest/browser'
 import preview from '../.storybook/preview'
 import * as stories from '../stories/components-select.stories'
 import { computed } from '../stories/support/computed'
+import { frames } from '../stories/support/frames'
 import { isOpen, optionLabel, popup } from '../stories/support/select'
 import { mount, unmount } from './support/mount'
 
@@ -20,9 +21,6 @@ afterEach(async () => {
   await page.viewport(viewport.width, viewport.height)
 })
 
-const frames = async (count: number) => {
-  for (let index = 0; index < count; index++) await new Promise((resolve) => requestAnimationFrame(resolve))
-}
 
 function trigger(canvas: HTMLElement): HTMLElement {
   const element = canvas.querySelector<HTMLElement>('[role="combobox"]')

@@ -9,7 +9,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { computed } from './support/computed'
-import { castShadows, checkSlot, isOpen, optionLabel, popup, positionerAncestorsWith } from './support/select'
+import { castShadows, positionerAncestorsWith } from './support/floating'
+import { checkSlot, isOpen, optionLabel, popup } from './support/select'
 
 const meta = {
   title: 'Components/Select',
