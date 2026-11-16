@@ -28,13 +28,12 @@ there.
 
 ## Functional Requirements
 
-> Pending: of these components only the button, the search box, the select and the segmented control are built.
-> Each other one's first sizes (padding, heights, font sizes, weights, radii) are taken from the matching element of
-> the Agent Shed app (`aloong-planet/agentshed`, commit `14b6d5b`, `src/renderer/src/theme.css` unless named
-> otherwise) and then confirmed by the owner in Storybook (components::CON-002): card `.card` (`selectable`
-> `.theme-card`, `dashed` `.settings-foot`); badge `.pill` (`count` `.cnt-b`); tooltip `TIP_LOOK` in
-> `FloatingBox.tsx`; drawer `.file-drawer`; confirm dialog `.reader.dlg`; toast `.toasts`, `.toast`; skeleton
-> `.sk-ph`; tabs `.tab` (`pill` `.ptab`).
+> Pending: of these components only the button, the search box, the select, the segmented control, the card, the
+> badge, the skeleton and the tabs are built. Each other one's first sizes (padding, heights, font sizes, weights,
+> radii) are taken from the matching element of the Agent Shed app (`aloong-planet/agentshed`, commit `14b6d5b`,
+> `src/renderer/src/theme.css` unless named otherwise) and then confirmed by the owner in Storybook
+> (components::CON-002): tooltip `TIP_LOOK` in `FloatingBox.tsx`; drawer `.file-drawer`; confirm dialog `.reader.dlg`;
+> toast `.toasts`, `.toast`.
 
 ### components::REQ-001 Shared states
 
@@ -146,19 +145,40 @@ Segments side by side in one bordered container with `rounded-md` corners, one o
 
 ### components::REQ-006 Card
 
+A card is made of parts, each optional, stacked in this order: a header, holding a title, a description under the
+title, and an action at the header's top-right corner beside them; the content; and a footer, its items in a row. The
+parts stand apart from each other and from the card's top and bottom edges by the spacing of its size, and the
+header, the content and the footer keep that spacing from the side edges. A header or a footer the caller gives a
+border towards the content keeps the spacing between that border and its own text. The card's text is in `text-sm`,
+with `rounded-lg` corners; the title is in `text-sm` semibold, the description in `text-xs` and `--muted-foreground`.
+
+| Size | Spacing |
+|---|---|
+| `default` | 14px |
+| `sm` | 10px |
+
 | Variant | Look |
 |---|---|
-| `default` | `--card` ground, 1px `--border` border |
-| `selectable` | As `default`; under the pointer, a `--primary` border and the wash; when selected, also a 1px `--primary` ring and its label in `--primary` |
+| `default` | `--card` ground, 1px `--border` border, `--card-foreground` text |
+| `selectable` | As `default`, as a button; under the pointer, a `--primary` border and the wash; when selected, also a 1px `--primary` ring and its title in `--primary` |
 | `dashed` | `--background` ground, 1px dashed `--border-strong` border, `--muted-foreground` text — for empty states and notes |
+
+A `selectable` card starts unpressed unless the caller passes whether it is pressed.
 
 - components::REQ-006/AC-01: Each variant renders as its row describes.
 - components::REQ-006/AC-02: A `selectable` card is a button that reports whether it is pressed, and takes
   keyboard focus.
+- components::REQ-006/AC-03: Each size spaces the parts apart, and from the card's edges, by its row's spacing.
+- components::REQ-006/AC-04: The header shows the title, the description under it, and the action at its top-right
+  corner; the title is in `text-sm` semibold, the description in `text-xs` and `--muted-foreground`.
+- components::REQ-006/AC-05: An image placed directly in a card spans the card's full width; as the card's first
+  child it runs to the card's top edge, and as its last child to its bottom edge, its corners following the card's.
 
 ### components::REQ-007 Badge
 
-A small label in one shape, in these variants:
+A small label in one shape: 18px tall whether or not its variant shows a border, in `text-xs` with `rounded-sm`
+corners and 6px between its sides and its text. A leading icon is 10px, 3px before the text. It comes in these
+variants:
 
 | Variant | Look |
 |---|---|
@@ -171,12 +191,14 @@ A small label in one shape, in these variants:
 | `warning` | `--warning` ground, `--warning-foreground` text |
 | `note` | `--note` ground, `--note-foreground` text |
 | `risk` | 1px dashed `--risk` border, `--risk-foreground` text |
-| `count` | A rounded number in the wash, `--primary` text |
+| `count` | A rounded number in the wash, `--primary` text in bold: fully rounded ends, at least as wide as it is tall |
 
 - components::REQ-007/AC-01: Each variant renders as its row describes.
 - components::REQ-007/AC-02: A badge can carry a leading icon before its text.
 - components::REQ-007/AC-03: A caller's own classes override a badge's ground, border and text colours, so
   an app can colour a badge with its app tokens ([theming](theming.md) `theming::REQ-009`).
+- components::REQ-007/AC-04: Every variant is 18px tall, in `text-xs`, with 6px between its sides and its text and
+  `rounded-sm` corners, except `count`, whose ends are fully rounded; a leading icon is 10px, 3px before the text.
 
 ### components::REQ-008 Tooltip
 
@@ -244,23 +266,42 @@ with the newest at the bottom. Any code in the app can raise one.
 
 ### components::REQ-012 Skeleton
 
-A placeholder block in `--border` (`deep`: `--border-strong`) that pulses between 55% and full opacity over
-1.6s, eased in and out, repeating.
+A placeholder block in `--border` (`deep`: `--border-strong`), with `rounded-sm` corners and the size the caller's
+classes give it, that pulses between 55% and full opacity over 1.6s, eased in and out, repeating.
 
 - components::REQ-012/AC-01: When the system asks for reduced motion, the block does not pulse.
 - components::REQ-012/AC-02: The block is hidden from screen readers and does not react to the pointer.
 - components::REQ-012/AC-03: The block pulses between 55% and full opacity over 1.6s, eased in and out,
   repeating, in `--border`, or `--border-strong` for `deep`.
+- components::REQ-012/AC-04: The block has `rounded-sm` corners and the width and height the caller's classes give
+  it.
 
 ### components::REQ-013 Tabs
 
+A row of tabs over their panels: each tab the caller passes carries its label and its panel, and the selected tab's
+panel shows below the row. Tabs always have a selected tab.
+
 | Variant | Use | Look |
 |---|---|---|
-| `page` | Switching the sections of a page | Folder tabs above a 1px `--border` rule; the selected tab takes the `--background` ground and `--primary` text in a heavier weight and joins the panel below it; the others show `--muted-foreground` text, `--foreground` under the pointer |
-| `pill` | Switching between categories of a list | Separate pill buttons on a `--card` ground with a 1px `--border-strong` border and `--muted-foreground` text; the selected one shows the wash, `--primary-strong` text and a `--primary` border; a tab can show a count after its label in a lighter tone |
+| `page` | Switching the sections of a page | Folder tabs above a 1px `--border` rule; the selected tab takes the `--background` ground, a 1px `--border` border on its top and sides, and `--primary` text in a heavier weight, and joins the panel below it; the others show `--muted-foreground` text, `--foreground` under the pointer |
+| `pill` | Switching between categories of a list | Separate pill buttons on a `--card` ground with a 1px `--border-strong` border and `--muted-foreground` text; the selected one shows the wash, `--primary-strong` text and a `--primary` border |
+
+A tab of either variant can show a count after its label, in a lighter tone, 4px after the label. A `page` tab is
+28px tall, as tall as a `default` button, in `text-sm`, with 13px between its sides and its label and `rounded-md`
+top corners; the tabs stand 2px apart, and the panel starts directly under the rule. A `pill` tab is 22px tall, as
+tall as an `sm` button, in `text-xs` semibold, with 10px between its sides and its label and `rounded-md` corners;
+the tabs stand 4px apart, and the panel starts 8px under the row. The panel has no ground and no padding of its own.
 
 - components::REQ-013/AC-01: Each variant renders as its row describes.
-- components::REQ-013/AC-02: The tabs are announced as a tab list, and arrow keys move between tabs.
+- components::REQ-013/AC-02: The tab row is announced as a tab list under the label the caller passes
+  (components::CON-001), and the arrow keys move between the tabs, selecting each enabled tab they reach.
+- components::REQ-013/AC-03: The selected tab's panel shows below the row, announced as a tab panel under its tab's
+  label; no other tab's panel shows.
+- components::REQ-013/AC-04: A single tab can be disabled (components::REQ-001/AC-02); the arrow keys still reach it,
+  without selecting it.
+- components::REQ-013/AC-05: Tabs used without a selected value, or with a value that is none of their tabs, fail
+  the type check.
+- components::REQ-013/AC-06: Each variant renders the height, text size and spacing the paragraph above gives it.
 
 ### components::REQ-014 Floating surfaces follow their anchor
 
@@ -288,7 +329,7 @@ Applies to the select popup and the tooltip.
 
 Applies to: every component in this spec. A component writes no text of its own: every visible or announced
 text it needs — the accessible name of an icon-only button, the drawer's close button, the label of a
-segmented control, the placeholder of a search box, the accessible name of a search box or a select (an
+segmented control, the placeholder of a search box, the accessible name of a search box, a select or a tab row (an
 `aria-label`, or an `aria-labelledby` pointing at a label on the page) — is a required prop, so a missing one fails
 the type check. The app passes it from its own dictionary.
 
@@ -329,10 +370,16 @@ on light/dark.
 
 - **A label longer than its control**: it stays on one line and is cut with an ellipsis, while running text
   wraps (components::REQ-001/AC-05).
-- **An icon-only button, a drawer, a segmented control, a search box or a select without its text**: the type
-  check fails (components::CON-001); nothing renders a fallback text.
-- **A select or a segmented control without a selected value**: the type check fails; neither has a state without a
-  selection (components::REQ-004/AC-09, components::REQ-005/AC-06).
+- **An icon-only button, a drawer, a segmented control, a search box, a select or tabs without their text**: the
+  type check fails (components::CON-001); nothing renders a fallback text.
+- **A select, a segmented control or tabs without a selected value**: the type check fails; none has a state without
+  a selection (components::REQ-004/AC-09, components::REQ-005/AC-06, components::REQ-013/AC-05).
+- **Something interactive inside a `selectable` card**, such as a button in its action: not supported. The card is a
+  button itself, and a control inside a button cannot be used reliably by pointer, keyboard or screen reader; a card
+  that needs an action of its own is a `default` card.
+- **`page` tabs on a surface other than the page's ground**, such as inside a card: the selected tab keeps its
+  `--background` ground, which joins a panel on the page's `--background` but not one on a `--card` ground; the tabs
+  are drawn for the page (components::REQ-013).
 - **The selected segment activated again**: it stays selected (components::REQ-005/AC-05).
 - **A click outside an open select popup**: the popup closes and the click acts on what it lands on
   (components::REQ-004/AC-05, components::REQ-004/AC-08).
@@ -350,10 +397,11 @@ specs; see `AGENTS.md`).
   drift apart. Rejected: several forms of a component for the same purpose.
 - **A filled `primary` button.** Apps need a prominent main action; its text takes the card colour, which
   reads on the brand colour in every theme. Rejected: outlined buttons only.
-- **Every control as tall as the button of its size.** Icon-only and text buttons, search boxes, select triggers and
-  segmented controls sit side by side in toolbars, forms and on rows, and line up only when they are equally tall:
-  28px beside a `default` button, 22px beside an `sm` one. Rejected: a 32px `icon` button, which stands above the 28px
-  text buttons beside it, and fields, triggers and segmented controls of 29 to 35px.
+- **Every control as tall as the button of its size.** Icon-only and text buttons, search boxes, select triggers,
+  segmented controls and tabs sit side by side in toolbars, forms and on rows, and line up only when they are equally
+  tall: 28px beside a `default` button (a `page` tab), 22px beside an `sm` one (a `pill` tab). Rejected: a 32px `icon`
+  button, which stands above the 28px text buttons beside it, and fields, triggers, segmented controls and tabs of 29
+  to 35px.
 - **The segmented control is a radio group.** It is one choice among mutually exclusive options that is never
   empty, which is what a radio group announces and keeps. Rejected: Base UI's toggle group, on which shadcn/ui's
   `toggle-group` is built, which announces its segments as pressed toggle buttons and empties the selection when the
@@ -361,8 +409,19 @@ specs; see `AGENTS.md`).
 - **The select is not modal.** An outside scroll closes it (components::REQ-014/AC-01), so the page stays scrollable
   while it is open, and a click outside acts as it would with the popup closed. Rejected: Base UI's modal select,
   which locks the page's scroll and blocks outside clicks while it is open.
-- **A select and a segmented control always have a selected option.** Both show the current value of a setting.
-  Rejected: a placeholder for a select with nothing selected.
+- **A select, a segmented control and tabs always have a selected option.** The select and the segmented control show
+  the current value of a setting, and tabs always show the panel of one tab. Rejected: a placeholder for a select with
+  nothing selected, and tabs that fall back to their first tab when given no value, which hides a value the app
+  forgot to pass.
+- **The tabs render their panels.** Each tab is linked to the panel it shows, so a screen reader announces which
+  content a tab controls, and the selected `page` tab joins its panel. The owner's choice. Rejected: a row of tabs
+  only, the app switching the content below it, which leaves the tabs unlinked to what they switch.
+- **The selection follows the arrow keys in the tabs**, as in the segmented control: their panels show at once,
+  which is when the WAI-ARIA tabs pattern recommends it. The owner's choice. Rejected: Base UI's default, where the
+  arrow keys move the focus only and Enter or Space selects.
+- **The card keeps shadcn/ui's parts and sizes**: a header with a title, a description and an action, the content
+  and a footer, at two spacings. An app gets a ready layout for what a card holds. The owner's choice. Rejected: one
+  container, the app laying out its content.
 - **The select popup is at least as wide as its trigger, on the trigger's left edge.** Options keep their full
   labels where there is room, and the popup reads as opening from the trigger. Rejected: a popup exactly as wide as
   the trigger, which cuts every longer option, and one on the trigger's right edge, which suits only a trigger at the

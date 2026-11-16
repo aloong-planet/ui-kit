@@ -66,7 +66,7 @@ an existing token.
 
 | Kit token | What it colours |
 |---|---|
-| `--background` | The page; the ground of regular buttons, select triggers, the selected page tab and a segment under the pointer |
+| `--background` | The page; the ground of regular buttons, select triggers, dashed cards, the selected page tab and a segment under the pointer |
 | `--foreground` | Body text |
 | `--card` | Cards, the search box and the pill tabs |
 | `--card-foreground` | Text on cards |
