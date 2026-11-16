@@ -10,9 +10,10 @@ import preview from '../.storybook/preview'
 import * as stories from '../stories/components-drawer.stories'
 import { computed } from '../stories/support/computed'
 import { isOpen, opened } from '../stories/support/dialog'
+import { button } from './support/button'
 import { mount, unmount } from './support/mount'
 
-const { Default } = composeStories(stories, preview)
+const { Default, LongContent } = composeStories(stories, preview)
 
 const viewport = { width: window.innerWidth, height: window.innerHeight }
 
@@ -21,13 +22,6 @@ afterEach(async () => {
   window.scrollTo(0, 0)
   await page.viewport(viewport.width, viewport.height)
 })
-
-// The button of `canvas` whose text is `name`
-function button(canvas: HTMLElement, name: string): HTMLButtonElement {
-  const found = [...canvas.querySelectorAll('button')].find((element) => element.textContent === name)
-  if (!found) throw new Error(`no button ${name}`)
-  return found
-}
 
 // Opens the drawer of `canvas` from the keyboard: Tab onto its opener, the first element of the page, and Enter
 async function openByKeyboard(canvas: HTMLElement): Promise<{ opener: HTMLButtonElement; panel: HTMLElement }> {
@@ -110,6 +104,19 @@ test('the page behind an open drawer does not scroll', async () => {
   await vi.waitFor(() => expect(isOpen('dialog')).toBe(false))
   await userEvent.wheel(opener, { delta: { y: 400 } })
   await vi.waitFor(() => expect(window.scrollY).toBeGreaterThan(0))
+})
+
+// components::REQ-009/AC-05: the wheel over a body taller than the panel scrolls the body, down to its last line
+test('the wheel scrolls a long body to its last line', async () => {
+  const canvas = mount(<LongContent />)
+  const { panel } = await openByKeyboard(canvas)
+  const body = panel.querySelector('h2')?.parentElement?.nextElementSibling
+  const last = body?.lastElementChild?.lastElementChild
+  if (!(body instanceof HTMLElement) || !last) throw new Error('no body after the header')
+  const below = () => last.getBoundingClientRect().bottom > body.getBoundingClientRect().bottom
+  expect(below()).toBe(true)
+  await userEvent.wheel(body, { delta: { y: body.scrollHeight } })
+  await vi.waitFor(() => expect(below()).toBe(false))
 })
 
 // components::REQ-009/AC-04: the panel is `min(720px, 80vw)` wide: 720px in a window wide enough for it, and 80% of a

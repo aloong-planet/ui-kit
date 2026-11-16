@@ -10,9 +10,10 @@ import preview from '../.storybook/preview'
 import * as stories from '../stories/components-confirm-dialog.stories'
 import { computed } from '../stories/support/computed'
 import { isOpen, opened } from '../stories/support/dialog'
+import { button } from './support/button'
 import { mount, unmount } from './support/mount'
 
-const { Default, InsideDrawer } = composeStories(stories, preview)
+const { Default, InsideDrawer, LongBody } = composeStories(stories, preview)
 
 const viewport = { width: window.innerWidth, height: window.innerHeight }
 
@@ -21,13 +22,6 @@ afterEach(async () => {
   window.scrollTo(0, 0)
   await page.viewport(viewport.width, viewport.height)
 })
-
-// The button inside `container` whose text is `name`
-function button(container: Element, name: string): HTMLButtonElement {
-  const found = [...container.querySelectorAll('button')].find((element) => element.textContent === name)
-  if (!found) throw new Error(`no button ${name}`)
-  return found
-}
 
 // The Default story's spy, cleared of what earlier tests recorded on it
 function onConfirm() {
@@ -161,6 +155,62 @@ test.each([
   const { box } = await openByKeyboard(canvas)
   const rect = box.getBoundingClientRect()
   expect({ width: rect.width, left: rect.left, top: rect.top }).toEqual(expected)
+})
+
+// components::REQ-010/AC-07: the wheel over a body taller than the room left scrolls the body, down to its last line
+test('the wheel scrolls a long body to its last line', async () => {
+  const canvas = mount(<LongBody />)
+  const { box } = await openByKeyboard(canvas)
+  const body = box.querySelector('h2')?.nextElementSibling
+  const last = body?.lastElementChild?.lastElementChild
+  if (!(body instanceof HTMLElement) || !last) throw new Error('no body after the title')
+  const below = () => last.getBoundingClientRect().bottom > body.getBoundingClientRect().bottom
+  expect(below()).toBe(true)
+  await userEvent.wheel(body, { delta: { y: body.scrollHeight } })
+  await vi.waitFor(() => expect(below()).toBe(false))
+})
+
+// A confirm dialog whose body holds a control of the caller's, at the body's edge
+function ControlInBody() {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Open the question</Button>
+      <ConfirmDialog
+        open={open}
+        onOpenChange={setOpen}
+        title="Delete the project?"
+        cancelLabel="Cancel"
+        confirmLabel="Delete"
+        destructive
+        onConfirm={() => {}}
+      >
+        <Button>Keep its files</Button>
+      </ConfirmDialog>
+    </>
+  )
+}
+
+// components::REQ-001/AC-01: a control the caller puts at the edge of the body shows its whole focus ring, 2px outside
+// it, though the body scrolls and so clips what is drawn outside it
+test('a control at the edge of the body shows its whole focus ring', async () => {
+  const canvas = mount(<ControlInBody />)
+  const { box } = await openByKeyboard(canvas)
+  await userEvent.tab({ shift: true })
+  const control = button(box, 'Keep its files')
+  expect(document.activeElement).toBe(control)
+  const style = getComputedStyle(control)
+  const reach = parseFloat(style.outlineOffset) + parseFloat(style.outlineWidth)
+  const rect = control.getBoundingClientRect()
+  const clip = control.parentElement?.getBoundingClientRect()
+  if (!clip) throw new Error('no body around the control')
+  expect({
+    reach,
+    left: rect.left - reach >= clip.left,
+    top: rect.top - reach >= clip.top,
+    right: rect.right + reach <= clip.right,
+    bottom: rect.bottom + reach <= clip.bottom,
+  }).toEqual({ reach: 4, left: true, top: true, right: true, bottom: true })
 })
 
 // components::REQ-010/AC-09: Esc in a dialog opened from inside an open drawer closes only the dialog, returning focus

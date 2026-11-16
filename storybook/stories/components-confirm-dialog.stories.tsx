@@ -1,8 +1,9 @@
 // components::REQ-010 and the shared states of components::REQ-001 on the ConfirmDialog, in a consumer of the kit. The
 // owner confirms the ConfirmDialog's look on these stories, switching the theme and light/dark with the toolbar
 // (components::CON-002); each story opens its dialog in its play function. How it is answered, where keyboard focus
-// goes and the box's width in windows of different widths are checked with a real pointer and keyboard in
-// tests/components-confirm-dialog.test.tsx, since a play function's events do not move focus as a person's do.
+// goes, the box's width in windows of different widths and what the wheel scrolls are checked with a real pointer and
+// keyboard in tests/components-confirm-dialog.test.tsx, since a play function's events do not move focus or scroll as
+// a person's do.
 import { Button, ConfirmDialog, Drawer } from '@aloong-planet/ui'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState, type ReactNode } from 'react'
@@ -159,7 +160,8 @@ const paragraphs = Array.from({ length: 30 }, (_, index) => (
 ))
 
 // components::REQ-010/AC-07: a body taller than the room left scrolls inside the box, which ends inside the window,
-// with the title and both buttons in view
+// with the title and both buttons in view. That the wheel scrolls the body to its last line is checked in
+// tests/components-confirm-dialog.test.tsx.
 export const LongBody: StoryObj<{ onConfirm: () => void }> = {
   args: { onConfirm: fn() },
   render: ({ onConfirm }) => (
@@ -180,41 +182,38 @@ export const LongBody: StoryObj<{ onConfirm: () => void }> = {
     }
     await expect({
       boxInWindow: inWindow(box),
-      scrolls: body.scrollHeight > body.clientHeight,
       title: inWindow(title),
       buttons: within(box).getAllByRole('button').map(inWindow),
-    }).toEqual({ boxInWindow: true, scrolls: true, title: true, buttons: [true, true] })
+    }).toEqual({ boxInWindow: true, title: true, buttons: [true, true] })
   },
 }
 
-const longTitle = 'Publish the release that brings light and dark to every theme and keeps the scroll position of long lists?'
-const path = `projects/${'very-long-folder-name-'.repeat(14)}end/README.md`
+// A file name with no break opportunity in it, wider than the box: no space, hyphen or slash
+const word = `${'VeryLongFileName'.repeat(10)}.md`
+const longTitle = `Delete ${word}?`
 
-// components::REQ-001/AC-05 and the long unbroken word: a title longer than the box wraps, and a path with no break in
-// it breaks onto further lines inside the body instead of running past the box
+// components::REQ-001/AC-05 and the long unbroken word: a title longer than the box wraps, and the word in the title and
+// in the body breaks onto further lines instead of running past the box
 export const LongText: StoryObj<{ onConfirm: () => void }> = {
   args: { onConfirm: fn() },
   render: ({ onConfirm }) => (
-    <WithOpener
-      question={{ ...remove, title: longTitle, body: <p data-path>{path}</p> }}
-      onConfirm={onConfirm}
-    />
+    <WithOpener question={{ ...remove, title: longTitle, body: <p data-word>{word}</p> }} onConfirm={onConfirm} />
   ),
   play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole('button', { name: 'Open the question' }))
     const box = await opened('alertdialog')
     const title = within(box).getByRole('heading', { name: longTitle })
-    const text = box.querySelector<HTMLElement>('[data-path]')
+    const text = box.querySelector<HTMLElement>('[data-word]')
     const body = text?.parentElement
-    if (!text || !body) throw new Error('no path in the body')
+    if (!text || !body) throw new Error('no word in the body')
     const lines = (element: HTMLElement) =>
       Math.round(element.getBoundingClientRect().height / parseFloat(getComputedStyle(element).lineHeight))
     await expect({
       titleLines: lines(title) > 1,
-      pathLines: lines(text) > 1,
-      pathInBox: text.getBoundingClientRect().right <= box.getBoundingClientRect().right,
+      titleOverflow: title.scrollWidth > title.clientWidth,
+      wordLines: lines(text) > 1,
       bodyOverflow: body.scrollWidth > body.clientWidth,
-    }).toEqual({ titleLines: true, pathLines: true, pathInBox: true, bodyOverflow: false })
+    }).toEqual({ titleLines: true, titleOverflow: false, wordLines: true, bodyOverflow: false })
   },
 }
 

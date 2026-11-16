@@ -34,7 +34,11 @@ const boxClass =
 
 const titleClass = "mb-1 shrink-0 text-lg font-bold wrap-break-word"
 
-const bodyClass = "mt-2 mb-3.5 min-h-0 overflow-y-auto text-sm leading-[1.7] wrap-break-word text-muted-foreground"
+// The body scrolls, and a scrolling element clips what its children draw outside it, so 4px of padding, taken back by as
+// much negative margin, keeps the whole focus ring of a control at its edge in view (components::REQ-001/AC-01)
+// without moving the text
+const bodyClass =
+  "-mx-1 mt-1 mb-2.5 min-h-0 overflow-y-auto p-1 text-sm leading-[1.7] wrap-break-word text-muted-foreground"
 
 const buttonsClass = "flex shrink-0 justify-end gap-2"
 

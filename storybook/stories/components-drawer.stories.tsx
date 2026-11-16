@@ -114,7 +114,8 @@ const paragraphs = Array.from({ length: 40 }, (_, index) => (
 ))
 
 // components::REQ-009/AC-05: content taller than the panel scrolls inside the body; scrolled to its end, the header and
-// the close button stay where they were and the panel still fills the window's height
+// the close button stay where they were and the panel still fills the window's height. That the wheel scrolls the body
+// to its last line is checked in tests/components-drawer.test.tsx.
 export const LongContent: Story = {
   render: () => (
     <WithOpener title="Release notes">
@@ -132,26 +133,23 @@ export const LongContent: Story = {
     const before = [header.getBoundingClientRect().toJSON(), close.getBoundingClientRect().toJSON()]
     body.scrollTop = body.scrollHeight
     await expect({
-      scrolls: body.scrollHeight > body.clientHeight,
-      scrolled: body.scrollTop > 0,
       header: [header.getBoundingClientRect().toJSON(), close.getBoundingClientRect().toJSON()],
       panelBottom: panel.getBoundingClientRect().bottom,
-      lastInBody: (body.lastElementChild?.lastElementChild?.getBoundingClientRect().bottom ?? Infinity) <= body.getBoundingClientRect().bottom,
-    }).toEqual({ scrolls: true, scrolled: true, header: before, panelBottom: window.innerHeight, lastInBody: true })
+    }).toEqual({ header: before, panelBottom: window.innerHeight })
   },
 }
 
-const longTitle = 'Release notes for the version that brings light and dark to every theme and keeps the scroll position of long lists'
-const path = `projects/${'very-long-folder-name-'.repeat(14)}end/README.md`
+// A file name with no break opportunity in it, wider than the panel: no space, hyphen or slash
+const word = `${'VeryLongFileName'.repeat(10)}.md`
+const longTitle = `Release notes for ${word}`
 
 // components::REQ-001/AC-05 and the long unbroken word: a title longer than the header wraps, staying clear of the
-// close button, and a path with no break in it breaks onto further lines inside the body instead of running past the
-// panel
+// close button, and the word in the title and in the body breaks onto further lines instead of running past the panel
 export const LongText: Story = {
   render: () => (
     <WithOpener title={longTitle}>
-      <p className="text-sm" data-path>
-        {path}
+      <p className="text-sm" data-word>
+        {word}
       </p>
     </WithOpener>
   ),
@@ -160,16 +158,16 @@ export const LongText: Story = {
     const panel = await opened('dialog')
     const title = within(panel).getByRole('heading', { name: longTitle })
     const close = within(panel).getByRole('button', { name: 'Close' })
-    const text = panel.querySelector<HTMLElement>('[data-path]')
+    const text = panel.querySelector<HTMLElement>('[data-word]')
     const body = text?.parentElement
-    if (!text || !body) throw new Error('no path in the body')
+    if (!text || !body) throw new Error('no word in the body')
     const lineHeight = (element: HTMLElement) => parseFloat(getComputedStyle(element).lineHeight)
     await expect({
       titleLines: Math.round(title.getBoundingClientRect().height / lineHeight(title)) > 1,
+      titleOverflow: title.scrollWidth > title.clientWidth,
       titleClearOfClose: title.getBoundingClientRect().right <= close.getBoundingClientRect().left,
-      pathLines: Math.round(text.getBoundingClientRect().height / lineHeight(text)) > 1,
-      pathInPanel: text.getBoundingClientRect().right <= panel.getBoundingClientRect().right,
+      wordLines: Math.round(text.getBoundingClientRect().height / lineHeight(text)) > 1,
       bodyOverflow: body.scrollWidth > body.clientWidth,
-    }).toEqual({ titleLines: true, titleClearOfClose: true, pathLines: true, pathInPanel: true, bodyOverflow: false })
+    }).toEqual({ titleLines: true, titleOverflow: false, titleClearOfClose: true, wordLines: true, bodyOverflow: false })
   },
 }
