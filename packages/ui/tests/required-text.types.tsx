@@ -5,9 +5,17 @@
 // error to expect; the unmarked use next to it differs only in keeping the rule, so that the marked one fails for
 // breaking it and not for something else. This file is type-checked by `pnpm typecheck`, never run.
 import { X } from 'lucide-react'
-import { Button, SearchBox, SegmentedControl, Select } from '../src'
+import { Badge, Button, SearchBox, SegmentedControl, Select } from '../src'
 
 declare const name: string
+
+export const badges = [
+  // @ts-expect-error a badge needs its text
+  <Badge key="no text" variant="primary" />,
+  <Badge key="text" variant="primary">
+    {name}
+  </Badge>,
+]
 
 export const iconButtons = [
   // @ts-expect-error an icon-only button needs the accessible name the caller passes
